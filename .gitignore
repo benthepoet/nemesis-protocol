@@ -1,0 +1,15 @@
+# Reference image files — third-party web images are inspiration only,
+# never shipped AND never committed to this public repo (redistribution).
+# Commit the references.md index instead (links + notes + attribution).
+**/references/**
+!**/references/references.md
+
+# License-clean refs (CC0 / CC BY / public domain) MAY be committed —
+# place them under references/cleared/ with attribution in references.md
+!**/references/cleared/
+!**/references/cleared/**
+
+# Build output
+dist/
+build/
+node_modules/
