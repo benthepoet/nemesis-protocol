@@ -10,10 +10,11 @@
 | 2026-07-29 | Stage 3 start | Composer 2.5 Fast on `feat/p1-deck-geometry` from `integration` (50ef0c9); spec v1, clarification log KIMI RULINGS v1 |
 | 2026-07-29 | Stage 3 impl | Tasks 1–18 complete: deck03.json, graph/validate/collision/spawn/hash, blockout render, debug fly cam, boot wire-up, Vitest E1–E20 |
 | 2026-07-29 | Verification | `npm run test:run` 38/38 pass (17 scaffold + 21 deck); `npm run build` exit 0; dev smoke HTTP 200 |
-| 2026-07-29 | PR opened | [#2](https://github.com/benthepoet/nemesis-protocol/pull/2) → `integration` |
+| 2026-07-29 | PR opened | [#2](https://github.com/benthepoet/nemesis-protocol/pull/2) → `integration`; review rounds used: 2; merge sha `8a01f79` |
 | 2026-07-29 | Review round 1 | Grok REQUEST CHANGES — 1 blocker (G4/R1 blast bulkhead seal), 2 minor, 1 question; independent verify 38/38 + build 0; posted [PR comment](https://github.com/benthepoet/nemesis-protocol/pull/2#issuecomment-5124364576) |
 | 2026-07-29 | Revision round 1 | Composer: #1 bulkhead gaps (4e9078d), #2 partition Q7 (17471c6), #3 CONNECTED validator (07cc432), #4 E10 actor-radius (c8afe35); verify 39/39 + build 0 |
 | 2026-07-29 | Review round 2 | Grok APPROVE — all 4 findings verified-fixed; zero open blockers; independent verify 39/39 + build 0; merge held pending Director; posted [PR comment](https://github.com/benthepoet/nemesis-protocol/pull/2#issuecomment-5124412650) |
+| 2026-07-29 | Merged (§6) | `feat/p1-deck-geometry` → `integration` at `8a01f79`; post-merge verify 39/39 + build 0; PR #2 remains Gate 1–2 record thread |
 | | Gate 1 (Kimi) | pass / fail → findings |
 | | Gate 2 (Director) | accept / amend / reject → feedback ref |
 | | Director iterations (§3.5a) | cycle <n>: diagnosis <design/spec/impl> |
