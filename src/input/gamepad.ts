@@ -18,6 +18,10 @@ export class GamepadDevice implements InputDevice {
     if (!pad) {
       if (this.connected) {
         this.connected = false;
+        for (const action of [...this.held]) {
+          this.pending.push({ kind: this.kind, action, value: 0 });
+          this.held.delete(action);
+        }
         this.previousButtons.clear();
       }
       return this.pending;
