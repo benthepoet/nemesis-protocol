@@ -43,13 +43,14 @@ describe('device hot-swap (G5 / Q4)', () => {
     expect(world.meta.interactHeld).toBe(true);
 
     kbm.setHeld('interact', true);
-    pad.pushSample('interact', 1);
+    pad.pushSample('cancel', 1);
     bus.enqueueFromDevices([kbm, pad]);
     cmds = bus.drainForTick(world.tick);
     const release = cmds.find((c) => c.action === 'interact' && c.value === 0);
     expect(release).toBeDefined();
     applyCommands(world, cmds);
-    expect(world.meta.interactHeld).toBe(true);
+    expect(world.meta.interactHeld).toBe(false);
+    expect(world.meta.cancelHeld).toBe(true);
   });
 
   it('E13: disconnect flushes synthetic releases for all held actions', () => {
