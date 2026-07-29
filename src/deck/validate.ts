@@ -35,6 +35,16 @@ export const P1_CRITICAL_PATH_CLASS_A_CHECK_IDS = [
 
 const VALID_WALL_CLASSES: readonly WallClass[] = ['A', 'B', 'C'];
 
+/** Logical bulkhead band ids (Q1 — 3 section bounds; gapped segments share a band prefix). */
+const BULKHEAD_BAND_PREFIXES = ['wall-b-aft-rear', 'wall-b-mid-aft', 'wall-b-mid-fore'] as const;
+
+function bulkheadBandKey(id: string): string | null {
+  for (const prefix of BULKHEAD_BAND_PREFIXES) {
+    if (id === prefix || id.startsWith(`${prefix}-`)) return prefix;
+  }
+  return null;
+}
+
 function isValidWallClass(value: string): value is WallClass {
   return (VALID_WALL_CLASSES as readonly string[]).includes(value);
 }
@@ -63,21 +73,26 @@ export function validateDeckGraph(graph: DeckGraph): ValidationReport {
     issues.push({ code: 'CLASS_A_COUNT', message: `expected 9 Class A walls, got ${classACount}` });
   }
 
-  const bulkheadCount = listWallSegments(graph).filter((w) => w.role === 'bulkhead').length;
-  if (bulkheadCount !== 3) {
+  const bulkheadBands = new Set(
+    listWallSegments(graph)
+      .filter((w) => w.role === 'bulkhead')
+      .map((w) => bulkheadBandKey(w.id))
+      .filter((k): k is string => k !== null),
+  );
+  if (bulkheadBands.size !== 3) {
     issues.push({
       code: 'CLASS_B_BULKHEAD_COUNT',
-      message: `expected 3 bulkhead bands, got ${bulkheadCount}`,
+      message: `expected 3 bulkhead bands, got ${bulkheadBands.size}`,
     });
   }
 
   const allNodeIds = listNodes(graph).map((n) => n.id);
-  const reachableSets = allNodeIds.map((id) => allReachableFrom(graph, id));
-  const allSameComponent =
-    reachableSets.length > 0 &&
-    reachableSets.every((set) => set.size === reachableSets[0]!.size);
-  if (!allSameComponent) {
-    issues.push({ code: 'CONNECTED', message: 'door graph is not a single connected component' });
+  if (allNodeIds.length > 0) {
+    const reference = allReachableFrom(graph, allNodeIds[0]!);
+    const allConnected = allNodeIds.every((id) => reference.has(id));
+    if (!allConnected) {
+      issues.push({ code: 'CONNECTED', message: 'door graph is not a single connected component' });
+    }
   }
 
   const breaches = breachNodes(graph);
