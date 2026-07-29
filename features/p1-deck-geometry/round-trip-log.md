@@ -11,7 +11,7 @@
 | 2026-07-29 | Stage 3 impl | Tasks 1–18 complete: deck03.json, graph/validate/collision/spawn/hash, blockout render, debug fly cam, boot wire-up, Vitest E1–E20 |
 | 2026-07-29 | Verification | `npm run test:run` 38/38 pass (17 scaffold + 21 deck); `npm run build` exit 0; dev smoke HTTP 200 |
 | 2026-07-29 | PR opened | [#2](https://github.com/benthepoet/nemesis-protocol/pull/2) → `integration` |
-| | Review round 1..5 | <findings count / outcome> |
+| 2026-07-29 | Review round 1 | Grok REQUEST CHANGES — 1 blocker (G4/R1 blast bulkhead seal), 2 minor, 1 question; independent verify 38/38 + build 0; posted [PR comment](https://github.com/benthepoet/nemesis-protocol/pull/2#issuecomment-5124364576) |
 | | Gate 1 (Kimi) | pass / fail → findings |
 | | Gate 2 (Director) | accept / amend / reject → feedback ref |
 | | Director iterations (§3.5a) | cycle <n>: diagnosis <design/spec/impl> |
