@@ -11,9 +11,13 @@ describe('loadDeck (G1)', () => {
     expect(graph.doorEdges.length).toBe(17);
 
     const classA = graph.wallSegments.filter((w) => w.wallClass === 'A').length;
-    const bulkheads = graph.wallSegments.filter((w) => w.role === 'bulkhead').length;
     expect(classA).toBe(9);
-    expect(bulkheads).toBe(3);
+    const bulkheadBands = new Set(
+      graph.wallSegments
+        .filter((w) => w.role === 'bulkhead')
+        .map((w) => w.id.replace(/-(above|below)$/, '')),
+    );
+    expect(bulkheadBands.size).toBe(3);
 
     const nonBlast = graph.doorEdges.filter((d) => !d.isBlast);
     expect(nonBlast).toHaveLength(15);
