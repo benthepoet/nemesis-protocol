@@ -8,6 +8,8 @@
 | 2026-07-29 | Design pack | v1 (design doc v1.10, charter v1.12) |
 | 2026-07-29 | Design pack | v2 — branch naming `master` per Director ruling (charter v1.13) |
 | 2026-07-29 | Spec | v1 FINAL (charter v1.13, design pack v2) — 22 tasks, G1–G9 traced; clarification loop §3.2a: 6 questions, all resolved (KIMI RULINGS v1, no doc change) |
+| 2026-07-29 | Stage 3 implementation | Composer — branch `feat/p1-project-scaffold`; tasks 1–22 per spec v1 |
+| 2026-07-29 | Verification | `npm run test:run`: 6 files, 16 tests passed; `npm run build`: exit 0, `dist/` emitted; dev smoke: HTTP 200, `#game-canvas` + `#fps-overlay` served (curl) |
 | | PR opened | <link/number> |
 | | Review round 1..5 | <findings count / outcome> |
 | | Gate 1 (Kimi) | pass / fail → findings |
