@@ -11,14 +11,14 @@
 
 | ID | Goal (binary-verifiable) | Verified |
 |----|--------------------------|----------|
-| G1 | Deck 03 exists as a machine-readable definition derived from the canonical mockup (v2.2): 18 nodes (16 rooms + main spine + fore connector), all doors as edges, all wall segments typed A/B/C, sections, breach points, android racks, objective markers — at correct metric scale (mockup 120 px = 25 m) | ☐ |
-| G2 | The room graph conforms to the §7 topology model and **validates**: graph connected; every room reachable from both breach points; exactly 2 breach points (§7 r5); every edge carries a wall class (§7 r7); Engineering/aft is Class-B-bounded (§7 r7); critical-path rooms border ≥1 Class A wall and hull rooms are flagged (§7 r8) | ☐ |
-| G3 | The deck renders as blockout 3D from the deck definition: floors, full-height walls, **ceilings on every room** (cutaway-ready — visual direction §7 rule 6), per-section accent tinting per visual direction §3 (players navigate by tint) | ☐ |
-| G4 | Collision derives from the same deck definition: actor proxies cannot pass walls, bulkheads, or hull; all doorways (including both blast-door passages — see ruling R1) are traversable | ☐ |
-| G5 | Both airlocks are flagged spawn-safe entry rooms with validated spawn points (inside room, non-colliding, clearance-checked), mapped to their breach profiles per §3 Phase 0 | ☐ |
-| G6 | The data model is topology-agnostic (§12.2): collision and rendering consume the room *graph* via APIs — no layout coordinates hard-coded outside the deck definition | ☐ |
-| G7 | Determinism preserved from the scaffold: identical deck definition → identical graph (hash-verifiable); deck entities use stable IDs | ☐ |
-| G8 | A dev-only debug inspection camera (free-fly) exists for gate review — explicitly **not** the gameplay camera rig (that is `p1-player-controller`) | ☐ |
+| G1 | Deck 03 exists as a machine-readable definition derived from the canonical mockup (v2.2): 18 nodes (16 rooms + main spine + fore connector), all doors as edges, all wall segments typed A/B/C, sections, breach points, android racks, objective markers — at correct metric scale (mockup 120 px = 25 m) | ☑ |
+| G2 | The room graph conforms to the §7 topology model and **validates**: graph connected; every room reachable from both breach points; exactly 2 breach points (§7 r5); every edge carries a wall class (§7 r7); Engineering/aft is Class-B-bounded (§7 r7); critical-path rooms border ≥1 Class A wall and hull rooms are flagged (§7 r8) | ☑ |
+| G3 | The deck renders as blockout 3D from the deck definition: floors, full-height walls, **ceilings on every room** (cutaway-ready — visual direction §7 rule 6), per-section accent tinting per visual direction §3 (players navigate by tint) | ☑ |
+| G4 | Collision derives from the same deck definition: actor proxies cannot pass walls, bulkheads, or hull; all doorways (including both blast-door passages — see ruling R1) are traversable | ☑ |
+| G5 | Both airlocks are flagged spawn-safe entry rooms with validated spawn points (inside room, non-colliding, clearance-checked), mapped to their breach profiles per §3 Phase 0 | ☑ |
+| G6 | The data model is topology-agnostic (§12.2): collision and rendering consume the room *graph* via APIs — no layout coordinates hard-coded outside the deck definition | ☑ |
+| G7 | Determinism preserved from the scaffold: identical deck definition → identical graph (hash-verifiable); deck entities use stable IDs | ☑ |
+| G8 | A dev-only debug inspection camera (free-fly) exists for gate review — explicitly **not** the gameplay camera rig (that is `p1-player-controller`) | ☑ |
 
 ## Mechanics callout (anti-assumption: unlisted = does not exist)
 

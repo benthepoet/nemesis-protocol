@@ -15,7 +15,7 @@
 | 2026-07-29 | Revision round 1 | Composer: #1 bulkhead gaps (4e9078d), #2 partition Q7 (17471c6), #3 CONNECTED validator (07cc432), #4 E10 actor-radius (c8afe35); verify 39/39 + build 0 |
 | 2026-07-29 | Review round 2 | Grok APPROVE — all 4 findings verified-fixed; zero open blockers; independent verify 39/39 + build 0; merge held pending Director; posted [PR comment](https://github.com/benthepoet/nemesis-protocol/pull/2#issuecomment-5124412650) |
 | 2026-07-29 | Merged (§6) | `feat/p1-deck-geometry` → `integration` at `8a01f79`; post-merge verify 39/39 + build 0; PR #2 remains Gate 1–2 record thread |
-| | Gate 1 (Kimi) | pass / fail → findings |
+| 2026-07-29 | Gate 1 (Kimi) | **pass** — G1–G8 all verified binary (pack checkboxes ☑); mechanics callout compliant — M1–M6 present, nothing missing, nothing invented; visual standard met (18-room palette per Q2, three wall treatments per Q7, ceilings, FPS 60; evidence: `gate1-evidence-deck-render.png`); license scan clean (no dep changes, no shipped third-party material) |
 | | Gate 2 (Director) | accept / amend / reject → feedback ref |
 | | Director iterations (§3.5a) | cycle <n>: diagnosis <design/spec/impl> |
 | | Escalations | <E-IDs if any> |
