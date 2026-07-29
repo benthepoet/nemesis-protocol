@@ -2,7 +2,7 @@
 
 **Owner:** Kimi K3 (Art Lead, charter §1)
 **Applies to:** all assets, VFX, lighting, UI treatment. Binding for every phase; deviations require a version bump here + Director sign-off.
-**Status:** v1.1 — engine, camera model, and ceiling policy specified
+**Status:** v1.2 — engine, camera model, and ceiling policy specified; function-accent palette extended
 
 ---
 
@@ -31,6 +31,8 @@ Inherited from the deck-plan mockups — this palette is the brand and carries i
 | Void / base dark | `#05080f` | Space, unlit recesses, UI chrome |
 | Hull steel | `#1a232e` – `#2a3644` | Primary surfaces, PBR base metals |
 | Section accents | Engineering `#ef5350` · Command `#7986cb` · Ops `#ffb74d` · Life support `#4dd0e1` · Crew `#ce93d8` · Hydro `#81c784` | Per-section lighting gels, trim, signage — **players learn to navigate by tint** |
+| Function accents (extended) | Armory `#ff8a65` · Medical `#80cbc4` · Comms/Sensors `#5c7cfa` · Mess/Crew ops `#a1887f` | Room-function trim/signage at finer grain than sections — inherited from the deck-plan mockups |
+| Corridor neutral | `#8b949e` | Spine/corridor surfaces — deliberately tint-neutral so section accents read by contrast |
 | Alarm / hazard | `#ff5252` | Alarm states, breach events, enemy telegraphs |
 | Safe / allied | `#69f0ae` | Airlocks, extraction, player-aligned indicators |
 | Interactive / door | `#ffd54f` | Doors, gates, interactables — one color, one meaning, everywhere |
@@ -121,3 +123,5 @@ Inherited from the deck-plan mockups — this palette is the brand and carries i
 | Version | Change |
 |---------|--------|
 | v1.0 | Initial direction: pillars, palette, ship-state lighting matrix, VFX families, readability rules, technical bar |
+| v1.1 | Engine, camera model, ceiling policy |
+| v1.2 | §3 palette extended: function accents (armory `#ff8a65`, medical `#80cbc4`, comms `#5c7cfa`, mess `#a1887f`) + corridor neutral `#8b949e` — formalized from deck-plan mockup v2.2 (`p1-deck-geometry` clarification Q2) |

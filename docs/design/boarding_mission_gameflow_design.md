@@ -8,7 +8,7 @@
 **License:** open source — MIT (code) / CC BY 4.0 (assets). See `LICENSE` / `LICENSE-ASSETS`.
 **Scope of this document:** Single-mission gameflow for the core loop — *board an enemy capital ship, fight through it, destroy it, get out.*
 **Reference asset:** `assets/mockups/cruiser_boarding_deck_plan.svg` — ISV *Nemesis*, Deck 03 (procgen reference layout)
-**Status:** v1.10 — locked for prototype (enemy roster approved)
+**Status:** v1.11 — locked for prototype (enemy roster approved)
 
 ---
 
@@ -159,6 +159,8 @@ Every wall segment in a deck belongs to exactly one class:
 | **A — Partition** | Interior walls between compartments | **Yes** — chips under gunfire, fails under sustained fire or explosives | Emergent shortcuts, flanking, line-of-sight control |
 | **B — Structural** | Section bulkheads, blast doors, reactor containment | **No** — sealed, immune to all damage | Protects the lock-and-key mission structure (§3) |
 | **C — Outer Hull** | The ship's skin | **Not by intent** — but vulnerable to catastrophic failure from explosions | Depressurization events (§6.4) |
+
+**Class B presentations.** Class B has two presentations with identical immunity: **bulkhead** — the section-bounding bands and blast doors that constitute the gating firewall (§7, rule 7: every edge bounding a gated section is Class B); and **interior** — ordinary solid walls (e.g., room-to-corridor faces between doorways), equally indestructible but *not* section bounds. Door edges carry the class of the wall they pierce: ordinary doors are Class B (interior); blast doors are Class B (bulkhead). Class A is reserved for breachable partitions — never a doorway.
 
 ### 6.2 Damage Model (Class A)
 
@@ -417,3 +419,12 @@ Stations drop the ship grammar (no nose, no engines-aft) and change the mission 
 - `assets/mockups/cruiser_mission_flow_overlay.svg` — mission flow companion: numbered beats 1 → 2A/2B → 3 → 4, route lanes, GATE chips, spawn zones, sealed-breach marker, alarm ladder.
 
 This layout is the canonical grammar example for the generator: *nose = command, spine = pacing axis, aft = objective heart, hull rooms = risk zones, partitions = negotiable, bulkheads = law.*
+
+---
+
+## 14. Changelog
+
+| Version | Change |
+|---------|--------|
+| v1.0–v1.10 | History predates this changelog section |
+| v1.11 | §6.1: Class B presentation split — **bulkhead** (section-bounding gating firewall) vs **interior** (ordinary solid walls, same immunity, not section bounds); door edges carry the class of the wall they pierce; Class A is never a doorway (from `p1-deck-geometry` clarification Q1) |
