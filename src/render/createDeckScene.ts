@@ -20,7 +20,7 @@ function roomFloorMaterial(accentId: AccentId): THREE.MeshStandardMaterial {
   });
 }
 
-function wallMaterialForRole(role: WallRole, accentId?: AccentId): THREE.MeshStandardMaterial {
+function wallMaterialForRole(role: WallRole): THREE.MeshStandardMaterial {
   if (role === 'bulkhead') {
     return new THREE.MeshStandardMaterial({
       color: '#2c3947',
@@ -31,13 +31,7 @@ function wallMaterialForRole(role: WallRole, accentId?: AccentId): THREE.MeshSta
     });
   }
   if (role === 'partition') {
-    return new THREE.MeshStandardMaterial({
-      color: '#1f2a36',
-      emissive: accentId ? new THREE.Color(ACCENT_HEX[accentId as keyof typeof ACCENT_HEX]) : new THREE.Color('#39434e'),
-      emissiveIntensity: 0.3,
-      metalness: 0.65,
-      roughness: 0.45,
-    });
+    return hullSteelMaterial();
   }
   if (role === 'hull') {
     return new THREE.MeshStandardMaterial({
@@ -72,6 +66,27 @@ function addBox(
 function hullSteelMaterial(): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({
     color: '#1f2a36',
+    metalness: 0.65,
+    roughness: 0.45,
+  });
+}
+
+function partitionCapMaterial(): THREE.MeshStandardMaterial {
+  return new THREE.MeshStandardMaterial({
+    color: '#1f2a36',
+    emissive: new THREE.Color('#39434e'),
+    emissiveIntensity: 0.35,
+    metalness: 0.65,
+    roughness: 0.45,
+  });
+}
+
+function partitionAccentStripMaterial(accentId: AccentId): THREE.MeshStandardMaterial {
+  const hex = ACCENT_HEX[accentId as keyof typeof ACCENT_HEX];
+  return new THREE.MeshStandardMaterial({
+    color: '#1f2a36',
+    emissive: new THREE.Color(hex),
+    emissiveIntensity: 0.4,
     metalness: 0.65,
     roughness: 0.45,
   });
@@ -113,13 +128,46 @@ function wallThicknessForRole(role: WallRole): number {
   return role === 'bulkhead' ? BULKHEAD_THICKNESS_M : WALL_THICKNESS_M;
 }
 
+function buildPartitionWall(
+  parent: THREE.Object3D,
+  x: number,
+  z: number,
+  w: number,
+  h: number,
+  thickness: number,
+  accentId: AccentId | undefined,
+  name: string,
+): void {
+  const capHeight = 0.08;
+  const stripWidth = 0.04;
+  const bodyMat = hullSteelMaterial();
+  const capMat = partitionCapMaterial();
+  const stripMat = partitionAccentStripMaterial(accentId ?? 'corridor');
+
+  if (w >= h) {
+    addBox(parent, x, 0, z, w, ROOM_HEIGHT_M - capHeight, thickness, bodyMat, `${name}:body`);
+    addBox(parent, x, ROOM_HEIGHT_M - capHeight, z, w, capHeight, thickness, capMat, `${name}:cap`);
+    addBox(parent, x, 0, z, w, ROOM_HEIGHT_M, stripWidth, stripMat, `${name}:accent`);
+  } else {
+    addBox(parent, x, 0, z, thickness, ROOM_HEIGHT_M - capHeight, h, bodyMat, `${name}:body`);
+    addBox(parent, x, ROOM_HEIGHT_M - capHeight, z, thickness, capHeight, h, capMat, `${name}:cap`);
+    addBox(parent, x, 0, z, stripWidth, ROOM_HEIGHT_M, h, stripMat, `${name}:accent`);
+  }
+}
+
 function buildWalls(scene: THREE.Scene, graph: DeckGraph): void {
   for (const wall of listWallSegments(graph)) {
     const thickness = wallThicknessForRole(wall.role);
     const accentRoom = wall.rooms[0];
     const accentId = accentRoom ? getNode(graph, accentRoom).accentId : undefined;
-    const mat = wallMaterialForRole(wall.role, accentId);
     const { x, z, w, h } = wall.rect;
+
+    if (wall.role === 'partition') {
+      buildPartitionWall(scene, x, z, w, h, thickness, accentId, wall.id);
+      continue;
+    }
+
+    const mat = wallMaterialForRole(wall.role);
 
     if (w >= h) {
       addBox(scene, x, 0, z, w, ROOM_HEIGHT_M, thickness, mat, wall.id);
