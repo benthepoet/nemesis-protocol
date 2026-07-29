@@ -11,7 +11,7 @@
 | 2026-07-29 | Stage 3 implementation | Composer — branch `feat/p1-project-scaffold`; tasks 1–22 per spec v1 |
 | 2026-07-29 | Verification | `npm run test:run`: 6 files, 16 tests passed; `npm run build`: exit 0, `dist/` emitted; dev smoke: HTTP 200, `#game-canvas` + `#fps-overlay` served (curl) |
 | | PR opened | https://github.com/benthepoet/nemesis-protocol/pull/1 |
-| | Review round 1..5 | <findings count / outcome> |
+| 2026-07-29 | Review round 1 | Grok — REQUEST CHANGES; 2 blockers (Q4/E13 disconnect wiring; E8 test assertion), 3 minors, 1 question; both Composer deviations ACCEPT; comment https://github.com/benthepoet/nemesis-protocol/pull/1#issuecomment-5123937047 |
 | | Gate 1 (Kimi) | pass / fail → findings |
 | | Gate 2 (Director) | accept / amend / reject → feedback ref |
 | | Director iterations (§3.5a) | cycle <n>: diagnosis <design/spec/impl> |
