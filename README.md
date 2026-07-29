@@ -30,3 +30,16 @@ Optional: append `?webgpu=1` to the dev URL to attempt WebGPU rendering when `na
 - **Cancel:** `Escape`, gamepad east (B/circle)
 
 Both emit press/release commands into the sim meta counters (no gameplay HUD beyond the fps overlay).
+
+## Deck 03 (p1-deck-geometry)
+
+After `npm run dev`, the app loads the Deck 03 blockout (floors, walls, ceilings, per-room accent tints) instead of the scaffold placeholder cube.
+
+| Command / URL | Purpose |
+|---------------|---------|
+| `npm run dev` | Dev server with deck blockout + fps overlay |
+| `?debugCamera=1` | Dev-only free-fly inspection camera (WASD + mouse look, Q/E vertical, Shift sprint). Requires `import.meta.env.DEV`. |
+| `npm run test:run` | Vitest — scaffold regression (17 tests) + deck suite (E1–E20) |
+| `npm run build` | Typecheck + production build |
+
+Verification: `npm run test:run` and `npm run build` must exit 0 before PR submission.

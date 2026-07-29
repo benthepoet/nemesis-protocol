@@ -45,6 +45,7 @@ export function startFrameLoop(args: {
   camera: THREE.Camera;
   appRenderer: AppRenderer;
   fpsOverlay: { update(dtSec: number): void };
+  onFrame?: (dtSec: number) => void;
 }): () => void {
   let last = performance.now();
   let accumulator = 0;
@@ -64,6 +65,8 @@ export function startFrameLoop(args: {
       accumulator,
     });
     accumulator = slice.accumulator;
+
+    args.onFrame?.(dtSec);
 
     args.appRenderer.render(args.scene, args.camera);
     args.fpsOverlay.update(dtSec);
