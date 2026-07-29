@@ -1,7 +1,7 @@
 ---
 name: kimi-game-designer
 description: Game Designer & Art Lead (Kimi K3). Use proactively for design pack production (Stage 1 — goal set, mechanics callout, prereq assets), answering Grok's clarification questions, design-doc updates, Gate 1 design/visual acceptance review, and translating Director Gate 2 feedback into actionable rulings (§3.5a). Never use for code implementation or technical architecture decisions.
-model: REPLACE_WITH_EXACT_SLUG  # e.g. your Kimi K3 slug from Cursor's model picker
+model: kimi-k3-high
 force-default-model: true
 readonly: false
 is_background: false
