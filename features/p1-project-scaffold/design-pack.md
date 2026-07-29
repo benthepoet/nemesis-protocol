@@ -11,15 +11,15 @@
 
 | ID | Goal (binary-verifiable) | Verified |
 |----|--------------------------|----------|
-| G1 | A fresh checkout installs and runs with documented commands: dev server serves a rendering three.js scene in-browser; production build succeeds and emits static assets | ☐ |
-| G2 | Rendering baseline conforms to visual direction §8: WebGL2 renderer (WebGPU path optional), HDR pipeline with ACES-style tonemapping, placeholder scene holds 60 fps at 1080p on a mid-tier GPU | ☐ |
-| G3 | Simulation advances on fixed, deterministic ticks fully decoupled from render frame rate — no frame-rate-coupled logic anywhere in the sim layer (§12.1) | ☐ |
-| G4 | All player intent reaches the sim as tick-stamped input **commands** (command pattern); nothing mutates sim state directly from device events (§12.1) | ☐ |
-| G5 | Keyboard/mouse and gamepad feed the **same** command stream with full action parity for scaffold-level actions, and device hot-swap works mid-session with no menu trip or restart (§8 foundation) | ☐ |
-| G6 | Every entity is addressable by a stable, deterministic ID — identical spawn sequences yield identical IDs across runs (§12.1) | ☐ |
-| G7 | Determinism is demonstrable: replaying a recorded command stream from identical initial state produces identical sim state | ☐ |
-| G8 | Automated test runner is wired in and runs the scaffold's verification suite via a single documented command | ☐ |
-| G9 | Two-tier branching (`master` / `integration`) per charter §6 exists and is documented in-repo; `master` is buildable at all times | ☐ |
+| G1 | A fresh checkout installs and runs with documented commands: dev server serves a rendering three.js scene in-browser; production build succeeds and emits static assets | ☑ |
+| G2 | Rendering baseline conforms to visual direction §8: WebGL2 renderer (WebGPU path optional), HDR pipeline with ACES-style tonemapping, placeholder scene holds 60 fps at 1080p on a mid-tier GPU | ☑ |
+| G3 | Simulation advances on fixed, deterministic ticks fully decoupled from render frame rate — no frame-rate-coupled logic anywhere in the sim layer (§12.1) | ☑ |
+| G4 | All player intent reaches the sim as tick-stamped input **commands** (command pattern); nothing mutates sim state directly from device events (§12.1) | ☑ |
+| G5 | Keyboard/mouse and gamepad feed the **same** command stream with full action parity for scaffold-level actions, and device hot-swap works mid-session with no menu trip or restart (§8 foundation) | ☑ |
+| G6 | Every entity is addressable by a stable, deterministic ID — identical spawn sequences yield identical IDs across runs (§12.1) | ☑ |
+| G7 | Determinism is demonstrable: replaying a recorded command stream from identical initial state produces identical sim state | ☑ |
+| G8 | Automated test runner is wired in and runs the scaffold's verification suite via a single documented command | ☑ |
+| G9 | Two-tier branching (`master` / `integration`) per charter §6 exists and is documented in-repo; `master` is buildable at all times | ☑ |
 
 ## Mechanics callout (anti-assumption: unlisted = does not exist)
 
