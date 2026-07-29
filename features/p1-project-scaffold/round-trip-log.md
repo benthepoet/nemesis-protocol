@@ -10,7 +10,7 @@
 | 2026-07-29 | Spec | v1 FINAL (charter v1.13, design pack v2) — 22 tasks, G1–G9 traced; clarification loop §3.2a: 6 questions, all resolved (KIMI RULINGS v1, no doc change) |
 | 2026-07-29 | Stage 3 implementation | Composer — branch `feat/p1-project-scaffold`; tasks 1–22 per spec v1 |
 | 2026-07-29 | Verification | `npm run test:run`: 6 files, 16 tests passed; `npm run build`: exit 0, `dist/` emitted; dev smoke: HTTP 200, `#game-canvas` + `#fps-overlay` served (curl) |
-| | PR opened | <link/number> |
+| | PR opened | https://github.com/benthepoet/nemesis-protocol/pull/1 |
 | | Review round 1..5 | <findings count / outcome> |
 | | Gate 1 (Kimi) | pass / fail → findings |
 | | Gate 2 (Director) | accept / amend / reject → feedback ref |
