@@ -1,11 +1,11 @@
 # Design Pack — p1-project-scaffold
 
-`DESIGN PACK v1 | feature p1-project-scaffold | design doc v1.10 | phase P1`
+`DESIGN PACK v2 | feature p1-project-scaffold | design doc v1.10 | phase P1`
 *Owner: Kimi K3. Gate: must exist before Stage 2 finalizes.*
 
-**Versions cited (charter §8):** charter v1.12 · design doc v1.10 · feature roadmap v1.3 · visual direction v1.1
+**Versions cited (charter §8):** charter v1.13 · design doc v1.10 · feature roadmap v1.3 · visual direction v1.1
 
-**Feature (roadmap P1 #1):** three.js project setup (WebGL2/WebGPU), build pipeline, input plumbing, `main` repo conventions per charter §6. Technical enabler — no dependencies. Carries the Director's solo-first ruling (roadmap v1.2): the netcode-ready architecture mandate (design doc §12.1) is a **primary goal** of this feature, not a nice-to-have.
+**Feature (roadmap P1 #1):** three.js project setup (WebGL2/WebGPU), build pipeline, input plumbing, `master` repo conventions per charter §6. Technical enabler — no dependencies. Carries the Director's solo-first ruling (roadmap v1.2): the netcode-ready architecture mandate (design doc §12.1) is a **primary goal** of this feature, not a nice-to-have.
 
 ## Goal set (the contract)
 
@@ -19,7 +19,7 @@
 | G6 | Every entity is addressable by a stable, deterministic ID — identical spawn sequences yield identical IDs across runs (§12.1) | ☐ |
 | G7 | Determinism is demonstrable: replaying a recorded command stream from identical initial state produces identical sim state | ☐ |
 | G8 | Automated test runner is wired in and runs the scaffold's verification suite via a single documented command | ☐ |
-| G9 | Two-tier branching (`main` / `integration`) per charter §6 exists and is documented in-repo; `main` is buildable at all times | ☐ |
+| G9 | Two-tier branching (`master` / `integration`) per charter §6 exists and is documented in-repo; `master` is buildable at all times | ☐ |
 
 ## Mechanics callout (anti-assumption: unlisted = does not exist)
 
@@ -39,7 +39,7 @@
 1. **Design doc §12.1 (locked prototype scope):** "Players: solo-first (Director ruling)… Hard requirement on the architecture: the simulation is built **netcode-ready from day one** — command-pattern inputs, deterministic sim ticks, no frame-rate-coupled logic, entities addressable by stable IDs. Solo-first must never mean retrofit-later." → G3, G4, G6, G7.
 2. **Design doc §8 (input parity):** "every action is fully playable on keyboard/mouse *and* gamepad… hot-swap — switching input device mid-mission must never require a menu trip or a restart." Scaffold scope: the *plumbing* that makes this possible (one command stream, device-agnostic). → G5.
 3. **Visual direction §8 (technical standards):** three.js (WebGL2 baseline, WebGPU where beneficial); HDR pipeline, ACES-style tonemapping; performance target 60 fps at 1080p in-browser on mid-tier GPU. → G2.
-4. **Charter §6 (two-tier integration):** `integration` receives feature PRs after Stage 4 approval; `main` receives features only on Gate 2 acceptance; `main` is always buildable. → G9.
+4. **Charter §6 (two-tier integration):** `integration` receives feature PRs after Stage 4 approval; `master` receives features only on Gate 2 acceptance; `master` is always buildable. → G9.
 5. **Roadmap v1.2 Director ruling:** P1 is solo-first; netcode targeted P2–P3; every P1 feature must satisfy the netcode-ready mandate. The scaffold is where this mandate is *made structural* — a scaffold that couples logic to frame rate or reads devices imperatively fails Gate 1 on its face.
 
 ## Prereq assets
@@ -62,4 +62,4 @@
 | G6 | Two runs spawning the same entity sequence produce the same ID sequence (asserted in test) |
 | G7 | Record a command stream + initial state, replay it twice, assert identical final-state hash (test in the verification suite) |
 | G8 | Single documented command runs the test suite green on a fresh checkout |
-| G9 | Repo docs (README or CONTRIBUTING) name the two-tier model and merge authorities; `main` HEAD builds |
+| G9 | Repo docs (README or CONTRIBUTING) name the two-tier model and merge authorities; `master` HEAD builds |

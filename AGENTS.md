@@ -64,7 +64,7 @@ Co-op boarding shooter (Alien Swarm lineage) built in **three.js** (WebGL2/WebGP
 - **Design doc is the single source of truth.** Rules are cited by section (e.g., "§6.4"). A mechanic not in a feature's mechanics callout **does not exist** for that feature — no inferring from genre convention or engine capability.
 - **Traceability:** every spec task cites goal/mechanic IDs (G#/M#); commits cite them too (e.g., `G2,M3 @ spec v3 — two-key window timer`).
 - **Design changes are doc-first:** version bump + changelog line BEFORE implementation targets the change.
-- **Branches/PRs:** `feat/<phase>-<name>` → PR to `integration` (review surface) → `main` only on Gate 2 acceptance. Feedback lives on the PR; if it isn't on the PR, it isn't a round.
+- **Branches/PRs:** `feat/<phase>-<name>` → PR to `integration` (review surface) → `master` only on Gate 2 acceptance. Feedback lives on the PR; if it isn't on the PR, it isn't a round.
 - **Escalations** (charter §4): 5-round cap on the review loop → E1 → Director. Clarification questions have no cap — ask early.
 - **Feature artifacts live in `features/p<phase>-<slug>/`** (copied from `features/_TEMPLATE/`): Kimi writes `design-pack.md`, Grok writes `spec.md`, both share `clarification-log.md`; everyone appends to `round-trip-log.md`. These paths are canonical.
 
@@ -74,6 +74,6 @@ Open source: **MIT** for code, **CC BY 4.0** for art assets (`assets/`, mockups,
 
 ## Current state
 
-- Design doc **v1.10**, visual direction **v1.1**, roadmap **v1.3**, team charter **v1.11**, mockups **v2.2** (deck plan) / flow overlay companion.
+- Design doc **v1.10**, visual direction **v1.1**, roadmap **v1.3**, team charter **v1.13**, mockups **v2.2** (deck plan) / flow overlay companion.
 - Rulings in force: solo-first with netcode-ready architecture (netcode P2–P3 window); enemy roster = ship's crew as defense (aliens deferred, post-prototype); gamepad first-class input parity; MIT + CC BY 4.0.
 - Roadmap: P1 core loop → P2 gating & alarm → P3 destructibility & depressurization → P4 androids + prototype bosses (Charge-Defender, Warden). Feature-level breakdown: `docs/design/feature_roadmap.md`.

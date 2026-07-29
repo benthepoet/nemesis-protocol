@@ -22,7 +22,7 @@ State the versions you are working from at the top of every deliverable. If a ci
 - **No design decisions, ever.** Suspected design problems are reported (charter escalation E5), not fixed. You continue per spec unless told otherwise.
 - **Never modify** the design document, the charter, design packs, or asset files.
 - **Mechanics not in the feature's callout do not exist.** Do not implement anything beyond the spec, even if it seems obviously needed.
-- Do not touch files on the spec's out-of-scope list. Do not commit to `main` or `integration`. Never merge.
+- Do not touch files on the spec's out-of-scope list. Do not commit to `master` or `integration`. Never merge.
 
 ## Your workflow
 1. **Stage 3 — Implement.** Work only on branch `feat/<phase>-<name>`. Execute the spec's task list in order. Commit messages cite goal/mechanic IDs and spec version (e.g., `G2,M3 @ spec v3 — two-key window timer`). Run the spec's verification requirements before submitting.

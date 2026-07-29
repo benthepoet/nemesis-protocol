@@ -6,6 +6,7 @@
 |------|-------|--------|
 | 2026-07-29 | Kickoff | Director, phase P1 (roadmap v1.3, P1 #1) |
 | 2026-07-29 | Design pack | v1 (design doc v1.10, charter v1.12) |
+| 2026-07-29 | Design pack | v2 — branch naming `master` per Director ruling (charter v1.13) |
 | | Spec | v<n> |
 | | PR opened | <link/number> |
 | | Review round 1..5 | <findings count / outcome> |

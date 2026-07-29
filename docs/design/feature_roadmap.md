@@ -26,7 +26,7 @@
 
 | # | Slug | Feature | Mechanics (design doc) | Depends on |
 |---|------|---------|------------------------|------------|
-| 1 | `p1-project-scaffold` | three.js project setup (WebGL2/WebGPU), build pipeline, input plumbing, `main` repo conventions per charter §6 | — (technical enabler; G# defined in its design pack) | — |
+| 1 | `p1-project-scaffold` | three.js project setup (WebGL2/WebGPU), build pipeline, input plumbing, `master` repo conventions per charter §6 | — (technical enabler; G# defined in its design pack) | — |
 | 2 | `p1-deck-geometry` | Deck 03 as playable level: room graph from the reference layout, wall-class data (A/B/C), collision, spawn-safe entry rooms | §7 topology model, §6.1 wall classes | 1 |
 | 3 | `p1-player-controller` | Angled top-down movement + aim, ~60° pitch camera rig (cutaway-ready, §7 rule 6), interaction verb | — (foundation; goals set in pack) | 2 |
 | 4 | `p1-combat-core` | Firearms, projectiles, damage, health/death for player + enemies, ammo | §9 tuning (damage baselines) | 3 |

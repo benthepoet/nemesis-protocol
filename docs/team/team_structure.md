@@ -3,7 +3,7 @@
 **Project:** Untitled Boarding Shooter (working title: *Nemesis Protocol*)
 **Team model:** 1 human director + 3 AI agents
 **Source of truth:** `boarding_mission_gameflow_design.md` (currently v1.10)
-**Status:** v1.12 — ratified
+**Status:** v1.13 — ratified
 
 ---
 
@@ -202,7 +202,7 @@ On any E1 escalation, the Human Director chooses one of: (a) new instruction app
 
 ## 6. Repository & Integration Rules
 
-- **Branch per feature:** `feat/<phase>-<name>`. Composer commits to the feature branch only — never to `main` or `integration` directly.
+- **Branch per feature:** `feat/<phase>-<name>`. Composer commits to the feature branch only — never to `master` or `integration` directly.
 - **PR per feature:** on Stage 3 submission, Composer **opens a pull request** from the feature branch to `integration`. The PR is the canonical review surface for the entire feature lifecycle.
   - **PR body (template):** goal set (G#) and mechanics callout (M#) implemented, spec version, link to clarification log, verification evidence (tests run, screenshots/build notes).
   - **Feedback is logged on the PR:** Grok's review rounds happen as numbered PR review comments (tagged `[blocker]` / `[minor]` / `[question]`), and Composer responds per comment with the fixing commit reference. Verbal or chat feedback is not actionable — if it isn't on the PR, it doesn't count as a round.
@@ -211,10 +211,10 @@ On any E1 escalation, the Human Director chooses one of: (a) new instruction app
 - **Commit discipline:** messages cite goal/mechanic IDs and spec version (e.g., `G2,M3 @ spec v3 — two-key window timer`).
 - **Two-tier integration:**
   - `integration` — receives features (via PR merge) after Stage 4 technical approval; this is the build Kimi and the Director review at Gates 1–2.
-  - `main` — receives features only on **Gate 2 acceptance** (release merge by Grok, referencing the feature PR). `main` is always buildable and always reflects accepted work.
+  - `master` — receives features only on **Gate 2 acceptance** (release merge by Grok, referencing the feature PR). `master` is always buildable and always reflects accepted work.
 - **Merge authority:** Grok performs all merges. Merge conflicts are Grok's to resolve; if a resolution changes observable behavior, Grok consults Kimi first.
 - **Build break rule:** a merge that breaks `integration` is reverted immediately (Grok may revert without ceremony); the fix re-enters at Stage 4. No broken build survives overnight.
-- **Rollback:** the Director may order any accepted feature rolled back from `main`; rollbacks are logged with reason.
+- **Rollback:** the Director may order any accepted feature rolled back from `master`; rollbacks are logged with reason.
 
 ---
 
@@ -293,3 +293,4 @@ Asset completeness is Kimi's gate; instruction quality is Grok's gate; spec comp
 | v1.10 | Third-party images rule hardened: Gate 1 license scan + `references/` excluded from builds/releases |
 | v1.11 | Reference commit policy (public repo): commit `references.md` index only; copyrighted image files gitignored/local-only; license-clean refs allowed under `references/cleared/` |
 | v1.12 | Junior Developer model swap: Qwen3.6-27B → Composer 2.5 Fast (Director ruling); role, constraints, and pipeline unchanged |
+| v1.13 | Primary branch named `master` (Director ruling); §6 references, agent configs, and permission guards updated |
