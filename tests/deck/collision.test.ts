@@ -1,12 +1,49 @@
 import { describe, expect, it } from 'vitest';
-import { ACTOR_PROXY_RADIUS_M } from '../../src/config.js';
+import { ACTOR_PROXY_RADIUS_M, M_PER_PX } from '../../src/config.js';
 import {
   buildCollisionWorld,
   circleHitsWalls,
   doorPassageClear,
 } from '../../src/deck/collision.js';
 import { getNode } from '../../src/deck/graph.js';
+import type { DoorEdge } from '../../src/deck/types.js';
 import { loadTestDeck03 } from '../helpers/deckTestUtils.js';
+
+function doorPassageSamples(door: DoorEdge): { x: number; z: number }[] {
+  const { x, z, w, h } = door.opening;
+  return [{ x: x + w / 2, z: z + h / 2 }];
+}
+
+/** Half-span for centerline sweep inset from opening edges by actor radius. */
+function doorTraverseHalfSpan(door: DoorEdge): number {
+  const r = ACTOR_PROXY_RADIUS_M;
+  const passage = Math.max(door.opening.w, door.opening.h);
+  if (passage <= 2 * r) return 0;
+  return Math.min(passage / 2 - r, passage / 4);
+}
+
+function traverseDoorOpening(
+  world: ReturnType<typeof buildCollisionWorld>,
+  door: DoorEdge,
+  axis: 'x' | 'z',
+  spanM: number,
+): boolean {
+  const { x, z, w, h } = door.opening;
+  const cx = x + w / 2;
+  const cz = z + h / 2;
+  const r = ACTOR_PROXY_RADIUS_M;
+  const step = M_PER_PX * 0.5;
+  if (axis === 'x') {
+    for (let px = cx - spanM; px <= cx + spanM; px += step) {
+      if (circleHitsWalls(world, px, cz, r)) return false;
+    }
+    return true;
+  }
+  for (let pz = cz - spanM; pz <= cz + spanM; pz += step) {
+    if (circleHitsWalls(world, cx, pz, r)) return false;
+  }
+  return true;
+}
 
 describe('collision (G4)', () => {
   const graph = loadTestDeck03();
@@ -24,13 +61,26 @@ describe('collision (G4)', () => {
     expect(circleHitsWalls(world, cx, cz, ACTOR_PROXY_RADIUS_M)).toBe(false);
   });
 
-  it('E10: all 17 door opening centers are clear', () => {
+  it('E10: all 17 door openings clear at actor radius', () => {
+    const r = ACTOR_PROXY_RADIUS_M;
     for (const door of graph.doorEdges) {
-      const cx = door.opening.x + door.opening.w / 2;
-      const cz = door.opening.z + door.opening.h / 2;
-      expect(circleHitsWalls(world, cx, cz, 0.05)).toBe(false);
+      for (const sample of doorPassageSamples(door)) {
+        expect(circleHitsWalls(world, sample.x, sample.z, r)).toBe(false);
+      }
       expect(doorPassageClear(graph, world, door.id)).toBe(true);
+      const halfSpan = doorTraverseHalfSpan(door);
+      if (halfSpan > 0) {
+        const axis = door.opening.w >= door.opening.h ? 'x' : 'z';
+        expect(traverseDoorOpening(world, door, axis, halfSpan)).toBe(true);
+      }
     }
+  });
+
+  it('E10: blast doors traversable eng↔spine and spine↔connector at actor radius', () => {
+    const engBlast = graph.doorEdges.find((d) => d.id === 'door-engineering-spine-blast')!;
+    const foreBlast = graph.doorEdges.find((d) => d.id === 'door-spine-connector-blast')!;
+    expect(traverseDoorOpening(world, engBlast, 'x', engBlast.opening.w)).toBe(true);
+    expect(traverseDoorOpening(world, foreBlast, 'x', foreBlast.opening.w)).toBe(true);
   });
 
   it('E11: point outside hull hits collider', () => {
