@@ -30,13 +30,10 @@ export class CommandBus {
         }
       }
 
-      for (const sample of samples) {
-        this.activeDeviceKind = sample.kind;
-        this.buffer.push({
-          action: sample.action,
-          value: sample.value,
-          synthetic: false,
-        });
+      const intents = mapSamplesToIntents(samples);
+      for (const intent of intents) {
+        this.activeDeviceKind = sampleKind;
+        this.buffer.push({ ...intent, synthetic: false });
       }
     }
   }
