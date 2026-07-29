@@ -16,8 +16,8 @@
 | 2026-07-29 | Review round 2 | Grok — APPROVE; findings 1–4 verified-fixed; #6 RenderSurface ACCEPT; #5 screenshot non-blocking for Stage 4 (Gate 1 evidence); 17 tests + build green; merge held; comment https://github.com/benthepoet/nemesis-protocol/pull/1#issuecomment-5123978788 |
 | 2026-07-29 | Merged → integration | `2cabd0a` — PR #1, spec v1, Stage 4 approved; review rounds used: 2; verification on integration: 17 tests passed, build exit 0 |
 | | Gate 1 (Kimi) | pass → 2026-07-29: G1–G9 all verified binary (pack checkboxes ☑); mechanics callout compliant — M1–M3 present, nothing missing, nothing invented; visual standard met (palette/ACES/fps overlay, evidence: `gate1-evidence-fps-overlay.png`); license scan clean (no shipped assets; deps MIT/Apache-2.0) |
-| | Gate 2 (Director) | accept / amend / reject → feedback ref |
+| 2026-07-29 | Gate 2 (Director) | **accept** — final acceptance after Director playtest on integration build |
 | | Director iterations (§3.5a) | cycle <n>: diagnosis <design/spec/impl> |
 | | Escalations | <E-IDs if any> |
 
-**Final state:** <accepted / rolled back / superseded> · **Design doc version at acceptance:** v<n>
+**Final state:** accepted · **Design doc version at acceptance:** v1.10
