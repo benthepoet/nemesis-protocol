@@ -10,7 +10,8 @@
 | 2026-07-30 | Stage 3 start | Composer on `feat/p1-player-controller` @ integration 27e1c0e; spec v1 FINAL |
 | 2026-07-30 | Stage 3 complete | Tasks 1–20; `npm run test:run` 60/60 (scaffold 17 regression green); `npm run build` exit 0; dev smoke HTTP 200 |
 | 2026-07-30 | PR opened | https://github.com/benthepoet/nemesis-protocol/pull/3 |
-| | Review round 1..5 | <findings count / outcome> |
+| 2026-07-30 | Review round 1 | Grok REQUEST CHANGES — 1 blocker (T12/M4 idle pad move steals channel / zeros WASD) + 3 minor (E8 teleport vs traversal; PR screenshots; config ACCENT comment). Verify: 60/60 tests, scaffold 17/17, build exit 0. Comment: https://github.com/benthepoet/nemesis-protocol/pull/3#issuecomment-5133232380 |
+| | Review round 2..5 | <findings count / outcome> |
 | | Gate 1 (Kimi) | pass / fail → findings |
 | | Gate 2 (Director) | accept / amend / reject → feedback ref |
 | | Director iterations (§3.5a) | cycle <n>: diagnosis <design/spec/impl> |
