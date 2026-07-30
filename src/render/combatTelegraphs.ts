@@ -37,6 +37,8 @@ export interface CombatTelegraphs {
 
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 const _dir = new THREE.Vector3();
+const _aimLocalStart = new THREE.Vector3();
+const _aimLocalEnd = new THREE.Vector3();
 
 function telegraphMaterial(colorHex: string, opacity: number): THREE.MeshBasicMaterial {
   return new THREE.MeshBasicMaterial({
@@ -78,9 +80,7 @@ function orientHorizontalSegment(mesh: THREE.Mesh, sx: number, sy: number, sz: n
     return;
   }
   mesh.visible = true;
-  const midX = (sx + ex) / 2;
-  const midZ = (sz + ez) / 2;
-  mesh.position.set(midX, sy, midZ);
+  mesh.position.set(sx, sy, sz);
   _dir.set(dx / len, 0, dz / len);
   mesh.quaternion.setFromUnitVectors(Y_AXIS, _dir);
   mesh.scale.set(1, len, 1);
@@ -247,4 +247,32 @@ export function getAimLineStateForTest(telegraphs: CombatTelegraphs): {
   const handle = telegraphs as CombatTelegraphsInternal;
   const mat = handle.aimCoreMesh.material as THREE.MeshBasicMaterial;
   return { visible: handle.aimLineGroup.visible, opacity: mat.opacity };
+}
+
+/** Test / dev hook — aim line core segment world endpoints after last sync. */
+export function getAimLineEndpointsForTest(telegraphs: CombatTelegraphs): {
+  startX: number;
+  startY: number;
+  startZ: number;
+  endX: number;
+  endY: number;
+  endZ: number;
+} {
+  if (!import.meta.env.VITEST && !import.meta.env.DEV) {
+    throw new Error('getAimLineEndpointsForTest is only available in vitest or DEV');
+  }
+  const mesh = (telegraphs as CombatTelegraphsInternal).aimCoreMesh;
+  mesh.updateWorldMatrix(true, false);
+  _aimLocalStart.set(0, 0, 0);
+  _aimLocalEnd.set(0, 1, 0);
+  _aimLocalStart.applyMatrix4(mesh.matrixWorld);
+  _aimLocalEnd.applyMatrix4(mesh.matrixWorld);
+  return {
+    startX: _aimLocalStart.x,
+    startY: _aimLocalStart.y,
+    startZ: _aimLocalStart.z,
+    endX: _aimLocalEnd.x,
+    endY: _aimLocalEnd.y,
+    endZ: _aimLocalEnd.z,
+  };
 }

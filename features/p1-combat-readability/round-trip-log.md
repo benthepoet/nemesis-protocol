@@ -10,6 +10,7 @@
 | 2026-07-30 | Stage 3 | Composer — branch `feat/p1-combat-readability`; telegraph constants, `earliestWallHit`, `combatTelegraphs`, boot wire, tests (105), README; `npm run test:run` + `npm run build` green. |
 | 2026-07-30 | PR opened | #5 → `integration` (commit d58ec5a) |
 | 2026-07-30 | Review round 1 | Grok: REQUEST CHANGES — verify 105/105 + build 0 @ `70cbead`; G9 `combatVfx` untouched; sim constants/`integrateCombat` frozen; coupling + G10(e) present. Blocker: aim-line `geo.translate(0,0.5)` + midpoint pose breaks R8/G10(c) muzzle→wall. Formal `gh pr review --request-changes` may be blocked (self-PR); verdict in PR comment. |
+| 2026-07-30 | Revision round 1 | Composer — aim-line start pose fix + `getAimLineEndpointsForTest`; 106/106 + build green. |
 | | Review round 2..5 | |
 | | Gate 1 (Kimi) | |
 | | Gate 2 (Director) | |

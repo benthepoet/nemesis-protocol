@@ -8,7 +8,13 @@ import { integratePlayerMotion } from '../../src/sim/playerMotion.js';
 import { applyCommands, fixedStep } from '../../src/sim/step.js';
 import { cloneSimState, getEntity } from '../../src/sim/world.js';
 import {
+  AIM_LINE_Y_M,
+  PROJECTILE_MAX_RANGE_M,
+  PROJECTILE_MUZZLE_OFFSET_M,
+} from '../../src/config.js';
+import {
   createCombatTelegraphs,
+  getAimLineEndpointsForTest,
   getAimLineStateForTest,
   getTracerIdsForTest,
 } from '../../src/render/combatTelegraphs.js';
@@ -91,6 +97,37 @@ describe('combat telegraphs (G10)', () => {
     runTicks(harness, 80);
     telegraphs.sync(harness.state, harness.collisionWorld);
     expect(getTracerIdsForTest(telegraphs).length).toBe(0);
+    telegraphs.dispose();
+  });
+
+  it('aim line world endpoints span muzzle to wall hit', () => {
+    const harness = createCombatTestHarness();
+    const scene = new THREE.Scene();
+    const telegraphs = createCombatTelegraphs(scene);
+    const player = getEntity(harness.state, harness.state.meta.playerId!)!;
+    player.yaw = 0;
+
+    telegraphs.sync(harness.state, harness.collisionWorld);
+    scene.updateMatrixWorld(true);
+
+    const dirX = Math.sin(player.yaw);
+    const dirZ = Math.cos(player.yaw);
+    const ox = player.x + dirX * PROJECTILE_MUZZLE_OFFSET_M;
+    const oz = player.z + dirZ * PROJECTILE_MUZZLE_OFFSET_M;
+    const ex = ox + dirX * PROJECTILE_MAX_RANGE_M;
+    const ez = oz + dirZ * PROJECTILE_MAX_RANGE_M;
+    const hit = earliestWallHit(ox, oz, ex, ez, harness.collisionWorld);
+    const endX = hit ? hit.x : ex;
+    const endZ = hit ? hit.z : ez;
+
+    const endpoints = getAimLineEndpointsForTest(telegraphs);
+    expect(endpoints.startX).toBeCloseTo(ox, 4);
+    expect(endpoints.startY).toBeCloseTo(AIM_LINE_Y_M, 4);
+    expect(endpoints.startZ).toBeCloseTo(oz, 4);
+    expect(endpoints.endX).toBeCloseTo(endX, 3);
+    expect(endpoints.endY).toBeCloseTo(AIM_LINE_Y_M, 4);
+    expect(endpoints.endZ).toBeCloseTo(endZ, 3);
+
     telegraphs.dispose();
   });
 
