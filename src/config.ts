@@ -152,3 +152,41 @@ export const ACCENT_HEX = {
   corridor: '#8b949e',
   safe: '#69f0ae',
 } as const;
+
+/** Visual tracer slug length (m) — R7: ≈ 2 sim ticks at 60 m/s. */
+export const TRACER_LENGTH_M = 1.2 as const;
+
+/** Tracer height above floor (m) — presentation only. */
+export const TRACER_Y_M = 0.55 as const;
+
+/** Tracer core radius (m). */
+export const TRACER_CORE_RADIUS_M = 0.035 as const;
+
+/** Tracer halo radius (m). */
+export const TRACER_HALO_RADIUS_M = 0.07 as const;
+
+/** Hot-white tracer core (R7 / VD §3). */
+export const TRACER_CORE_COLOR_HEX = '#ffffff' as const;
+
+/** Allied halo — must equal PLAYER_COLOR_HEX (#69f0ae). */
+export const TRACER_HALO_COLOR_HEX = PLAYER_COLOR_HEX;
+
+/** Soft budget for concurrent tracer meshes (R7). */
+export const TRACER_MAX_CONCURRENT = 12 as const;
+
+/** Aim-line height above floor (m). */
+export const AIM_LINE_Y_M = 0.5 as const;
+
+/** Aim-line dim opacity at rest (alive, fire not held). */
+export const AIM_LINE_DIM_OPACITY = 0.28 as const;
+
+/** Aim-line bright opacity while fire held. */
+export const AIM_LINE_BRIGHT_OPACITY = 0.9 as const;
+
+/** Aim-line core / halo half-widths (m) for tube or fat-line presentation. */
+export const AIM_LINE_CORE_RADIUS_M = 0.02 as const;
+export const AIM_LINE_HALO_RADIUS_M = 0.045 as const;
+
+/** Aim-line colors — same allied treatment as tracers (R8). */
+export const AIM_LINE_CORE_COLOR_HEX = TRACER_CORE_COLOR_HEX;
+export const AIM_LINE_HALO_COLOR_HEX = TRACER_HALO_COLOR_HEX;

@@ -64,6 +64,16 @@ npm run build
 npm run dev
 ```
 
+## Combat readability telegraphs (p1-combat-readability)
+
+World-space **projectile tracers** (R7) and a persistent **aim-direction line** (R8) — render-only; sim combat rules unchanged. Parent design: `features/p1-combat-core` design pack **v2** (G10/M10). Branch: `feat/p1-combat-readability`.
+
+```bash
+npm run test:run   # includes tests/combat/telegraphs.test.ts + G10(e) determinism
+npm run build
+npm run dev        # LMB/RT fire shows moving tracers; aim line dim at rest, bright while fire held
+```
+
 ## Deck 03 (p1-deck-geometry)
 
 After `npm run dev`, the app loads the Deck 03 blockout (floors, walls, ceilings, per-room accent tints) instead of the scaffold placeholder cube.

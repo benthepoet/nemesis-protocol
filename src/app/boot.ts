@@ -12,6 +12,7 @@ import { createWorld, getEntity } from '../sim/world.js';
 import { updateCeilingCutaway, type CutawayState } from '../render/ceilingCutaway.js';
 import { createCombatDevReadout } from '../render/combatDevReadout.js';
 import { createCombatVfx } from '../render/combatVfx.js';
+import { createCombatTelegraphs } from '../render/combatTelegraphs.js';
 import { createDeckScene } from '../render/createDeckScene.js';
 import { createDebugFlyCamera, isDebugFlyCameraEnabled } from '../render/debugFlyCamera.js';
 import { createFollowCamera } from '../render/createFollowCamera.js';
@@ -54,6 +55,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   }
 
   const combatVfx = createCombatVfx(deckScene.scene);
+  const telegraphs = createCombatTelegraphs(deckScene.scene);
   const vfxRegistry = combatVfx as ReturnType<typeof createCombatVfx> & {
     registerActorMesh(id: string, mesh: THREE.Object3D): void;
   };
@@ -85,6 +87,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
         const e = getEntity(world, id);
         if (e) syncStandInMeshPose(mesh, e);
       }
+      telegraphs.sync(world, collisionWorld);
       combatVfx.update(dt);
       combatReadout?.update(world);
     };
@@ -115,6 +118,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
         if (e) syncStandInMeshPose(mesh, e);
       }
       updateCeilingCutaway(deckScene.roomGroups, graph, entity.x, entity.z, cutawayState);
+      telegraphs.sync(world, collisionWorld);
       combatVfx.update(dt);
       combatReadout?.update(world);
     };
@@ -153,6 +157,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   return () => {
     stopLoop();
     flyDispose?.();
+    telegraphs.dispose();
     combatVfx.dispose();
     combatReadout?.dispose();
     window.removeEventListener('resize', resize);
