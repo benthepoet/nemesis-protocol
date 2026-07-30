@@ -111,7 +111,7 @@ None blocking — R1–R6 pre-rule the expected conflicts. Topics Grok may still
 
 | ID | Goal (binary-verifiable) | Verified |
 |----|--------------------------|----------|
-| G10 | Combat readability telegraphs (M10, R7/R8): every live projectile renders as a visible emissive tracer synced to its sim entity, and the living player renders an in-world aim-direction line from the muzzle along facing to the first wall obstruction — dim at rest, bright while fire is held; both are render-only with zero sim coupling (G8 unchanged) | ☐ |
+| G10 | Combat readability telegraphs (M10, R7/R8): every live projectile renders as a visible emissive tracer synced to its sim entity, and the living player renders an in-world aim-direction line from the muzzle along facing to the first wall obstruction — dim at rest, bright while fire is held; both are render-only with zero sim coupling (G8 unchanged) | ☑ |
 
 ### New mechanic
 
