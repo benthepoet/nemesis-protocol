@@ -2,7 +2,7 @@
 
 **Owner:** Kimi K3 (Art Lead, charter §1)
 **Applies to:** all assets, VFX, lighting, UI treatment. Binding for every phase; deviations require a version bump here + Director sign-off.
-**Status:** v1.4 — combat readability telegraphs: visible projectile tracers + aim-direction line (§6 P1 row, §7 rule 7)
+**Status:** v1.5 — hostile combat telegraphs: enemy wind-up pre-glow + hostile tracers own `#ff5252` (§6 P1 row)
 
 ---
 
@@ -78,7 +78,7 @@ Inherited from the deck-plan mockups — this palette is the brand and carries i
 | **Venting** | 5 s suction (§6.4) | Full-room particle advection toward breach: papers, dust, frost; screen-edge frost on player camera |
 | **Curtain seal** | Emergency curtain (§6.4) | Hard light-bar slam + pressure-equalization mist burst |
 | **Reactor** | Proximity + arming (§3 Phase 4) | Core bloom pulse, heat distortion, ember drift; intensity = timer pressure |
-| **Muzzle/impacts** | Combat (P1) | Per-surface impact FX (sparks on metal, dust on composite); muzzle flash lights the room; **visible projectile tracers** — emissive slug stretched along velocity, hot-white core with allied `#69f0ae` halo, render-synced to sim projectile positions; **aim-direction line** — in-world telegraph from the muzzle along facing to the first wall obstruction, dim at rest, bright while firing |
+| **Muzzle/impacts** | Combat (P1) | Per-surface impact FX (sparks on metal, dust on composite); muzzle flash lights the room (allied **and** enemy fire — a real light either way); **visible projectile tracers** — emissive slug stretched along velocity, hot-white core, render-synced to sim projectile positions: halo allied `#69f0ae` for player fire, **hostile `#ff5252` for enemy fire** — allegiance readable at a glance in a two-way firefight; **aim-direction line** — in-world telegraph from the muzzle along facing to the first wall obstruction, dim at rest, bright while firing; **enemy attack wind-up** — muzzle pre-glow `#ff5252` for the full wind-up duration before an enemy's first shot of an engagement, render-only (the "about to shoot" read; design doc §10 wind-up) |
 | **Android** | §6.7 units | Cold white eye-slit glow (visible in darkness — *the* android telegraph), hydraulic vapor on wake |
 | **Meltdown fires** | Extraction hazards (§3 Phase 5) | Real area light, smoke columns that block sightlines, ember advection toward venting zones |
 
@@ -154,3 +154,4 @@ Each visual pass is scoped, not open-ended: its design pack enumerates exactly t
 | v1.2 | §3 palette extended: function accents (armory `#ff8a65`, medical `#80cbc4`, comms `#5c7cfa`, mess `#a1887f`) + corridor neutral `#8b949e` — formalized from deck-plan mockup v2.2 (`p1-deck-geometry` clarification Q2) |
 | v1.3 | §11 added: phase visual milestones — universal Gate 1 bar + per-phase scope (M-P1…M-P4) for the scheduled visual-pass features (Director ruling 2026-07-30; roadmap v1.7). Changelog renumbered to §12 |
 | v1.4 | Combat readability telegraphs (Director Gate-2 iteration on `p1-combat-core`, pack v2 R7/R8): §6 muzzle/impacts row extended — visible projectile tracers (emissive slug, white core / allied `#69f0ae` halo) + aim-direction line (muzzle → first wall obstruction, dim at rest, bright while firing); §7 rule 7 added — player combat telegraphs are world-space, allied-palette, subordinate to enemy telegraphs |
+| v1.5 | Hostile combat telegraphs (`p1-enemy-baseline` design pack v1, R9): §6 muzzle/impacts row extended — tracer halo carries allegiance (allied `#69f0ae` / hostile `#ff5252`, formalizing the §7 rule 7 note), enemy muzzle flash is a real light like the player's, and the **enemy attack wind-up pre-glow** (`#ff5252`, full wind-up duration, render-only) joins the family |

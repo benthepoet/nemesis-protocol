@@ -9,8 +9,12 @@ import { applyCommands, fixedStep } from '../../src/sim/step.js';
 import { cloneSimState, getEntity } from '../../src/sim/world.js';
 import {
   AIM_LINE_Y_M,
+  CREW_ATTACK_WINDUP_SEC,
+  CREW_ATTACK_WINDUP_TICKS,
   PROJECTILE_MAX_RANGE_M,
   PROJECTILE_MUZZLE_OFFSET_M,
+  TRACER_HALO_COLOR_HEX,
+  TRACER_HOSTILE_HALO_COLOR_HEX,
 } from '../../src/config.js';
 import {
   createCombatTelegraphs,
@@ -25,7 +29,96 @@ import {
 } from '../helpers/combatTestUtils.js';
 import type { InputCommand } from '../../src/sim/commands.js';
 
+function firstTracerHaloHex(scene: THREE.Scene): string {
+  for (const child of scene.children) {
+    if (child instanceof THREE.Group && typeof child.userData.haloHex === 'string') {
+      return child.userData.haloHex as string;
+    }
+  }
+  throw new Error('expected tracer group on scene');
+}
+
+function windupPointLightCount(scene: THREE.Scene): number {
+  let n = 0;
+  scene.traverse((obj) => {
+    if (obj instanceof THREE.PointLight) n += 1;
+  });
+  return n;
+}
+
 describe('combat telegraphs (G10)', () => {
+  it('E27: hostile tracer halo #ff5252 vs allied #69f0ae', () => {
+    const harness = createCombatTestHarness();
+    const sceneAllied = new THREE.Scene();
+    const alliedTg = createCombatTelegraphs(sceneAllied);
+    const cmds = new Map<number, InputCommand[]>([
+      [0, [fireHeldOn(0, 0)]],
+      [1, [{ tick: 1, sequence: 0, action: 'fire', value: 0 }]],
+    ]);
+    runTicks(harness, 2, cmds);
+    alliedTg.sync(harness.state, harness.collisionWorld);
+    expect(getTracerIdsForTest(alliedTg).length).toBeGreaterThan(0);
+    const alliedHex = firstTracerHaloHex(sceneAllied);
+    expect(alliedHex.toLowerCase()).toBe(TRACER_HALO_COLOR_HEX.toLowerCase());
+
+    const hostileHarness = createCombatTestHarness();
+    const crewId = hostileHarness.state.meta.crewIds[0]!;
+    const crew = getEntity(hostileHarness.state, crewId)!;
+    const player = getEntity(hostileHarness.state, hostileHarness.state.meta.playerId!)!;
+    player.x = crew.x + 6;
+    player.z = crew.z;
+    crew.yaw = Math.atan2(player.x - crew.x, player.z - crew.z);
+    const ai = hostileHarness.state.crewAi.get(crewId)!;
+    ai.fsm = 'ATTACK';
+    ai.windupTicksRemaining = 0;
+    ai.fireCooldownTicks = 0;
+    hostileHarness.state.crewAi.set(crewId, ai);
+    runTicks(hostileHarness, 1);
+
+    const sceneHostile = new THREE.Scene();
+    const hostileTg = createCombatTelegraphs(sceneHostile);
+    hostileTg.sync(hostileHarness.state, hostileHarness.collisionWorld);
+    expect(getTracerIdsForTest(hostileTg).length).toBeGreaterThan(0);
+    const hostileHex = firstTracerHaloHex(sceneHostile);
+    expect(hostileHex.toLowerCase()).toBe(TRACER_HOSTILE_HALO_COLOR_HEX.toLowerCase());
+    expect(hostileHex.toLowerCase()).not.toBe(alliedHex.toLowerCase());
+
+    alliedTg.dispose();
+    hostileTg.dispose();
+  });
+
+  it('E28: ATTACK wind-up pre-glow 0.5 s render; sync does not change sim hash', async () => {
+    expect(CREW_ATTACK_WINDUP_SEC).toBe(0.5);
+    expect(CREW_ATTACK_WINDUP_TICKS).toBe(Math.round(0.5 * 60));
+
+    const harness = createCombatTestHarness();
+    const crewId = harness.state.meta.crewIds[0]!;
+    const crew = getEntity(harness.state, crewId)!;
+    const player = getEntity(harness.state, harness.state.meta.playerId!)!;
+    player.x = crew.x + 6;
+    player.z = crew.z;
+    const ai = harness.state.crewAi.get(crewId)!;
+    ai.fsm = 'ATTACK';
+    ai.windupTicksRemaining = CREW_ATTACK_WINDUP_TICKS;
+    ai.fireCooldownTicks = 0;
+    harness.state.crewAi.set(crewId, ai);
+
+    const scene = new THREE.Scene();
+    const telegraphs = createCombatTelegraphs(scene);
+    const hashBefore = await hashSimState(harness.state);
+    telegraphs.sync(harness.state, harness.collisionWorld);
+    expect(await hashSimState(harness.state)).toBe(hashBefore);
+    expect(windupPointLightCount(scene)).toBe(1);
+    const light = scene.children.find((c) => c instanceof THREE.PointLight) as THREE.PointLight;
+    expect(`#${light.color.getHexString()}`).toBe(TRACER_HOSTILE_HALO_COLOR_HEX);
+
+    runTicks(harness, CREW_ATTACK_WINDUP_TICKS);
+    telegraphs.sync(harness.state, harness.collisionWorld);
+    expect(windupPointLightCount(scene)).toBe(0);
+
+    telegraphs.dispose();
+  });
+
   it('earliestWallHit hits expanded wall AABB with t in [0,1]', () => {
     const wall = { x: 5, z: -1, w: 0.3, h: 2 };
     const world = { aabbs: [wall], polyEdges: [] as const };
@@ -51,8 +144,11 @@ describe('combat telegraphs (G10)', () => {
     const az = 0;
     const bx = 20;
     const bz = 0;
-    const standInId = harness.state.meta.standInIds[0]!;
-    const standIn = getEntity(harness.state, standInId)!;
+    const crewId = harness.state.meta.crewIds.find((id) => {
+      const e = getEntity(harness.state, id)!;
+      return Math.hypot(e.x - 8, e.z) < 2;
+    }) ?? harness.state.meta.crewIds[0]!;
+    const standIn = getEntity(harness.state, crewId)!;
     standIn.x = 8;
     standIn.z = 0;
     standIn.alive = true;

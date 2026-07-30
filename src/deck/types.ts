@@ -99,6 +99,22 @@ export interface ObjectiveMarkerDef {
   y: number;
 }
 
+export interface CrewSpawnPostDef {
+  id: string;
+  homeRoomId: string;
+  role: 'rover' | 'posted';
+  spawn: { x: number; y: number; yawDeg: number };
+  waypoints: ReadonlyArray<{ x: number; y: number }>;
+}
+
+export interface CrewSpawnPost {
+  id: string;
+  homeRoomId: string;
+  role: 'rover' | 'posted';
+  spawn: { x: number; z: number; yawRad: number };
+  waypoints: ReadonlyArray<{ x: number; z: number }>;
+}
+
 export interface DeckDefinition {
   id: 'deck-03';
   name: string;
@@ -109,6 +125,7 @@ export interface DeckDefinition {
   wallSegments: WallSegmentDef[];
   androidRacks: AndroidRackDef[];
   objectives: ObjectiveMarkerDef[];
+  crewSpawnTable: CrewSpawnPostDef[];
 }
 
 export interface WorldRect {
@@ -171,4 +188,5 @@ export interface DeckGraph {
     kind: ObjectiveKind;
     position: WorldVec2;
   }[];
+  readonly crewSpawnTable: readonly CrewSpawnPost[];
 }

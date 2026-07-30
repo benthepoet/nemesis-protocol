@@ -8,7 +8,7 @@
 **License:** open source — MIT (code) / CC BY 4.0 (assets). See `LICENSE` / `LICENSE-ASSETS`.
 **Scope of this document:** Single-mission gameflow for the core loop — *board an enemy capital ship, fight through it, destroy it, get out.*
 **Reference asset:** `assets/mockups/cruiser_boarding_deck_plan.svg` — ISV *Nemesis*, Deck 03 (procgen reference layout)
-**Status:** v1.13 — locked for prototype (enemy roster approved; phase visual-pass policy)
+**Status:** v1.14 — locked for prototype (enemy roster approved; phase visual-pass policy; P1 crew-AI baselines)
 
 ---
 
@@ -111,6 +111,8 @@ Alarm state drives enemy behavior across the whole mission:
 | MELTDOWN | Charge armed | Spawn budget stays high; ship hazards replace patrol logic |
 
 Key rule: **attacking an objective raises the defense of everything else.** Speedrunners may rush — but they fight the ship at full strength the entire way.
+
+**Prototype scoping note (v1.14 — `p1-enemy-baseline` stub).** At P1 the alarm exists as a two-state stub (AL0/AL1 only). AL0→AL1 trips on the first of: (a) any player shot fired (§3 Phase 1), (b) any crew detection (§10 perception baselines), (c) any crew damage; the camera/hull-sensor trip is N/A (no sensors at P1). The AL1 effect at P1 is **converge only** — all living crew move on the shared last-known-position; lockdown (§3 Phase 2), reinforcements, and entrenchment are P2 scope (AL2+). The alarm never de-escalates at P1.
 
 ### 4.5 Enemy Roster (prototype — Director-approved)
 
@@ -359,7 +361,14 @@ Everything else is deferred to the roadmap (§12.5): Kill-Team and Champion need
 | Warden deploy trigger | AL3, or rack destroyed | Stalker miniboss (§9.2) |
 | Gamepad aim-assist | 0.35 magnetism, 10° cone | First-class input parity (§8); tune in P1 playtest |
 | Player HP | 100 | No passive regen; healing sources are mission features (§3 Phase 6 Med Bay) |
-| Security crew HP | 100 | §4.5 baseline infantry; static stand-ins until `p1-enemy-baseline` |
+| Security crew HP | 100 | §4.5 baseline infantry; spawner population since `p1-enemy-baseline` (v1.14) |
+| Crew population (Deck 03, initial) | 8 | `p1-enemy-baseline` spawn table: 2 spine rovers + 6 posted (Cargo, Armory, Med Bay, Barracks, Life Support, CIC); aft unposted at P1; no replacements at P1 |
+| Crew waypoint pause | 2 s | PATROL dwell at route waypoints |
+| Crew sight | 20 m, 110° cone, 0.25 s detection delay | Continuous LOS within cone to detect; LOS blocked by all wall classes |
+| Crew speeds | patrol 2.0 / investigate 3.5 / chase 4.5 m/s | Attack is stationary (no move-and-shoot at P1); chase < player 6 m/s — disengage always possible |
+| Crew attack range | 14 m, LOS required | ATTACK state entry condition |
+| Crew sidearm | 10 dmg/hit, 1 shot/0.9 s, 0.5 s wind-up, 4° seeded spread | AL0–AL1 armament (§4.5); shared projectile model (60 m/s, 60 m); infinite ammo, no reload at P1; **no friendly fire** — crew shots hit the player only |
+| Crew lost-contact flow | scan 4.0 s at LKP, then hold alerted | CHASE→INVESTIGATE at last-known-position without LOS; no return-to-patrol at AL1 |
 | Rifle damage (vs actors) | 25 / hit | Wall chip damage is P3 scope (§6.2) — a distinct value, bound there |
 | Rifle fire rate | 10 rounds/s, automatic | Hold-to-fire |
 | Rifle magazine | 30 | Trigger-pull on empty magazine auto-starts reload |
@@ -456,3 +465,4 @@ This layout is the canonical grammar example for the generator: *nose = command,
 | v1.11 | §6.1: Class B presentation split — **bulkhead** (section-bounding gating firewall) vs **interior** (ordinary solid walls, same immunity, not section bounds); door edges carry the class of the wall they pierce; Class A is never a doorway (from `p1-deck-geometry` clarification Q1) |
 | v1.12 | §8: P1 verb binding table — fire owns the primary trigger (mouse button 0 / right trigger); interact drops the mouse-0 binding (KBM interact = E). §10: P1 combat baselines — player/crew HP 100, rifle 25 dmg @ 10 rps automatic, magazine 30 + reserve 120, reload 2.0 s uninterruptible, projectile 60 m/s / 60 m range, no-spread v1, 3 s respawn placeholder (from `p1-combat-core` design pack v1, rulings R1/R2) |
 | v1.13 | §12.5: phase visual-pass policy — every phase (P1–P4) closes with a scheduled visual-pass feature before checkpoint sign-off; presentation uplift is per-phase, not prototype-end (Director ruling 2026-07-30; feature breakdown in roadmap v1.7, milestone bar in visual_direction §11) |
+| v1.14 | P1 crew-AI baselines (from `p1-enemy-baseline` design pack v1, rulings R2–R7): §4 prototype scoping note — two-state AL0/AL1 stub, trip rules, converge-only effect, no lockdown/reinforcement at P1; §10 — crew population 8 (2 spine rovers + 6 posts), waypoint pause 2 s, sight 20 m / 110° cone / 0.25 s detection delay, speeds patrol 2.0 · investigate 3.5 · chase 4.5 m/s, attack range 14 m, sidearm 10 dmg @ 1/0.9 s + 0.5 s wind-up + 4° seeded spread + no friendly fire, lost-contact flow; §10 stand-in note superseded (spawner population) |

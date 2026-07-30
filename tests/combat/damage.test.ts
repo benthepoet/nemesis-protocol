@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { RIFLE_DAMAGE_PER_HIT } from '../../src/config.js';
+import {
+  ACTOR_MAX_HP,
+  CREW_SIDEARM_DAMAGE,
+  RESPAWN_DELAY_TICKS,
+  RIFLE_DAMAGE_PER_HIT,
+} from '../../src/config.js';
 import { applyDamage } from '../../src/combat/applyDamage.js';
 import { getEntity } from '../../src/sim/world.js';
 import {
@@ -12,7 +17,7 @@ import type { InputCommand } from '../../src/sim/commands.js';
 describe('damage (G3)', () => {
   it('E7: projectile hit stand-in reduces HP 100→75 with impact events', () => {
     const harness = createCombatTestHarness();
-    const standId = harness.state.meta.standInIds[0]!;
+    const standId = harness.state.meta.crewIds[2]!;
     const stand = getEntity(harness.state, standId)!;
     const player = getEntity(harness.state, harness.state.meta.playerId!)!;
     player.x = stand.x - 1.5;
@@ -28,7 +33,7 @@ describe('damage (G3)', () => {
 
   it('E8: four projectile hits kill stand-in; later shots pass through', () => {
     const harness = createCombatTestHarness();
-    const standId = harness.state.meta.standInIds[0]!;
+    const standId = harness.state.meta.crewIds[2]!;
     const stand = getEntity(harness.state, standId)!;
     const player = getEntity(harness.state, harness.state.meta.playerId!)!;
     player.x = stand.x - 1.5;
@@ -54,9 +59,45 @@ describe('damage (G3)', () => {
     expect(events.some((e) => e.type === 'impact-actor' && e.targetId === standId)).toBe(false);
   });
 
+  it('E19: crew projectile −10 HP; death then 180-tick respawn', () => {
+    const harness = createCombatTestHarness();
+    const playerId = harness.state.meta.playerId!;
+    const player = getEntity(harness.state, playerId)!;
+    const crewId = harness.state.meta.crewIds[0]!;
+    const crew = getEntity(harness.state, crewId)!;
+    player.x = crew.x + 6;
+    player.z = crew.z;
+    crew.yaw = Math.atan2(player.x - crew.x, player.z - crew.z);
+    const ai = harness.state.crewAi.get(crewId)!;
+    ai.fsm = 'ATTACK';
+    ai.windupTicksRemaining = 0;
+    ai.fireCooldownTicks = 0;
+    harness.state.crewAi.set(crewId, ai);
+
+    const hp0 = player.hp;
+    runTicks(harness, 12);
+    expect(hp0 - getEntity(harness.state, playerId)!.hp).toBe(CREW_SIDEARM_DAMAGE);
+
+    player.hp = CREW_SIDEARM_DAMAGE;
+    player.alive = true;
+    ai.windupTicksRemaining = 0;
+    ai.fireCooldownTicks = 0;
+    harness.state.crewAi.set(crewId, ai);
+    runTicks(harness, 12);
+    expect(getEntity(harness.state, playerId)!.hp).toBe(0);
+    expect(getEntity(harness.state, playerId)!.alive).toBe(false);
+    expect(harness.state.meta.respawnTicksRemaining).toBeGreaterThan(0);
+
+    runTicks(harness, RESPAWN_DELAY_TICKS);
+    const respawned = getEntity(harness.state, playerId)!;
+    expect(respawned.alive).toBe(true);
+    expect(respawned.hp).toBe(ACTOR_MAX_HP);
+    expect(RESPAWN_DELAY_TICKS).toBe(180);
+  });
+
   it('E9: applyDamage(999) clamps hp at 0', () => {
     const harness = createCombatTestHarness();
-    const standId = harness.state.meta.standInIds[0]!;
+    const standId = harness.state.meta.crewIds[2]!;
     applyDamage(harness.state, standId, 999);
     expect(getEntity(harness.state, standId)!.hp).toBe(0);
   });

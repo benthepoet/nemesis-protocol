@@ -124,8 +124,17 @@ function segmentCircleHitT(
   return best;
 }
 
-function isActorTarget(entity: Entity): boolean {
-  return entity.alive && (entity.kind === PLAYER_KIND || entity.kind === SECURITY_CREW_KIND);
+function isActorTargetForOwner(state: SimState, ownerId: EntityId, entity: Entity): boolean {
+  if (!entity.alive) return false;
+  const owner = state.entities.get(ownerId);
+  if (!owner) return false;
+  if (owner.kind === PLAYER_KIND) {
+    return entity.kind === SECURITY_CREW_KIND;
+  }
+  if (owner.kind === SECURITY_CREW_KIND) {
+    return entity.kind === PLAYER_KIND;
+  }
+  return false;
 }
 
 /**
@@ -190,7 +199,7 @@ export function earliestSegmentHit(
 
   for (const entity of state.entities.values()) {
     if (entity.id === ownerId) continue;
-    if (!isActorTarget(entity)) continue;
+    if (!isActorTargetForOwner(state, ownerId, entity)) continue;
     const t = segmentCircleHitT(ax, az, bx, bz, entity.x, entity.z, ACTOR_PROXY_RADIUS_M);
     if (t !== null && (best === null || t < best.t)) {
       best = {

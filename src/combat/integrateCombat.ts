@@ -1,5 +1,7 @@
 import {
   ACTOR_MAX_HP,
+  CREW_FIRE_INTERVAL_TICKS,
+  CREW_SIDEARM_DAMAGE,
   FIRE_INTERVAL_TICKS,
   FIXED_DT,
   MAGAZINE_SIZE,
@@ -13,6 +15,7 @@ import {
   RIFLE_DAMAGE_PER_HIT,
   SECURITY_CREW_KIND,
 } from '../config.js';
+import { tripAlarm } from '../ai/alarm.js';
 import type { CollisionWorld } from '../deck/collision.js';
 import { computeSpawnPoint } from '../deck/spawn.js';
 import type { DeckGraph } from '../deck/types.js';
@@ -20,6 +23,7 @@ import type { EntityId, SimState } from '../sim/types.js';
 import { getEntity, setEntityPose, setEntityYaw, spawnEntity } from '../sim/world.js';
 import { applyDamage } from './applyDamage.js';
 import { earliestSegmentHit } from './projectileCollision.js';
+import { sampleSpreadYawOffset } from './spread.js';
 import type { CombatEvent } from './types.js';
 
 export function tryBeginReload(state: SimState): void {
@@ -104,7 +108,33 @@ export function integrateCombat(
     traveled.set(projId, 0);
     meta.magazine -= 1;
     meta.fireCooldownTicks = FIRE_INTERVAL_TICKS;
-    events.push({ type: 'muzzle', x: mx, y: 0, z: mz, yaw: player!.yaw });
+    tripAlarm(state, 'player-shot');
+    events.push({ type: 'muzzle', x: mx, y: 0, z: mz, yaw: player!.yaw, ownerKind: PLAYER_KIND });
+  }
+
+  for (const id of meta.crewIds) {
+    const entity = getEntity(state, id);
+    const ai = state.crewAi.get(id);
+    if (!entity?.alive || !ai || ai.fsm !== 'ATTACK') continue;
+    if (ai.windupTicksRemaining > 0 || ai.fireCooldownTicks > 0) continue;
+
+    const spread = sampleSpreadYawOffset(state.tick, id, ai.shotIndex);
+    const yaw = entity.yaw + spread;
+    const dirX = Math.sin(yaw);
+    const dirZ = Math.cos(yaw);
+    const mx = entity.x + dirX * PROJECTILE_MUZZLE_OFFSET_M;
+    const mz = entity.z + dirZ * PROJECTILE_MUZZLE_OFFSET_M;
+    const projId = spawnEntity(state, PROJECTILE_KIND, mx, 0, mz);
+    const proj = getEntity(state, projId)!;
+    proj.yaw = yaw;
+    proj.ownerId = id;
+    proj.hp = 0;
+    proj.alive = true;
+    traveled.set(projId, 0);
+    ai.shotIndex += 1;
+    ai.fireCooldownTicks = CREW_FIRE_INTERVAL_TICKS;
+    state.crewAi.set(id, ai);
+    events.push({ type: 'muzzle', x: mx, y: 0, z: mz, yaw, ownerKind: SECURITY_CREW_KIND });
   }
 
   const stepDist = PROJECTILE_SPEED_MPS * FIXED_DT;
@@ -137,7 +167,10 @@ export function integrateCombat(
       if (hit.kind === 'wall') {
         events.push({ type: 'impact-wall', x: hit.x, y: 0, z: hit.z });
       } else if (hit.targetId !== undefined) {
-        applyDamage(state, hit.targetId, RIFLE_DAMAGE_PER_HIT);
+        const owner = entity.ownerId ? getEntity(state, entity.ownerId) : undefined;
+        const amount =
+          owner?.kind === SECURITY_CREW_KIND ? CREW_SIDEARM_DAMAGE : RIFLE_DAMAGE_PER_HIT;
+        applyDamage(state, hit.targetId, amount);
         events.push({
           type: 'impact-actor',
           x: hit.x,

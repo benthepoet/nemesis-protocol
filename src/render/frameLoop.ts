@@ -2,6 +2,8 @@ import type { CollisionWorld } from '../deck/collision.js';
 import type { DeckGraph } from '../deck/types.js';
 import { FIXED_DT, MAX_FRAME_DELTA_SEC } from '../config.js';
 import { integrateCombat } from '../combat/integrateCombat.js';
+import { integrateCrewAi } from '../ai/integrateCrewAi.js';
+import type { CrewAiEvent } from '../ai/types.js';
 import { CommandBus } from '../input/commandBus.js';
 import type { InputDevice } from '../input/types.js';
 import { integratePlayerMotion } from '../sim/playerMotion.js';
@@ -21,6 +23,7 @@ export interface FixedTimestepSliceArgs {
   dtSec: number;
   accumulator: number;
   onCombatEvents?: (events: readonly CombatEvent[]) => void;
+  onCrewAiEvents?: (events: readonly CrewAiEvent[]) => void;
 }
 
 export interface FixedTimestepSliceResult {
@@ -38,6 +41,8 @@ export function runFixedTimestepSlice(args: FixedTimestepSliceArgs): FixedTimest
     const cmds = args.bus.drainForTick(args.world.tick);
     applyCommands(args.world, cmds);
     integratePlayerMotion(args.world, args.collisionWorld);
+    const crewEvents = integrateCrewAi(args.world, args.collisionWorld, args.graph);
+    args.onCrewAiEvents?.(crewEvents);
     const events = integrateCombat(args.world, args.collisionWorld, args.graph);
     args.onCombatEvents?.(events);
     fixedStep(args.world);
@@ -61,6 +66,7 @@ export function startFrameLoop(args: {
   onFrame?: (dtSec: number) => void;
   onBeforeSim?: () => void;
   onCombatEvents?: (events: readonly CombatEvent[]) => void;
+  onCrewAiEvents?: (events: readonly CrewAiEvent[]) => void;
 }): () => void {
   let last = performance.now();
   let accumulator = 0;
@@ -83,6 +89,7 @@ export function startFrameLoop(args: {
       dtSec,
       accumulator,
       onCombatEvents: args.onCombatEvents,
+      onCrewAiEvents: args.onCrewAiEvents,
     });
     accumulator = slice.accumulator;
 
