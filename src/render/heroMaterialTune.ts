@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { HOSTILE_COLOR_HEX, HERO_MATERIAL_MODE, PLAYER_COLOR_HEX } from '../config.js';
+import { HOSTILE_COLOR_HEX, PLAYER_COLOR_HEX } from '../config.js';
+import { getHeroMaterialMode } from './heroMaterialMode.js';
 
 /** GLB material names (Blender MCP). */
 const ALLIED_GLOW_MAT = 'p1_allied_glow';
@@ -100,7 +101,7 @@ function tuneHeroMaterialsPbr(root: THREE.Object3D, role: 'player' | 'crew'): vo
 export function tuneHeroMaterials(
   root: THREE.Object3D,
   role: 'player' | 'crew',
-  mode: 'basic' | 'pbr' = HERO_MATERIAL_MODE,
+  mode: 'basic' | 'pbr' = getHeroMaterialMode(),
 ): void {
   if (mode === 'pbr') {
     tuneHeroMaterialsPbr(root, role);
@@ -192,6 +193,28 @@ export function heroBodyHasAlbedoMap(root: THREE.Object3D): boolean {
         (m instanceof THREE.MeshStandardMaterial || m instanceof THREE.MeshPhysicalMaterial) &&
         m.name?.startsWith('p1_') &&
         m.map
+      ) {
+        found = true;
+      }
+    }
+  });
+  return found;
+}
+
+/** Factor-only albedo on body Standard slots (rigged GLBs may ship without embedded `map`). */
+export function heroBodyHasFactorAlbedo(root: THREE.Object3D): boolean {
+  let found = false;
+  root.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh) || found) return;
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+    for (const m of mats) {
+      if (
+        (m instanceof THREE.MeshStandardMaterial || m instanceof THREE.MeshPhysicalMaterial) &&
+        m.name?.startsWith('p1_') &&
+        m.name !== ALLIED_GLOW_MAT &&
+        m.name !== HOSTILE_GLOW_MAT &&
+        !m.map &&
+        m.color.getHex() !== 0xffffff
       ) {
         found = true;
       }

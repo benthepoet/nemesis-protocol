@@ -13,6 +13,7 @@ import {
   stripOptionalMaterialMaps,
 } from './loadGltf.js';
 import { assertHeroGlbLoaded, tuneHeroMaterials } from '../heroMaterialTune.js';
+import { getHeroMaterialMode } from '../heroMaterialMode.js';
 import { assertRequiredHeroClips, stripRootMotionFromClips } from '../heroAnimation.js';
 
 export interface HeroAssetTemplates {
@@ -47,9 +48,10 @@ export async function preloadHeroAssets(): Promise<HeroAssetTemplates> {
   for (const root of [player, crew, rifle, corridorLight, amberBeacon]) {
     stripOptionalMaterialMaps(root);
   }
-  tuneHeroMaterials(player, 'player');
-  tuneHeroMaterials(crew, 'crew');
-  tuneHeroMaterials(rifle, 'player');
+  const mode = getHeroMaterialMode();
+  tuneHeroMaterials(player, 'player', mode);
+  tuneHeroMaterials(crew, 'crew', mode);
+  tuneHeroMaterials(rifle, 'player', mode);
   assertHeroGlbLoaded(player, 'p1_player_boarder');
   assertHeroGlbLoaded(crew, 'p1_security_crew');
   const bundle: HeroAssetTemplates = {

@@ -297,8 +297,8 @@ export const SHADOW_CASTING_DIRECTIONAL_MAX = 2 as const;
 /** Corridor spine neutral accent (G6). */
 export const CORRIDOR_SPINE_NEUTRAL_HEX = '#8b949e' as const;
 
-/** R15 staged hero shading: 'basic' = tune-4 unlit (anim Gate 1); 'pbr' = VD §5 restore (pre–Gate 2). */
-export const HERO_MATERIAL_MODE: 'basic' | 'pbr' = 'basic';
+/** R15 staged hero shading: preferred default `pbr` (G2–G4); `basic` via URL/env debug override. */
+export const HERO_MATERIAL_MODE: 'basic' | 'pbr' = 'pbr';
 
 /** Clip names — must match R14 export exactly. */
 export const HERO_CLIP_IDLE = 'idle' as const;

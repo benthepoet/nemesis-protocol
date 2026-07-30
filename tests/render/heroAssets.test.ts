@@ -5,7 +5,7 @@ import { PLAYER_COLOR_HEX, PROJECTILE_MUZZLE_OFFSET_M } from '../../src/config.j
 import { loadGltf } from '../../src/render/assets/loadGltf.js';
 import { preloadHeroAssets } from '../../src/render/assets/preloadHeroAssets.js';
 import { createPlayerMeshFromTemplates, playerHasDebugWedge } from '../../src/render/createPlayerMesh.js';
-import { countHeroBasicMaterials } from '../../src/render/heroMaterialTune.js';
+import { countHeroBasicMaterials, countHeroStandardBodyMaterials } from '../../src/render/heroMaterialTune.js';
 import { getMuzzleWorldXZ, heroHasGripBone } from '../../src/render/createRifleBlockout.js';
 
 describe('hero assets (G1, M1–M3, R5, R6)', () => {
@@ -27,20 +27,21 @@ describe('hero assets (G1, M1–M3, R5, R6)', () => {
     expect(Math.hypot(x - expectedX, z - expectedZ)).toBeLessThanOrEqual(0.02);
   });
 
-  it('player allied-glow material uses authored #69f0ae (G2, unlit basic)', async () => {
+  it('player allied-glow uses #69f0ae in PBR emissive (G2)', async () => {
     const templates = await preloadHeroAssets();
     const player = createPlayerMeshFromTemplates(templates);
-    let glow: THREE.MeshBasicMaterial | undefined;
+    let glow: THREE.MeshStandardMaterial | undefined;
     player.traverse((obj) => {
       if (!(obj instanceof THREE.Mesh)) return;
       const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
       for (const m of mats) {
-        if (m instanceof THREE.MeshBasicMaterial && m.name === 'p1_allied_glow') glow = m;
+        if (m instanceof THREE.MeshStandardMaterial && m.name === 'p1_allied_glow') glow = m;
       }
     });
     expect(glow).toBeDefined();
-    expect(glow!.color.getHexString()).toBe(new THREE.Color(PLAYER_COLOR_HEX).getHexString());
-    expect(countHeroBasicMaterials(player)).toBeGreaterThan(10);
+    expect(glow!.emissive.getHexString()).toBe(new THREE.Color(PLAYER_COLOR_HEX).getHexString());
+    expect(countHeroStandardBodyMaterials(player)).toBeGreaterThan(0);
+    expect(countHeroBasicMaterials(player)).toBe(0);
   });
 
   it('E3: rigged player has hand_r_grip when clips present', async () => {
