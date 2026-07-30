@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CREW_ATTACK_WINDUP_TICKS,
   CREW_FIRE_INTERVAL_TICKS,
+  CREW_SIDEARM_DAMAGE,
 } from '../../src/config.js';
 import { sampleSpreadYawOffset } from '../../src/combat/spread.js';
 import { getEntity } from '../../src/sim/world.js';
@@ -23,8 +24,28 @@ describe('attack (G5)', () => {
     harness.state.crewAi.set(crewId, ai);
     runTicks(harness, CREW_ATTACK_WINDUP_TICKS - 1);
     expect(countProjectiles(harness.state)).toBe(0);
-    runTicks(harness, CREW_FIRE_INTERVAL_TICKS + 2);
-    expect(countProjectiles(harness.state)).toBeGreaterThanOrEqual(0);
+
+    const hpBefore = player.hp;
+    let firstMuzzleTick: number | null = null;
+    let secondMuzzleTick: number | null = null;
+    for (let i = 0; i < CREW_FIRE_INTERVAL_TICKS + 40; i += 1) {
+      const events = runTicks(harness, 1, undefined, { collectEvents: true });
+      if (events.some((e) => e.type === 'muzzle' && e.ownerKind === 'security-crew')) {
+        if (firstMuzzleTick === null) firstMuzzleTick = harness.state.tick - 1;
+        else if (secondMuzzleTick === null) secondMuzzleTick = harness.state.tick - 1;
+      }
+      const p = getEntity(harness.state, harness.state.meta.playerId!)!;
+      if (p.hp < hpBefore) break;
+    }
+    expect(firstMuzzleTick).not.toBeNull();
+    expect(hpBefore - getEntity(harness.state, harness.state.meta.playerId!)!.hp).toBe(
+      CREW_SIDEARM_DAMAGE,
+    );
+    if (secondMuzzleTick !== null && firstMuzzleTick !== null) {
+      const gap = secondMuzzleTick - firstMuzzleTick;
+      expect(gap).toBeGreaterThanOrEqual(CREW_FIRE_INTERVAL_TICKS - 1);
+      expect(gap).toBeLessThanOrEqual(CREW_FIRE_INTERVAL_TICKS + 1);
+    }
 
     for (let i = 0; i < 64; i += 1) {
       const off = sampleSpreadYawOffset(100, crewId, i);

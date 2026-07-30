@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { PROJECTILE_KIND, PROJECTILE_SPEED_MPS, FIXED_DT } from '../../src/config.js';
+import {
+  CREW_SIDEARM_DAMAGE,
+  PROJECTILE_KIND,
+  PROJECTILE_SPEED_MPS,
+  FIXED_DT,
+} from '../../src/config.js';
 import { circleHitsWalls } from '../../src/deck/collision.js';
 import { hashDeckGraph } from '../../src/deck/hashDeck.js';
 import { footprintCenter } from '../../src/deck/spawn.js';
@@ -84,6 +89,34 @@ describe('projectiles (G2)', () => {
     expect([...harness.state.entities.values()].filter((e) => e.kind === PROJECTILE_KIND).length).toBe(0);
     expect(events.some((e) => e.type === 'impact-wall')).toBe(true);
     expect(await hashDeckGraph(harness.graph)).toBe(deckHashBefore);
+  });
+
+  it('E20: crew shot passes through living crew; damages player', () => {
+    const harness = createCombatTestHarness();
+    const playerId = harness.state.meta.playerId!;
+    const player = getEntity(harness.state, playerId)!;
+    const shooterId = harness.state.meta.crewIds[0]!;
+    const blockerId = harness.state.meta.crewIds[1]!;
+    const shooter = getEntity(harness.state, shooterId)!;
+    const blocker = getEntity(harness.state, blockerId)!;
+    const anchor = getEntity(harness.state, harness.state.meta.crewIds[2]!)!;
+    shooter.x = anchor.x - 4;
+    shooter.z = anchor.z;
+    blocker.x = anchor.x - 2;
+    blocker.z = anchor.z;
+    player.x = anchor.x + 1;
+    player.z = anchor.z;
+    shooter.yaw = Math.atan2(player.x - shooter.x, player.z - shooter.z);
+    const blockerHpBefore = blocker.hp;
+    const playerHpBefore = player.hp;
+    const ai = harness.state.crewAi.get(shooterId)!;
+    ai.fsm = 'ATTACK';
+    ai.windupTicksRemaining = 0;
+    ai.fireCooldownTicks = 0;
+    harness.state.crewAi.set(shooterId, ai);
+    runTicks(harness, 12);
+    expect(getEntity(harness.state, blockerId)!.hp).toBe(blockerHpBefore);
+    expect(playerHpBefore - getEntity(harness.state, playerId)!.hp).toBe(CREW_SIDEARM_DAMAGE);
   });
 
   it('E6: segment sweep hits thin wall when endpoints lie outside collider', () => {

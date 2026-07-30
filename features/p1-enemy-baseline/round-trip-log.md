@@ -10,6 +10,7 @@
 | 2026-07-30 | Stage 3 | Composer 2.5 Fast — branch `feat/p1-enemy-baseline`; spec v1 FINAL; tasks 1–20; `npm run test:run` 121 passed; `npm run build` green |
 | 2026-07-30 | PR opened | https://github.com/benthepoet/nemesis-protocol/pull/6 |
 | 2026-07-30 | Review round 1 | Grok Stage 4 — **REQUEST CHANGES** (6 blockers / 3 minors). Tasks 1–17 + 19 impl look spec-aligned; local `npm run test:run` 121/121 + build green; no CI workflows configured. **Hold merge.** T18 verification incomplete: vacuous E10 assert; missing E6/E19/E20/E27–E28; E8 allows PATROL. Composer must revise tests (and any defects they expose) then push for round 2. |
+| 2026-07-30 | Revision round 2 | Composer — T18 blockers 1–6: E10 real fire/dmg/cadence; E6 wall LOS + E4 leave-reset; E8 forbid PATROL @ AL1; E19 crew→player dmg+respawn; E20 friendly-fire pass-through; E27–E28 tracer/wind-up asserts. `npm run test:run` **130/130**; `npm run build` green. Awaiting Grok round 2. |
 | | Gate 1 (Kimi) | pass / fail → findings |
 | | Gate 2 (Director) | accept / amend / reject → feedback ref |
 | | Director iterations (§3.5a) | cycle <n>: diagnosis <design/spec/impl> |

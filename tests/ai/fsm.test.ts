@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { CREW_INVESTIGATE_SCAN_TICKS, CREW_CHASE_SPEED_MPS, FIXED_DT, TICK_HZ } from '../../src/config.js';
+import {
+  ALARM_LEVEL_AL1,
+  CREW_INVESTIGATE_SCAN_TICKS,
+  CREW_CHASE_SPEED_MPS,
+  FIXED_DT,
+  TICK_HZ,
+} from '../../src/config.js';
 import { getEntity } from '../../src/sim/world.js';
 import { createCombatTestHarness, runTicks } from '../helpers/combatTestUtils.js';
 import { tripAlarm } from '../../src/ai/alarm.js';
@@ -15,9 +21,16 @@ describe('crew fsm (G1,G4)', () => {
     player.x = 500;
     player.z = 500;
     runTicks(harness, TICK_HZ * 30);
+    expect(harness.state.meta.alarmLevel).toBe(ALARM_LEVEL_AL1);
+    for (const id of harness.state.meta.crewIds) {
+      const entity = getEntity(harness.state, id);
+      if (!entity?.alive) continue;
+      const ai = harness.state.crewAi.get(id)!;
+      expect(ai.fsm).not.toBe('PATROL');
+    }
     const crewId = harness.state.meta.crewIds[0]!;
     const ai = harness.state.crewAi.get(crewId)!;
-    expect(['INVESTIGATE', 'CHASE', 'PATROL']).toContain(ai.fsm);
+    expect(ai.fsm).toBe('INVESTIGATE');
     expect(CREW_INVESTIGATE_SCAN_TICKS).toBe(240);
   });
 
