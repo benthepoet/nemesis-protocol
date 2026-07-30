@@ -7,7 +7,7 @@ function applyRadialDeadzone(x: number, y: number, deadzone: number): { x: numbe
   const mag = Math.hypot(x, y);
   if (mag <= deadzone) return { x: 0, z: 0 };
   const scale = (mag - deadzone) / (1 - deadzone) / mag;
-  return { x: x * scale, z: -y * scale };
+  return { x: x * scale, z: y * scale };
 }
 
 function readStickDirection(x: number, y: number, deadzone: number): { axisX: number; axisZ: number } | null {
