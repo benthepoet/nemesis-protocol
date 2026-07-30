@@ -9,7 +9,8 @@ import {
 } from '../../src/config.js';
 import { loadTestDeck03 } from '../helpers/deckTestUtils.js';
 import { createDeckScene } from '../../src/render/createDeckScene.js';
-import { countActiveCorridorBeacons, createDeckLighting } from '../../src/render/createDeckLighting.js';
+import { countActiveCorridorBeacons, createDeckLighting, countShadowCastingDirectionals } from '../../src/render/createDeckLighting.js';
+import { SHADOW_CASTING_DIRECTIONAL_MAX } from '../../src/config.js';
 import { preloadHeroAssets } from '../../src/render/assets/preloadHeroAssets.js';
 import { getHeroFixtures } from '../../src/render/assets/preloadHeroAssets.js';
 
@@ -37,6 +38,15 @@ describe('deck lighting (G7–G9, M5–M6)', () => {
     lighting.update(0.01, ALARM_LEVEL_AL1);
     expect(countActiveCorridorBeacons(deck.scene)).toBeGreaterThan(0);
     lighting.dispose();
+    deck.disposeMaterials();
+  });
+
+  it('shadow-casting directionals stay within WebGL texture-unit budget', async () => {
+    const graph = loadTestDeck03();
+    const deck = createDeckScene(graph);
+    const fixtures = getHeroFixtures(await preloadHeroAssets());
+    createDeckLighting(deck.scene, graph, fixtures);
+    expect(countShadowCastingDirectionals(deck.scene)).toBe(SHADOW_CASTING_DIRECTIONAL_MAX);
     deck.disposeMaterials();
   });
 

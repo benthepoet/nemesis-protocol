@@ -26,6 +26,27 @@ export function loadGltf(url: string): Promise<THREE.Group> {
   });
 }
 
+/** Drop optional maps so fragment shaders stay under MAX_TEXTURE_IMAGE_UNITS with shadows. */
+export function stripOptionalMaterialMaps(root: THREE.Object3D): void {
+  root.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+    const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+    for (const material of materials) {
+      if (
+        material instanceof THREE.MeshStandardMaterial ||
+        material instanceof THREE.MeshPhysicalMaterial
+      ) {
+        material.aoMap = null;
+        material.lightMap = null;
+        material.bumpMap = null;
+        material.displacementMap = null;
+        material.alphaMap = null;
+        material.needsUpdate = true;
+      }
+    }
+  });
+}
+
 /** Deep-clone a loaded template for per-instance meshes (shared geometry OK). */
 export function cloneGltfTemplate(template: THREE.Group): THREE.Group {
   return template.clone(true);

@@ -6,7 +6,8 @@ import {
   P1_RIFLE_GLB,
   P1_SECURITY_CREW_GLB,
 } from './urls.js';
-import { cloneGltfTemplate, loadGltf } from './loadGltf.js';
+import { cloneGltfTemplate, loadGltf, stripOptionalMaterialMaps } from './loadGltf.js';
+import { assertHeroGlbLoaded, tuneHeroMaterials } from '../heroMaterialTune.js';
 
 export interface HeroAssetTemplates {
   player: THREE.Group;
@@ -24,6 +25,14 @@ export async function preloadHeroAssets(): Promise<HeroAssetTemplates> {
     loadGltf(P1_CORRIDOR_LIGHT_FIXTURE_GLB),
     loadGltf(P1_AMBER_BEACON_GLB),
   ]);
+  for (const root of [player, crew, rifle, corridorLight, amberBeacon]) {
+    stripOptionalMaterialMaps(root);
+  }
+  tuneHeroMaterials(player, 'player');
+  tuneHeroMaterials(crew, 'crew');
+  tuneHeroMaterials(rifle, 'player');
+  assertHeroGlbLoaded(player, 'p1_player_boarder');
+  assertHeroGlbLoaded(crew, 'p1_security_crew');
   const bundle = { player, crew, rifle, corridorLight, amberBeacon };
   cachedHeroTemplates = bundle;
   return bundle;

@@ -2,7 +2,7 @@
 /**
  * Minimal placeholder GLBs for Stage 3 when Kimi hero assets are not yet committed.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -98,8 +98,19 @@ function emptyGlb(name) {
   return packGlb(gltf, 0);
 }
 
-writeFileSync(join(OUT, 'p1_player_boarder.glb'), capsuleGlb('p1_player_boarder'));
-writeFileSync(join(OUT, 'p1_security_crew.glb'), capsuleGlb('p1_security_crew'));
+const HERO_MIN_BYTES = 50_000;
+
+function writeHeroPlaceholder(filename, data) {
+  const dest = join(OUT, filename);
+  if (existsSync(dest) && statSync(dest).size >= HERO_MIN_BYTES) {
+    console.warn(`skip ${filename}: existing hero GLB (${statSync(dest).size} bytes) — not overwriting`);
+    return;
+  }
+  writeFileSync(dest, data);
+}
+
+writeHeroPlaceholder('p1_player_boarder.glb', capsuleGlb('p1_player_boarder'));
+writeHeroPlaceholder('p1_security_crew.glb', capsuleGlb('p1_security_crew'));
 writeFileSync(join(OUT, 'p1_rifle.glb'), rifleGlb());
 writeFileSync(join(OUT, 'p1_corridor_light_fixture.glb'), emptyGlb('p1_corridor_light_fixture'));
 writeFileSync(join(OUT, 'p1_amber_beacon.glb'), emptyGlb('p1_amber_beacon'));

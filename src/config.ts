@@ -291,5 +291,8 @@ export const METAL_IMPACT_DURATION_SEC = 0.1 as const;
 /** Shadow map size for deck key/practical lights. */
 export const SHADOW_MAP_SIZE = 2048 as const;
 
+/** Cap shadow-casting directionals — each adds a sampler; PBR heroes exceed WebGL 32 TU if unbounded. */
+export const SHADOW_CASTING_DIRECTIONAL_MAX = 2 as const;
+
 /** Corridor spine neutral accent (G6). */
 export const CORRIDOR_SPINE_NEUTRAL_HEX = '#8b949e' as const;

@@ -24,6 +24,7 @@ import { createObjectiveBeacon } from '../render/objectiveBeacon.js';
 import { createPlayerMesh, syncPlayerMeshPose } from '../render/createPlayerMesh.js';
 import { createStandInMesh, syncStandInMeshPose } from '../render/createStandInMesh.js';
 import { getHeroFixtures, preloadHeroAssets } from '../render/assets/preloadHeroAssets.js';
+import { attachSceneEnvironment } from '../render/sceneEnvironment.js';
 import { createFpsOverlay } from '../render/fpsOverlay.js';
 import { createRenderer } from '../render/createRenderer.js';
 import { startFrameLoop } from '../render/frameLoop.js';
@@ -50,6 +51,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
 
   const appRenderer = await createRenderer(canvas);
   const deckScene = createDeckScene(graph, deckMaterials);
+  const sceneEnv = attachSceneEnvironment(deckScene.scene, appRenderer);
   const deckLighting = createDeckLighting(deckScene.scene, graph, getHeroFixtures(heroTemplates));
 
   const playerMesh = createPlayerMesh();
@@ -164,6 +166,10 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   resize();
   window.addEventListener('resize', resize);
 
+  if (import.meta.env.DEV) {
+    document.body.dataset.nemesisHeroTune = '4';
+  }
+
   const stopLoop = startFrameLoop({
     world,
     bus,
@@ -182,6 +188,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   return () => {
     stopLoop();
     flyDispose?.();
+    sceneEnv.dispose();
     deckLighting.dispose();
     deckScene.disposeMaterials();
     deckMaterials.dispose();
