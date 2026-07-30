@@ -15,8 +15,8 @@
 | 2026-07-30 | Review round 2 | Grok APPROVE — all round-1 findings verified fixed; zero new blockers. Verify: 62/62 tests, scaffold 17/17, build exit 0. Comment: https://github.com/benthepoet/nemesis-protocol/pull/3#issuecomment-5133284296 |
 | 2026-07-30 | Merged (§6) | `feat/p1-player-controller` → `integration` at `4acb536`; post-merge verify 62/62 + scaffold 17/17 + build 0; PR #3 remains Gate 1–2 record thread |
 | 2026-07-30 | Gate 1 (Kimi) | **pass** — G1–G8 verified binary (pack checkboxes ☑); M1–M8 compliant, no out-of-scope (combat/sprint player/aim-assist/HUD/consumers absent; debug-fly sprint only); visual: allied green capsule+wedge, 60° follow cam, cutaway per spec; license clean (no dep changes); evidence: tests 62/62 + manual verify steps on PR #3 |
-| 2026-07-30 | Gate 2 (Director) | **pending re-test** — feedback: left/right stick up/down inverted vs §8 twin-stick; diagnosis **impl** (axis Y→Z sign); Kimi ruling: stick up = forward (−Z), no design-doc change |
-| 2026-07-30 | Director iteration 2 | Gate 2 feedback: KBM aim only on cursor move — no snap to mouse after right-stick release (M3/M4) |
-| | Escalations | <E-IDs if any> |
+| 2026-07-30 | Gate 2 (Director) | **accept** — release to `master`; Gate 2 iterations: stick Y→Z sign (`0ca0114`), mouse aim on cursor move only (`dcc4aa5`) |
+| | Director iterations (§3.5a) | cycle 1: gamepad axis sign (impl); cycle 2: KBM aim sticky vs pad (impl) |
+| | Escalations | none |
 
-**Final state:** <accepted / rolled back / superseded> · **Design doc version at acceptance:** v<n>
+**Final state:** accepted · **Design doc version at acceptance:** v1.11
