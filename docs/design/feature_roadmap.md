@@ -2,7 +2,7 @@
 
 **Purpose:** the phase→feature breakdown. Each feature below is one pipeline instance (charter §3): one design pack, one spec, one branch/PR, one Gate 1 + Gate 2.
 **Granularity rule:** a feature is the smallest unit that can be independently gated. Target 3–8 features per phase; if a feature can't pass Gate 1 alone, it's too small; if it needs two design packs, it's too big.
-**Status:** v1.8 — P1 #1–#7 shipped (Gate 2 through 2026-07-30); phase visual-pass policy (Director ruling R1, 2026-07-30): one terminal visual-pass feature per phase; P1 #9 appended; P2–P4 visual-pass rows scoped; rows #7/#8 scope split clarified (`p1-hud` design pack v1, R6)
+**Status:** v1.8 — P1 #1–#8 shipped (Gate 2 through 2026-07-30); phase visual-pass policy (Director ruling R1, 2026-07-30): one terminal visual-pass feature per phase; P1 #9 appended; P2–P4 visual-pass rows scoped; rows #7/#8 scope split clarified (`p1-hud` design pack v1, R6)
 
 > **Director ruling (v1.2):** P1 is **solo-first**. Netcode is targeted for the P2–P3 window, and every P1 feature must satisfy the netcode-ready architecture mandate (design doc §12.1): command-pattern inputs, deterministic sim ticks, no frame-rate-coupled logic, stable entity IDs. Grok's scaffold spec (p1-project-scaffold) carries this as a primary goal.
 
@@ -39,7 +39,7 @@
 | 5 | `p1-enemy-baseline` ✅ shipped | Security crew infantry AI (patrol → investigate → chase → attack); basic spawner; alarm stub (AL0/AL1 only) | §4 (AL0–AL1), §4.5 roster | 4 |
 | 6 | `p1-mission-shell` ✅ shipped | Airlock entry sequence, objective placeholder ("reach Engineering"), mission end + score screen | §3 Phase 0–1 (shell only) | 2, 5 |
 | 7 | `p1-hud` ✅ shipped | Health, ammo, objective line, alarm indicator stub, mission clock as persistent HUD chrome; in-HUD focus + gamepad/KBM navigation of **existing** shell/mission UI (breach select, score screen) | §4 (indicator), §3, §10 (clock) | 6 |
-| 8 | `p1-gamepad-support` | First-class gamepad gameplay: full action parity, twin-stick aim + aim-assist (§10), input-device hot-swap mid-mission, navigation for any new UI it introduces | §8 (input parity), §9 | 3, 4 |
+| 8 | `p1-gamepad-support` ✅ shipped | First-class gamepad gameplay: full action parity, twin-stick aim + aim-assist (§10), input-device hot-swap mid-mission, navigation for any new UI it introduces | §8 (input parity), §9 | 3, 4 |
 | 9 | `p1-visual-pass` | Phase visual milestone **M-P1** (visual_direction §11): hero models for player/rifle/security crew replace all capsules & blockout weapons; deck PBR materials + authored wear + section accent trim; lighting rows AL0/AL1 live (keys, practicals, contact shadows, corridor haze); muzzle/impact VFX family complete; HUD skinned to palette; §7 readability verified | visual_direction §3–§7, §11 | 5, 6, 7, 8 |
 
 **P1 exit criteria (phase checkpoint):** Director can breach, traverse the full deck, fight, reach Engineering, and exit — end to end, one deck, **on either input device without touching a menu** — **and** `p1-visual-pass` is Gate-2 accepted (milestone M-P1, visual_direction §11). Per ruling R1 the checkpoint is signed only when both hold.
