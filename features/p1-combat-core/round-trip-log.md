@@ -11,10 +11,11 @@
 | 2026-07-30 | PR opened | PR #4 → integration — https://github.com/benthepoet/nemesis-protocol/pull/4 |
 | 2026-07-30 | Review round 1 | Grok: REQUEST CHANGES — verify 92/92 + scaffold 17/17 + build 0; blockers Task 19 E5/E6/E16/E21; minors E1/E7–E8/WeakMap traveled/config comment/smoke evidence; Q on projectileMotion split. Formal `gh pr review --request-changes` blocked (self-PR); verdict in PR comment. |
 | 2026-07-30 | Revision round 1 | Composer @ spec v1 — blockers E5/E6/E16/E21 + minors E1/E7–E8/projectileTraveledM clone/ACCENT_HEX comment; `npm run test:run` 97/97; `npm run build` exit 0 |
-| | Review round 2..5 | |
+| 2026-07-30 | Review round 2 | Grok: APPROVE — verify 97/97 + build 0 @ `3a7282a`; blockers E5/E6/E16/E21 closed; minors E1/E7–E8/traveled/ACCENT_HEX closed; smoke evidence still outstanding (non-blocking). Formal `gh pr review --approve` may be blocked (self-PR); verdict in PR comment. Stage 4 technical approval granted — ready for Gate 1 (Kimi). |
+| | Review round 3..5 | |
 | | Gate 1 (Kimi) | |
 | | Gate 2 (Director) | |
 | | Director iterations (§3.5a) | |
 | | Escalations | |
 
-**Final state:** in pipeline (Stage 2 complete — SPEC v1 FINAL) · **Design doc version at acceptance:** —
+**Final state:** Stage 4 APPROVED (PR #4) — awaiting Gate 1 (Kimi) · **Design doc version at acceptance:** —
