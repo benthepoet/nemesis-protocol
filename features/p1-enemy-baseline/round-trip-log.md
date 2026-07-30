@@ -13,9 +13,9 @@
 | 2026-07-30 | Revision round 2 | Composer — T18 blockers 1–6: E10 real fire/dmg/cadence; E6 wall LOS + E4 leave-reset; E8 forbid PATROL @ AL1; E19 crew→player dmg+respawn; E20 friendly-fire pass-through; E27–E28 tracer/wind-up asserts. `npm run test:run` **130/130**; `npm run build` green. Awaiting Grok round 2. |
 | 2026-07-30 | Review round 2 | Grok Stage 4 — **APPROVE** (round 2/5). All 6 blockers resolved on `c3eaf92`. Minors carried (E12/E13/E25/E26/E15 coverage; G10e harness omits `integrateCrewAi`; T20 manual smoke / G10 screenshots). Pre-merge `npm run test:run` **130/130**. |
 | 2026-07-30 | Merged → integration | Local merge (GitHub `mergePullRequest` API unavailable for token; PR #6 auto-detected **MERGED**). Merge SHA **`3f50b852af10b465a167da32cae84b5c26fd9078`**. Post-merge on `integration`: `npm run test:run` **130/130**; `npm run build` green. Gate 1/2 still pending — not merged to `master`. |
-| | Gate 1 (Kimi) | pass / fail → findings |
+| 2026-07-30 | Gate 1 (Kimi) | **PASS** — design doc v1.14 · visual v1.5 · charter v1.13 · design pack v1 · `integration` @ `42c827c`. G1–G10 all ☑ (Verified column updated in pack). `npm run test:run` 130/130; `npm run build` green. Mechanics callout clean — nothing missing, nothing invented (no AL2+/lockdown/reinforcements/rifles/melee/drops/HUD in shipped code). License scan clean (only dep `three` MIT; no third-party images in shipped paths/build; `references.md` index-only policy held). Caveat for Gate 2: 60°-rig screenshot evidence for G10 not captured (headless review env) — hostile telegraph colors/behavior verified via E27/E28 asserts + render-code review; Director playtest is the visual confirmation. Grok carried minors stand (E12/E13/E25/E26/E15 coverage notes; G10e harness omits `integrateCrewAi`) — non-blocking. |
 | | Gate 2 (Director) | accept / amend / reject → feedback ref |
 | | Director iterations (§3.5a) | cycle <n>: diagnosis <design/spec/impl> |
 | | Escalations | <E-IDs if any> |
 
-**Final state:** Stage 4 APPROVED · merged to `integration` (`3f50b85`) · awaiting Gate 1 (Kimi) · **Design doc version at acceptance:** —
+**Final state:** Stage 4 APPROVED · merged to `integration` (`3f50b85`) · **Gate 1 PASSED (Kimi, 2026-07-30)** · awaiting Gate 2 (Director) · **Design doc version at acceptance:** —
