@@ -56,6 +56,42 @@ describe('per-channel M4 arbitration', () => {
     expect(world.meta.interactHeld).toBe(true);
   });
 
+  it('E20: idle pad move (0,0) does not steal move channel from active KBM WASD', () => {
+    const world = createWorld();
+    const kbm = new FakeInputDevice('keyboard-mouse');
+    const pad = new FakeInputDevice('gamepad');
+    const bus = new CommandBus();
+
+    kbm.pushAxisSample('move', 0, -1);
+    pad.pushAxisSample('move', 0, 0);
+    bus.enqueueFromDevices([kbm, pad]);
+    const cmds = bus.drainForTick(world.tick);
+
+    const moves = cmds.filter((c) => c.action === 'move');
+    expect(moves).toHaveLength(1);
+    expect(moves[0]).toMatchObject({ axisX: 0, axisZ: -1 });
+    expect(bus.getChannelOwner('move')).toBe('keyboard-mouse');
+
+    applyCommands(world, cmds);
+    expect(world.meta.playerId).toBeDefined();
+  });
+
+  it('E20: non-zero pad stick takes move channel from KBM', () => {
+    const kbm = new FakeInputDevice('keyboard-mouse');
+    const pad = new FakeInputDevice('gamepad');
+    const bus = new CommandBus();
+
+    kbm.pushAxisSample('move', 0, -1);
+    pad.pushAxisSample('move', 1, 0);
+    bus.enqueueFromDevices([kbm, pad]);
+    const cmds = bus.drainForTick(0);
+
+    const moves = cmds.filter((c) => c.action === 'move');
+    expect(moves).toHaveLength(1);
+    expect(moves[0]).toMatchObject({ axisX: 1, axisZ: 0 });
+    expect(bus.getChannelOwner('move')).toBe('gamepad');
+  });
+
   it('E4: KBM vs pad move samples parity-equal when axis matches', () => {
     const tick = 0;
     const kbm = new FakeInputDevice('keyboard-mouse');
