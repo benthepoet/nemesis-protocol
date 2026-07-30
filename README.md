@@ -31,6 +31,27 @@ Optional: append `?webgpu=1` to the dev URL to attempt WebGPU rendering when `na
 
 Both emit press/release commands into the sim meta counters (no gameplay HUD beyond the fps overlay).
 
+## Player controller (p1-player-controller)
+
+| Input | Action |
+|-------|--------|
+| **W / A / S / D** | Move (6 m/s, normalized diagonals) |
+| **Mouse** | Aim (raycast onto deck plane) |
+| **Gamepad left stick** | Move |
+| **Gamepad right stick** | Aim (deadzone 0.24) |
+| **E / LMB / gamepad south** | Interact (DEV console trace on press) |
+| **Escape / gamepad east** | Cancel |
+
+With `?debugCamera=1` in dev, free-fly owns **KeyE** (vertical rise); keyboard **E** does not emit interact. Default boot uses follow camera (~60° pitch), player capsule, and occupied-room ceiling cutaway.
+
+Verification:
+
+```bash
+npm run test:run   # scaffold (17) + deck + player suites
+npm run build
+npm run dev        # WASD + mouse aim; optional ?debugCamera=1
+```
+
 ## Deck 03 (p1-deck-geometry)
 
 After `npm run dev`, the app loads the Deck 03 blockout (floors, walls, ceilings, per-room accent tints) instead of the scaffold placeholder cube.

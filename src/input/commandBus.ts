@@ -1,6 +1,7 @@
 import type { InputCommand } from '../sim/commands.js';
 import { mapSamplesToIntents } from './mapper.js';
-import type { ActionIntent, DeviceKind, DeviceSample, InputDevice } from './types.js';
+import type { ActionIntent, DeviceKind, DeviceSample, InputChannel, InputDevice } from './types.js';
+import { channelForAction } from './types.js';
 
 interface BufferedIntent extends ActionIntent {
   synthetic: boolean;
@@ -9,7 +10,11 @@ interface BufferedIntent extends ActionIntent {
 export class CommandBus {
   private buffer: BufferedIntent[] = [];
   private sequence = 0;
-  private activeDeviceKind: DeviceKind | null = null;
+  private owner: Record<InputChannel, DeviceKind | null> = {
+    move: null,
+    aim: null,
+    interact: null,
+  };
   private deviceByKind = new Map<DeviceKind, InputDevice>();
 
   enqueueFromDevices(devices: InputDevice[]): void {
@@ -20,28 +25,37 @@ export class CommandBus {
 
     for (const device of devices) {
       const samples = device.poll();
-      if (samples.length === 0) continue;
+      for (const sample of samples) {
+        this.ingestSample(device, sample);
+      }
+    }
+  }
 
-      const sampleKind = samples[0]!.kind;
-      if (this.activeDeviceKind !== null && sampleKind !== this.activeDeviceKind) {
-        const departing = this.deviceByKind.get(this.activeDeviceKind);
+  private ingestSample(device: InputDevice, sample: DeviceSample): void {
+    const channel = channelForAction(sample.action);
+    const prevOwner = this.owner[channel];
+    if (prevOwner !== null && prevOwner !== device.kind) {
+      if (channel === 'interact') {
+        const departing = this.deviceByKind.get(prevOwner);
         if (departing) {
           this.flushSyntheticReleases(departing);
         }
       }
+    }
+    this.owner[channel] = device.kind;
 
-      const intents = mapSamplesToIntents(samples);
-      for (const intent of intents) {
-        this.activeDeviceKind = sampleKind;
-        this.buffer.push({ ...intent, synthetic: false });
-      }
+    const intents = mapSamplesToIntents([sample]);
+    for (const intent of intents) {
+      this.buffer.push({ ...intent, synthetic: false });
     }
   }
 
   notifyDeviceDeparting(device: InputDevice): void {
     this.flushSyntheticReleases(device);
-    if (this.activeDeviceKind === device.kind) {
-      this.activeDeviceKind = null;
+    for (const ch of ['move', 'aim', 'interact'] as const) {
+      if (this.owner[ch] === device.kind) {
+        this.owner[ch] = null;
+      }
     }
   }
 
@@ -55,24 +69,35 @@ export class CommandBus {
   drainForTick(tick: number): InputCommand[] {
     const intents = [...this.buffer];
     this.buffer = [];
-    const out: InputCommand[] = intents.map((intent) => ({
-      tick,
-      sequence: this.sequence++,
-      action: intent.action,
-      value: intent.value,
-    }));
+    const out: InputCommand[] = intents.map((intent) => {
+      const cmd: InputCommand = {
+        tick,
+        sequence: this.sequence++,
+        action: intent.action,
+        value: intent.value,
+      };
+      if (intent.action === 'move' || intent.action === 'aim') {
+        cmd.axisX = intent.axisX;
+        cmd.axisZ = intent.axisZ;
+      }
+      return cmd;
+    });
     return out;
   }
 
   getActiveDeviceKind(): DeviceKind | null {
-    return this.activeDeviceKind;
+    return this.owner.interact;
+  }
+
+  getChannelOwner(channel: InputChannel): DeviceKind | null {
+    return this.owner[channel];
   }
 
   /** Test helper: reset stamping state without affecting devices. */
   resetSession(): void {
     this.buffer = [];
     this.sequence = 0;
-    this.activeDeviceKind = null;
+    this.owner = { move: null, aim: null, interact: null };
   }
 
   enqueueIntents(intents: ActionIntent[]): void {
@@ -82,17 +107,17 @@ export class CommandBus {
   }
 
   enqueueSamples(samples: DeviceSample[]): void {
-    const intents = mapSamplesToIntents(samples);
-    if (samples.length > 0) {
-      const kind = samples[0]!.kind;
-      if (this.activeDeviceKind !== null && kind !== this.activeDeviceKind) {
-        const departing = this.deviceByKind.get(this.activeDeviceKind);
-        if (departing) this.flushSyntheticReleases(departing);
+    for (const sample of samples) {
+      const kind = sample.kind;
+      const device = this.deviceByKind.get(kind);
+      if (device) {
+        this.ingestSample(device, sample);
+      } else {
+        const intents = mapSamplesToIntents([sample]);
+        for (const intent of intents) {
+          this.buffer.push({ ...intent, synthetic: false });
+        }
       }
-      this.activeDeviceKind = kind;
-    }
-    for (const intent of intents) {
-      this.buffer.push({ ...intent, synthetic: false });
     }
   }
 }

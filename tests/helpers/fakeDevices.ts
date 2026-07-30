@@ -16,6 +16,10 @@ export class FakeInputDevice implements InputDevice {
     else this.held.delete(action);
   }
 
+  pushAxisSample(action: 'move' | 'aim', axisX: number, axisZ: number): void {
+    this.queue.push({ kind: this.kind, action, value: 0, axisX, axisZ });
+  }
+
   setHeld(action: ActionId, held: boolean): void {
     if (held) this.held.add(action);
     else this.held.delete(action);

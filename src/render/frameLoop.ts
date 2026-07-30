@@ -1,6 +1,8 @@
+import type { CollisionWorld } from '../deck/collision.js';
 import { FIXED_DT, MAX_FRAME_DELTA_SEC } from '../config.js';
 import { CommandBus } from '../input/commandBus.js';
 import type { InputDevice } from '../input/types.js';
+import { integratePlayerMotion } from '../sim/playerMotion.js';
 import { applyCommands, fixedStep } from '../sim/step.js';
 import type { SimState } from '../sim/types.js';
 import type { AppRenderer } from './createRenderer.js';
@@ -11,6 +13,7 @@ export interface FixedTimestepSliceArgs {
   world: SimState;
   bus: CommandBus;
   devices: InputDevice[];
+  collisionWorld: CollisionWorld;
   dtSec: number;
   accumulator: number;
 }
@@ -29,6 +32,7 @@ export function runFixedTimestepSlice(args: FixedTimestepSliceArgs): FixedTimest
     args.bus.enqueueFromDevices(args.devices);
     const cmds = args.bus.drainForTick(args.world.tick);
     applyCommands(args.world, cmds);
+    integratePlayerMotion(args.world, args.collisionWorld);
     fixedStep(args.world);
     accumulator -= FIXED_DT;
     ticksAdvanced += 1;
@@ -41,11 +45,13 @@ export function startFrameLoop(args: {
   world: SimState;
   bus: CommandBus;
   devices: InputDevice[];
+  collisionWorld: CollisionWorld;
   scene: THREE.Scene;
   camera: THREE.Camera;
   appRenderer: AppRenderer;
   fpsOverlay: { update(dtSec: number): void };
   onFrame?: (dtSec: number) => void;
+  onBeforeSim?: () => void;
 }): () => void {
   let last = performance.now();
   let accumulator = 0;
@@ -57,10 +63,13 @@ export function startFrameLoop(args: {
     const dtSec = (now - last) / 1000;
     last = now;
 
+    args.onBeforeSim?.();
+
     const slice = runFixedTimestepSlice({
       world: args.world,
       bus: args.bus,
       devices: args.devices,
+      collisionWorld: args.collisionWorld,
       dtSec,
       accumulator,
     });

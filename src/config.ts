@@ -36,6 +36,45 @@ export const DEBUG_CAMERA_PARAM = 'debugCamera' as const;
  * Binding accent hex map (Q2 / visual direction §3 v1.2).
  * Keys match AccentId in src/deck/types.ts.
  */
+/** Player move speed (m/s). Design pack M1 — P1 checkpoint tunable. */
+export const PLAYER_MOVE_SPEED_MPS = 6 as const;
+
+/** Entity kind string for the local player. */
+export const PLAYER_KIND = 'player' as const;
+
+/** Allied / player blockout color (visual direction §3 safe/allied). */
+export const PLAYER_COLOR_HEX = '#69f0ae' as const;
+
+/** Visual capsule radius (m) — matches ACTOR_PROXY_RADIUS_M. */
+export const PLAYER_MESH_RADIUS_M = ACTOR_PROXY_RADIUS_M;
+
+/** Visual capsule height (m), excluding artistic wedge. */
+export const PLAYER_MESH_HEIGHT_M = 1.6 as const;
+
+/** Facing wedge length along forward (m). */
+export const PLAYER_WEDGE_LENGTH_M = 0.35 as const;
+
+/** Radial deadzone for gamepad sticks (M3). P1 checkpoint tunable. */
+export const GAMEPAD_AXIS_DEADZONE = 0.24 as const;
+
+/** Follow camera pitch below horizontal (degrees). Pack M6 / VD §7. */
+export const FOLLOW_CAMERA_PITCH_DEG = 60 as const;
+
+/** Perspective FOV (degrees). */
+export const FOLLOW_CAMERA_FOV_DEG = 50 as const;
+
+/** Distance from focus point to camera along the pitched view ray (m). */
+export const FOLLOW_CAMERA_DISTANCE_M = 18 as const;
+
+/** Max aim-bias shift of frame center toward aim point (m). Pack M6. */
+export const FOLLOW_AIM_BIAS_M = 2.0 as const;
+
+/** Render-side follow position smoothing rate (higher = snappier). Not sim state. */
+export const FOLLOW_CAMERA_POS_SMOOTH = 12 as const;
+
+/** Render-side focus smoothing rate. */
+export const FOLLOW_CAMERA_FOCUS_SMOOTH = 10 as const;
+
 export const ACCENT_HEX = {
   engineering: '#ef5350',
   command: '#7986cb',
