@@ -8,7 +8,7 @@
 | | Design pack | v1 (Kimi) — G1..G9, M1..M8, R1..R8; doc-first bumps: design doc v1.16 (§4 indicator note, §10 clock/low-HP rows, §12.1 HUD baselines), visual v1.6 (§3 UI application), roadmap v1.8 (rows #7/#8 scope split per R6); zero tangible assets (text/palette chrome only) |
 | | Spec | v1 FINAL (Grok) — 10 traced tasks (T1–T10) covering G1–G9 / M1–M8; zero open clarification Qs; TL bindings for DOM HUD, derived shell focus `#ffd54f`, DEV readout reposition; Composer branch `feat/p1-hud` |
 | 2026-07-30 | Stage 3 | Composer @ spec v1 FINAL — DOM HUD (G1–G9), shell focus `#ffd54f` (G7), DEV readout R8; branch `feat/p1-hud`; `npm run test:run` 172 pass, `npm run build` green |
-| | PR opened | |
+| | PR opened | https://github.com/benthepoet/nemesis-protocol/pull/8 → `integration` |
 | | Review round 1..5 | |
 | | Gate 1 (Kimi) | |
 | | Gate 2 (Director) | |
