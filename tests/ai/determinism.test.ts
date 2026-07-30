@@ -8,8 +8,8 @@ describe('ai determinism (G9)', () => {
   it('E22: identical command stream yields identical hash', async () => {
     const harness = createCombatTestHarness();
     runTicks(harness, 120);
-    const a = replay(cloneSimState(harness.state), [], harness.collisionWorld, harness.graph);
-    const b = replay(cloneSimState(harness.state), [], harness.collisionWorld, harness.graph);
+    const a = replay(cloneSimState(harness.state), [], harness.collisionRef, harness.graph);
+    const b = replay(cloneSimState(harness.state), [], harness.collisionRef, harness.graph);
     expect(await hashSimState(a)).toBe(await hashSimState(b));
   });
 

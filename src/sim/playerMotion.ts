@@ -1,10 +1,12 @@
 import { ACTOR_PROXY_RADIUS_M, FIXED_DT, PLAYER_MOVE_SPEED_MPS } from '../config.js';
 import { circleHitsWalls } from '../deck/collision.js';
 import type { CollisionWorld } from '../deck/collision.js';
+import { isGameplayActive } from '../mission/gameplayActive.js';
 import type { SimState } from './types.js';
 import { getEntity } from './world.js';
 
 export function integratePlayerMotion(state: SimState, world: CollisionWorld): void {
+  if (!isGameplayActive(state)) return;
   const playerId = state.meta.playerId;
   if (playerId === null) return;
   const entity = getEntity(state, playerId);

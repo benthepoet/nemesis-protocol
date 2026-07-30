@@ -39,7 +39,7 @@ describe('spawnCrew (G6)', () => {
     runTicks(harness, 30, cmds);
     expect(getEntity(harness.state, targetId)!.alive).toBe(false);
     const snap = cloneSimState(harness.state);
-    const replayed = replay(snap, [], harness.collisionWorld, harness.graph);
+    const replayed = replay(snap, [], harness.collisionRef, harness.graph);
     expect(getEntity(replayed, targetId)!.alive).toBe(false);
     expect(getEntity(replayed, targetId)!.hp).toBe(0);
   });

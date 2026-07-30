@@ -1,5 +1,5 @@
-import type { CollisionWorld } from '../deck/collision.js';
 import type { DeckGraph } from '../deck/types.js';
+import { integrateMissionShell, type CollisionWorldRef } from '../mission/integrateMissionShell.js';
 import { FIXED_DT, MAX_FRAME_DELTA_SEC } from '../config.js';
 import { integrateCombat } from '../combat/integrateCombat.js';
 import { integrateCrewAi } from '../ai/integrateCrewAi.js';
@@ -18,7 +18,7 @@ export interface FixedTimestepSliceArgs {
   world: SimState;
   bus: CommandBus;
   devices: InputDevice[];
-  collisionWorld: CollisionWorld;
+  collisionRef: CollisionWorldRef;
   graph: DeckGraph;
   dtSec: number;
   accumulator: number;
@@ -40,10 +40,11 @@ export function runFixedTimestepSlice(args: FixedTimestepSliceArgs): FixedTimest
     args.bus.enqueueFromDevices(args.devices);
     const cmds = args.bus.drainForTick(args.world.tick);
     applyCommands(args.world, cmds);
-    integratePlayerMotion(args.world, args.collisionWorld);
-    const crewEvents = integrateCrewAi(args.world, args.collisionWorld, args.graph);
+    integrateMissionShell(args.world, args.graph, args.collisionRef);
+    integratePlayerMotion(args.world, args.collisionRef.current);
+    const crewEvents = integrateCrewAi(args.world, args.collisionRef.current, args.graph);
     args.onCrewAiEvents?.(crewEvents);
-    const events = integrateCombat(args.world, args.collisionWorld, args.graph);
+    const events = integrateCombat(args.world, args.collisionRef.current, args.graph);
     args.onCombatEvents?.(events);
     fixedStep(args.world);
     accumulator -= FIXED_DT;
@@ -57,7 +58,7 @@ export function startFrameLoop(args: {
   world: SimState;
   bus: CommandBus;
   devices: InputDevice[];
-  collisionWorld: CollisionWorld;
+  collisionRef: CollisionWorldRef;
   graph: DeckGraph;
   scene: THREE.Scene;
   camera: THREE.Camera;
@@ -84,7 +85,7 @@ export function startFrameLoop(args: {
       world: args.world,
       bus: args.bus,
       devices: args.devices,
-      collisionWorld: args.collisionWorld,
+      collisionRef: args.collisionRef,
       graph: args.graph,
       dtSec,
       accumulator,

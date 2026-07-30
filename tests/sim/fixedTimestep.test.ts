@@ -10,6 +10,7 @@ import { FakeInputDevice } from '../helpers/fakeDevices.js';
 describe('fixed timestep (G3)', () => {
   const graph = loadTestDeck03();
   const collisionWorld = buildCollisionWorld(graph);
+  const collisionRef = { current: collisionWorld };
 
   it('E1: at 30 FPS sim advances 60 ticks per simulated second', () => {
     const world = createWorld();
@@ -23,7 +24,7 @@ describe('fixed timestep (G3)', () => {
         world,
         bus,
         devices,
-        collisionWorld,
+        collisionRef,
         graph,
         dtSec: dt,
         accumulator: acc,
@@ -47,7 +48,7 @@ describe('fixed timestep (G3)', () => {
         world,
         bus,
         devices,
-        collisionWorld,
+        collisionRef,
         graph,
         dtSec: dt,
         accumulator: acc,
@@ -70,7 +71,7 @@ describe('fixed timestep (G3)', () => {
       world,
       bus,
       devices,
-      collisionWorld,
+      collisionRef,
       graph,
       dtSec: 1,
       accumulator: 0,

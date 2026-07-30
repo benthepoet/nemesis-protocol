@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { integrateCombat } from '../../src/combat/integrateCombat.js';
+import { integrateCrewAi } from '../../src/ai/integrateCrewAi.js';
+import { integrateMissionShell } from '../../src/mission/integrateMissionShell.js';
 import type { CombatEvent } from '../../src/combat/types.js';
 import { createCombatTelegraphs } from '../../src/render/combatTelegraphs.js';
 import { hashSimState } from '../../src/sim/hash.js';
@@ -19,8 +21,7 @@ function advanceCombatTicks(
   initial: SimState,
   byTick: Map<number, InputCommand[]>,
   ticks: number,
-  collisionWorld: ReturnType<typeof createCombatTestHarness>['collisionWorld'],
-  graph: ReturnType<typeof createCombatTestHarness>['graph'],
+  harness: ReturnType<typeof createCombatTestHarness>,
   collectEvents: boolean,
 ): { state: SimState; events: CombatEvent[] } {
   const state = cloneSimState(initial);
@@ -29,8 +30,10 @@ function advanceCombatTicks(
     const t = state.tick;
     const tickCmds = byTick.get(t) ?? [];
     applyCommands(state, tickCmds);
-    integratePlayerMotion(state, collisionWorld);
-    const tickEvents = integrateCombat(state, collisionWorld, graph);
+    integrateMissionShell(state, harness.graph, harness.collisionRef);
+    integratePlayerMotion(state, harness.collisionRef.current);
+    integrateCrewAi(state, harness.collisionRef.current, harness.graph);
+    const tickEvents = integrateCombat(state, harness.collisionRef.current, harness.graph);
     if (collectEvents) events.push(...tickEvents);
     fixedStep(state);
   }
@@ -44,8 +47,8 @@ describe('combat determinism (G8)', () => {
     for (let t = 0; t < 30; t += 1) {
       cmds.push(fireHeldOn(t, t));
     }
-    const a = replay(cloneSimState(harness.state), cmds, harness.collisionWorld, harness.graph);
-    const b = replay(cloneSimState(harness.state), cmds, harness.collisionWorld, harness.graph);
+    const a = replay(cloneSimState(harness.state), cmds, harness.collisionRef, harness.graph);
+    const b = replay(cloneSimState(harness.state), cmds, harness.collisionRef, harness.graph);
     expect(await hashSimState(a)).toBe(await hashSimState(b));
   });
 
@@ -56,8 +59,8 @@ describe('combat determinism (G8)', () => {
     for (let t = 0; t < 20; t += 1) {
       long.push(fireHeldOn(t, t));
     }
-    const a = replay(cloneSimState(harness.state), short, harness.collisionWorld, harness.graph);
-    const b = replay(cloneSimState(harness.state), long, harness.collisionWorld, harness.graph);
+    const a = replay(cloneSimState(harness.state), short, harness.collisionRef, harness.graph);
+    const b = replay(cloneSimState(harness.state), long, harness.collisionRef, harness.graph);
     expect(await hashSimState(a)).not.toBe(await hashSimState(b));
   });
 
@@ -68,22 +71,8 @@ describe('combat determinism (G8)', () => {
       byTick.set(t, [fireHeldOn(t, t)]);
     }
 
-    const discarded = advanceCombatTicks(
-      harness.state,
-      byTick,
-      45,
-      harness.collisionWorld,
-      harness.graph,
-      false,
-    );
-    const collected = advanceCombatTicks(
-      harness.state,
-      byTick,
-      45,
-      harness.collisionWorld,
-      harness.graph,
-      true,
-    );
+    const discarded = advanceCombatTicks(harness.state, byTick, 45, harness, false);
+    const collected = advanceCombatTicks(harness.state, byTick, 45, harness, true);
 
     expect(collected.events.length).toBeGreaterThan(0);
     expect(collected.state.tick).toBe(discarded.state.tick);
@@ -97,22 +86,8 @@ describe('combat determinism (G8)', () => {
       byTick.set(t, [fireHeldOn(t, t)]);
     }
 
-    const synced = advanceCombatTicks(
-      harness.state,
-      byTick,
-      45,
-      harness.collisionWorld,
-      harness.graph,
-      false,
-    );
-    const plain = advanceCombatTicks(
-      harness.state,
-      byTick,
-      45,
-      harness.collisionWorld,
-      harness.graph,
-      false,
-    );
+    const synced = advanceCombatTicks(harness.state, byTick, 45, harness, false);
+    const plain = advanceCombatTicks(harness.state, byTick, 45, harness, false);
 
     const scene = new THREE.Scene();
     const tgOn = createCombatTelegraphs(scene);

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { CommandBus } from '../../src/input/commandBus.js';
 import { applyCommands, fixedStep } from '../../src/sim/step.js';
-import { createWorld } from '../../src/sim/world.js';
+import { createWorld, spawnEntity } from '../../src/sim/world.js';
+import { PLAYER_KIND } from '../../src/config.js';
 import { FakeInputDevice } from '../helpers/fakeDevices.js';
 import { scriptedScaffoldSession } from '../helpers/commandFixtures.js';
 
@@ -22,6 +23,12 @@ describe('command pattern (G4)', () => {
 
   it('E5: scripted command fixture updates meta counters', () => {
     const world = createWorld();
+    world.meta.missionPhase = 'ACTIVE';
+    const id = spawnEntity(world, PLAYER_KIND, 0, 0, 0);
+    world.meta.playerId = id;
+    const ent = world.entities.get(id)!;
+    ent.alive = true;
+    ent.hp = 100;
     const tick0 = scriptedScaffoldSession.filter((c) => c.tick === 0);
     applyCommands(world, tick0);
     fixedStep(world);

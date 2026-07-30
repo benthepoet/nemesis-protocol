@@ -9,13 +9,14 @@ import { scriptedScaffoldSession } from '../helpers/commandFixtures.js';
 
 describe('replay determinism (G7)', () => {
   const collisionWorld = buildCollisionWorld(loadTestDeck03());
+  const collisionRef = { current: collisionWorld };
 
   it('E10: identical replays produce identical hashSimState', async () => {
     const initial = createWorld();
     spawnEntity(initial, 'box', 0, 0, 0);
-    await assertReplayDeterministic(initial, scriptedScaffoldSession, collisionWorld, loadTestDeck03());
-    const once = replay(initial, scriptedScaffoldSession, collisionWorld, loadTestDeck03());
-    const twice = replay(initial, scriptedScaffoldSession, collisionWorld, loadTestDeck03());
+    await assertReplayDeterministic(initial, scriptedScaffoldSession, collisionRef, loadTestDeck03());
+    const once = replay(initial, scriptedScaffoldSession, collisionRef, loadTestDeck03());
+    const twice = replay(initial, scriptedScaffoldSession, collisionRef, loadTestDeck03());
     expect(await hashSimState(once)).toBe(await hashSimState(twice));
   });
 

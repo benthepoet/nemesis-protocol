@@ -66,8 +66,14 @@ function getBridgePolygonPoints(graph: DeckGraph): { x: number; z: number }[] {
   return bridge.footprint.points;
 }
 
-export function buildCollisionWorld(graph: DeckGraph): CollisionWorld {
-  const openings = graph.doorEdges.map((edge) => edge.opening);
+export function buildCollisionWorld(
+  graph: DeckGraph,
+  options?: { closedDoorEdgeIds?: readonly string[] },
+): CollisionWorld {
+  const closed = new Set(options?.closedDoorEdgeIds ?? []);
+  const openings = graph.doorEdges
+    .filter((edge) => !closed.has(edge.id))
+    .map((edge) => edge.opening);
   const aabbs: WorldRect[] = [];
 
   for (const wall of graph.wallSegments) {

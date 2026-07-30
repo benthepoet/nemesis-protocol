@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ACTOR_MAX_HP,
   CREW_SIDEARM_DAMAGE,
-  RESPAWN_DELAY_TICKS,
   RIFLE_DAMAGE_PER_HIT,
 } from '../../src/config.js';
 import { applyDamage } from '../../src/combat/applyDamage.js';
@@ -59,7 +57,7 @@ describe('damage (G3)', () => {
     expect(events.some((e) => e.type === 'impact-actor' && e.targetId === standId)).toBe(false);
   });
 
-  it('E19: crew projectile −10 HP; death then 180-tick respawn', () => {
+  it('E19: crew projectile −10 HP; death → mission FAILED (no respawn)', () => {
     const harness = createCombatTestHarness();
     const playerId = harness.state.meta.playerId!;
     const player = getEntity(harness.state, playerId)!;
@@ -86,13 +84,12 @@ describe('damage (G3)', () => {
     runTicks(harness, 12);
     expect(getEntity(harness.state, playerId)!.hp).toBe(0);
     expect(getEntity(harness.state, playerId)!.alive).toBe(false);
-    expect(harness.state.meta.respawnTicksRemaining).toBeGreaterThan(0);
+    expect(harness.state.meta.missionPhase).toBe('SCORE');
+    expect(harness.state.meta.score?.outcome).toBe('FAILED');
 
-    runTicks(harness, RESPAWN_DELAY_TICKS);
-    const respawned = getEntity(harness.state, playerId)!;
-    expect(respawned.alive).toBe(true);
-    expect(respawned.hp).toBe(ACTOR_MAX_HP);
-    expect(RESPAWN_DELAY_TICKS).toBe(180);
+    runTicks(harness, 200);
+    expect(getEntity(harness.state, playerId)!.alive).toBe(false);
+    expect(harness.state.meta.missionPhase).toBe('SCORE');
   });
 
   it('E9: applyDamage(999) clamps hp at 0', () => {
