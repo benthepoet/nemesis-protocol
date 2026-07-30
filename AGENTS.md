@@ -74,6 +74,7 @@ Open source: **MIT** for code, **CC BY 4.0** for art assets (`assets/`, mockups,
 
 ## Current state
 
-- Design doc **v1.11**, visual direction **v1.2**, roadmap **v1.3**, team charter **v1.13**, mockups **v2.2** (deck plan) / flow overlay companion.
+- Design doc **v1.11**, visual direction **v1.2**, roadmap **v1.4**, team charter **v1.13**, mockups **v2.2** (deck plan) / flow overlay companion.
+- Shipped: `p1-project-scaffold` (P1 #1), `p1-deck-geometry` (P1 #2). Next: `p1-player-controller` (P1 #3).
 - Rulings in force: solo-first with netcode-ready architecture (netcode P2–P3 window); enemy roster = ship's crew as defense (aliens deferred, post-prototype); gamepad first-class input parity; MIT + CC BY 4.0.
 - Roadmap: P1 core loop → P2 gating & alarm → P3 destructibility & depressurization → P4 androids + prototype bosses (Charge-Defender, Warden). Feature-level breakdown: `docs/design/feature_roadmap.md`.
