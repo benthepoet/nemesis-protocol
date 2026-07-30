@@ -71,6 +71,69 @@ export const FOLLOW_CAMERA_POS_SMOOTH = 12 as const;
 /** Render-side focus smoothing rate. */
 export const FOLLOW_CAMERA_FOCUS_SMOOTH = 10 as const;
 
+/** Security-crew stand-in entity kind (M7). */
+export const SECURITY_CREW_KIND = 'security-crew' as const;
+
+/** Projectile entity kind (M2). */
+export const PROJECTILE_KIND = 'projectile' as const;
+
+/** Shared actor max HP (player + crew). Design §10 / pack R2. */
+export const ACTOR_MAX_HP = 100 as const;
+
+/** Rifle damage per actor hit. Design §10. */
+export const RIFLE_DAMAGE_PER_HIT = 25 as const;
+
+/** Automatic fire rate (rounds/s). Design §10. */
+export const RIFLE_FIRE_RATE_RPS = 10 as const;
+
+/** Ticks between shots at TICK_HZ. Must equal TICK_HZ / RIFLE_FIRE_RATE_RPS (= 6). */
+export const FIRE_INTERVAL_TICKS = TICK_HZ / RIFLE_FIRE_RATE_RPS;
+
+/** Magazine capacity. */
+export const MAGAZINE_SIZE = 30 as const;
+
+/** Reserve ammo at mission start. */
+export const RESERVE_AMMO_START = 120 as const;
+
+/** Reload duration (seconds) — uninterruptible. */
+export const RELOAD_DURATION_SEC = 2.0 as const;
+
+/** Reload duration in ticks (= 120 at 60 Hz). */
+export const RELOAD_DURATION_TICKS = Math.round(RELOAD_DURATION_SEC * TICK_HZ);
+
+/** Projectile speed (m/s). */
+export const PROJECTILE_SPEED_MPS = 60 as const;
+
+/** Projectile max range (m). */
+export const PROJECTILE_MAX_RANGE_M = 60 as const;
+
+/** Spawn offset along facing from actor center (m) — outside proxy radius. */
+export const PROJECTILE_MUZZLE_OFFSET_M = 0.45 as const;
+
+/** Player respawn delay (seconds). Placeholder §10. */
+export const RESPAWN_DELAY_SEC = 3.0 as const;
+
+/** Respawn delay in ticks (= 180). */
+export const RESPAWN_DELAY_TICKS = Math.round(RESPAWN_DELAY_SEC * TICK_HZ);
+
+/** Hostile stand-in blockout color (VD §3 alarm/hazard). */
+export const HOSTILE_COLOR_HEX = '#ff5252' as const;
+
+/** Stand-in capsule height (m). */
+export const STAND_IN_MESH_HEIGHT_M = 1.6 as const;
+
+/** Muzzle flash point-light intensity (render-only). */
+export const MUZZLE_FLASH_INTENSITY = 4.0 as const;
+
+/** Muzzle flash light range (m). */
+export const MUZZLE_FLASH_RANGE_M = 6.0 as const;
+
+/** Muzzle flash lifetime (seconds, render-only). */
+export const MUZZLE_FLASH_DURATION_SEC = 0.06 as const;
+
+/** Actor hit-flash duration (seconds, render-only). */
+export const HIT_FLASH_DURATION_SEC = 0.1 as const;
+
 /**
  * Binding accent hex map (Q2 / visual direction §3 v1.2).
  * Keys match AccentId in src/deck/types.ts.

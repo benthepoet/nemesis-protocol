@@ -5,6 +5,7 @@ import {
   PLAYER_MESH_RADIUS_M,
   PLAYER_WEDGE_LENGTH_M,
 } from '../config.js';
+import { attachRifleBlockout } from './createRifleBlockout.js';
 
 export function createPlayerMesh(): THREE.Group {
   const group = new THREE.Group();
@@ -46,6 +47,8 @@ export function createPlayerMesh(): THREE.Group {
   wedge.position.set(0, PLAYER_MESH_HEIGHT_M * 0.55, PLAYER_MESH_RADIUS_M);
   wedge.name = 'player-wedge';
   group.add(wedge);
+
+  attachRifleBlockout(group);
 
   return group;
 }

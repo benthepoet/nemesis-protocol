@@ -1,4 +1,5 @@
 import { DEFAULT_PIXEL_RATIO_CAP } from '../config.js';
+import { spawnStandIns } from '../combat/spawnStandIns.js';
 import { buildCollisionWorld } from '../deck/collision.js';
 import { loadDeck03 } from '../deck/loadDeck.js';
 import { spawnDeckEntities } from '../deck/spawnDeckEntities.js';
@@ -9,13 +10,18 @@ import { computeMouseAimAxis, KeyboardMouseDevice } from '../input/keyboardMouse
 import { spawnPlayer } from '../player/spawnPlayer.js';
 import { createWorld, getEntity } from '../sim/world.js';
 import { updateCeilingCutaway, type CutawayState } from '../render/ceilingCutaway.js';
+import { createCombatDevReadout } from '../render/combatDevReadout.js';
+import { createCombatVfx } from '../render/combatVfx.js';
 import { createDeckScene } from '../render/createDeckScene.js';
 import { createDebugFlyCamera, isDebugFlyCameraEnabled } from '../render/debugFlyCamera.js';
 import { createFollowCamera } from '../render/createFollowCamera.js';
 import { createPlayerMesh, syncPlayerMeshPose } from '../render/createPlayerMesh.js';
+import { createStandInMesh, syncStandInMeshPose } from '../render/createStandInMesh.js';
 import { createFpsOverlay } from '../render/fpsOverlay.js';
 import { createRenderer } from '../render/createRenderer.js';
 import { startFrameLoop } from '../render/frameLoop.js';
+import type { EntityId } from '../sim/types.js';
+import type * as THREE from 'three';
 
 export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): Promise<() => void> {
   const graph = loadDeck03();
@@ -28,6 +34,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const world = createWorld();
   spawnDeckEntities(world, graph);
   spawnPlayer(world, graph);
+  spawnStandIns(world, graph);
 
   const kbm = new KeyboardMouseDevice();
   const gamepad = new GamepadDevice();
@@ -38,6 +45,24 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const deckScene = createDeckScene(graph);
   const playerMesh = createPlayerMesh();
   deckScene.scene.add(playerMesh);
+
+  const standInMeshes = new Map<EntityId, THREE.Group>();
+  for (const id of world.meta.standInIds) {
+    const mesh = createStandInMesh();
+    deckScene.scene.add(mesh);
+    standInMeshes.set(id, mesh);
+  }
+
+  const combatVfx = createCombatVfx(deckScene.scene);
+  const vfxRegistry = combatVfx as ReturnType<typeof createCombatVfx> & {
+    registerActorMesh(id: string, mesh: THREE.Object3D): void;
+  };
+  vfxRegistry.registerActorMesh(String(world.meta.playerId), playerMesh);
+  for (const [id, mesh] of standInMeshes) {
+    vfxRegistry.registerActorMesh(String(id), mesh);
+  }
+
+  const combatReadout = createCombatDevReadout(document.body);
 
   let camera = deckScene.camera;
   let onFrame: ((dt: number) => void) | undefined;
@@ -56,6 +81,12 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
       const playerId = world.meta.playerId;
       const entity = playerId !== null ? getEntity(world, playerId) : undefined;
       if (entity) syncPlayerMeshPose(playerMesh, entity);
+      for (const [id, mesh] of standInMeshes) {
+        const e = getEntity(world, id);
+        if (e) syncStandInMeshPose(mesh, e);
+      }
+      combatVfx.update(dt);
+      combatReadout?.update(world);
     };
     flyDispose = fly.dispose;
   } else {
@@ -79,7 +110,13 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
       if (!entity || !follow) return;
       follow.update(dt, entity);
       syncPlayerMeshPose(playerMesh, entity);
+      for (const [id, mesh] of standInMeshes) {
+        const e = getEntity(world, id);
+        if (e) syncStandInMeshPose(mesh, e);
+      }
       updateCeilingCutaway(deckScene.roomGroups, graph, entity.x, entity.z, cutawayState);
+      combatVfx.update(dt);
+      combatReadout?.update(world);
     };
   }
 
@@ -103,17 +140,21 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     bus,
     devices,
     collisionWorld,
+    graph,
     scene: deckScene.scene,
     camera,
     appRenderer,
     fpsOverlay,
     onFrame,
     onBeforeSim,
+    onCombatEvents: (events) => combatVfx.push(events),
   });
 
   return () => {
     stopLoop();
     flyDispose?.();
+    combatVfx.dispose();
+    combatReadout?.dispose();
     window.removeEventListener('resize', resize);
     kbm.dispose();
     gamepad.dispose();

@@ -11,15 +11,15 @@
 
 | ID | Goal (binary-verifiable) | Verified |
 |----|--------------------------|----------|
-| G1 | The fire verb exists as a command on both devices (§8 v1.12 binding table): holding fire enqueues fire commands through the command bus, and while the rifle has magazine ammo and is not reloading, the sim spawns a projectile from the player toward the current facing at 10 rounds/s (M1/M3) | ☐ |
-| G2 | Projectiles are deterministic sim entities: stable entity IDs, 60 m/s, despawn on first collision or at 60 m max range; they are blocked by all wall classes (A/B/C) and deal **no wall damage** — §6.2 is P3 scope (M2, ruling R3) | ☐ |
-| G3 | One shared actor health pipeline: player and crew stand-ins each have 100 HP (M4); a projectile hit applies 25 damage; HP clamps at 0 | ☐ |
-| G4 | Death rules (M5): a stand-in at 0 HP enters dead state (no longer targetable, no longer collides with projectiles); the player at 0 HP enters dead state (input inert) and respawns at the spawn point with full HP/ammo after 3 s (placeholder, §10 v1.12) | ☐ |
-| G5 | Ammo economy (M6): magazine 30 + reserve 120 at start; each shot consumes 1 magazine round; reload command — or a trigger-pull on an empty magazine — starts a 2.0 s uninterruptible reload that moves rounds from reserve; no fire during reload; no reload without reserve rounds | ☐ |
-| G6 | Enemy-as-damage-target: 3 static security-crew stand-ins (M7) exist at deterministic deck positions — Main Spine (midpoint), Cargo Hold, Barracks — damageable and killable through the same pipeline as the player | ☐ |
-| G7 | Input parity: fire + reload are fully playable on keyboard/mouse and gamepad per the §8 v1.12 binding table; interact no longer fires — the mouse-0 conflict is resolved by ruling R1 | ☐ |
-| G8 | Determinism preserved (§12.1): identical command streams produce identical projectile/HP/ammo states across runs; world hash extended to cover combat entities; no frame-rate-coupled or unseeded-random sim logic | ☐ |
-| G9 | Combat presentation conforms to visual direction: muzzle flash is a real dynamic light that lights the room (visual §4.2); per-surface impact FX from the muzzle/impacts family (visual §6, P1 row); telegraphs readable at the 60° camera (visual §7); palette rules respected (visual §3) | ☐ |
+| G1 | The fire verb exists as a command on both devices (§8 v1.12 binding table): holding fire enqueues fire commands through the command bus, and while the rifle has magazine ammo and is not reloading, the sim spawns a projectile from the player toward the current facing at 10 rounds/s (M1/M3) | ☑ |
+| G2 | Projectiles are deterministic sim entities: stable entity IDs, 60 m/s, despawn on first collision or at 60 m max range; they are blocked by all wall classes (A/B/C) and deal **no wall damage** — §6.2 is P3 scope (M2, ruling R3) | ☑ |
+| G3 | One shared actor health pipeline: player and crew stand-ins each have 100 HP (M4); a projectile hit applies 25 damage; HP clamps at 0 | ☑ |
+| G4 | Death rules (M5): a stand-in at 0 HP enters dead state (no longer targetable, no longer collides with projectiles); the player at 0 HP enters dead state (input inert) and respawns at the spawn point with full HP/ammo after 3 s (placeholder, §10 v1.12) | ☑ |
+| G5 | Ammo economy (M6): magazine 30 + reserve 120 at start; each shot consumes 1 magazine round; reload command — or a trigger-pull on an empty magazine — starts a 2.0 s uninterruptible reload that moves rounds from reserve; no fire during reload; no reload without reserve rounds | ☑ |
+| G6 | Enemy-as-damage-target: 3 static security-crew stand-ins (M7) exist at deterministic deck positions — Main Spine (midpoint), Cargo Hold, Barracks — damageable and killable through the same pipeline as the player | ☑ |
+| G7 | Input parity: fire + reload are fully playable on keyboard/mouse and gamepad per the §8 v1.12 binding table; interact no longer fires — the mouse-0 conflict is resolved by ruling R1 | ☑ |
+| G8 | Determinism preserved (§12.1): identical command streams produce identical projectile/HP/ammo states across runs; world hash extended to cover combat entities; no frame-rate-coupled or unseeded-random sim logic | ☑ |
+| G9 | Combat presentation conforms to visual direction: muzzle flash is a real dynamic light that lights the room (visual §4.2); per-surface impact FX from the muzzle/impacts family (visual §6, P1 row); telegraphs readable at the 60° camera (visual §7); palette rules respected (visual §3) | ☑ |
 
 ## Mechanics callout (anti-assumption: unlisted = does not exist)
 

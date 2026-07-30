@@ -7,11 +7,15 @@
 | 2026-07-30 | Kickoff | Director, phase P1 (roadmap v1.5, P1 #4; dependency p1-player-controller Gate-2 accepted) |
 | 2026-07-30 | Design pack | v1 (design doc v1.12 — bumped doc-first by this pack, rulings R1/R2; visual direction v1.2; charter v1.13) |
 | 2026-07-30 | Spec | v1 FINAL — 21 tasks traced G1..G9 / M1..M9; zero open clarification questions; stand-in placements documented from deck03 footprint centers |
-| | PR opened | |
-| | Review round 1..5 | |
-| | Gate 1 (Kimi) | |
-| | Gate 2 (Director) | |
-| | Director iterations (§3.5a) | |
-| | Escalations | |
+| 2026-07-30 | Stage 3 | Composer: branch feat/p1-combat-core — tasks 1–21 @ spec v1; npm run test:run 92 passed (scaffold 17 in sim+input parity/hotSwap/axes per README); npm run build exit 0 |
+| 2026-07-30 | PR opened | [#4](https://github.com/benthepoet/nemesis-protocol/pull/4) → `integration`; review rounds used: 2; merge sha `d39eec4` |
+| 2026-07-30 | Review round 1 | Grok: REQUEST CHANGES — verify 92/92 + scaffold 17/17 + build 0; blockers Task 19 E5/E6/E16/E21; minors E1/E7–E8/WeakMap traveled/config comment/smoke evidence; Q on projectileMotion split. Formal `gh pr review --request-changes` blocked (self-PR); verdict in PR comment. |
+| 2026-07-30 | Revision round 1 | Composer @ spec v1 — blockers E5/E6/E16/E21 + minors E1/E7–E8/projectileTraveledM clone/ACCENT_HEX comment; `npm run test:run` 97/97; `npm run build` exit 0 |
+| 2026-07-30 | Review round 2 | Grok: APPROVE — verify 97/97 + build 0 @ `3a7282a`; blockers E5/E6/E16/E21 closed; minors E1/E7–E8/traveled/ACCENT_HEX closed; smoke evidence still outstanding (non-blocking). Formal `gh pr review --approve` may be blocked (self-PR); verdict in PR comment. Stage 4 technical approval granted — ready for Gate 1 (Kimi). |
+| 2026-07-30 | Merged (§6) | `feat/p1-combat-core` → `integration` at `d39eec4`; post-merge verify 97/97 + build 0; PR #4 remains Gate 1–2 record thread |
+| 2026-07-30 | Gate 1 (Kimi) | **PASS** — G1–G9 binary-verified on `integration` @ `d39eec4` (design pack v1 checkboxes ☑; `npm run test:run` 97/97 incl. scaffold 17 regression, `npm run build` exit 0); mechanics callout compliant (M1–M9 present, nothing invented, all explicit non-goals absent — no AI/HUD/wall-damage/aim-assist/pickups/audio); license scan clean (zero dep changes, no third-party assets in diff or dist); G9 visual evidence: muzzle flash = real dynamic `PointLight` lighting deck geometry (headless capture), palette §3 conformant (`#ff5252` hostile / `#69f0ae` allied, no meaning collisions), DEV readout only (not HUD). Verdict on PR #4. |
+| 2026-07-30 | Gate 2 (Director) | **accept** — release to `master`; no Director iteration cycles |
+| | Director iterations (§3.5a) | none |
+| | Escalations | none |
 
-**Final state:** in pipeline (Stage 2 complete — SPEC v1 FINAL) · **Design doc version at acceptance:** —
+**Final state:** accepted · **Design doc version at acceptance:** v1.12

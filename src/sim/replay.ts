@@ -1,5 +1,7 @@
 import type { CollisionWorld } from '../deck/collision.js';
+import type { DeckGraph } from '../deck/types.js';
 import type { InputCommand } from './commands.js';
+import { integrateCombat } from '../combat/integrateCombat.js';
 import { hashSimState } from './hash.js';
 import { integratePlayerMotion } from './playerMotion.js';
 import { applyCommands, fixedStep } from './step.js';
@@ -14,6 +16,7 @@ export function replay(
   initial: SimState,
   commands: readonly InputCommand[],
   collisionWorld: CollisionWorld,
+  graph: DeckGraph,
 ): SimState {
   const state = cloneSimState(initial);
   const byTick = new Map<number, InputCommand[]>();
@@ -28,6 +31,7 @@ export function replay(
     const tickCmds = byTick.get(t) ?? [];
     applyCommands(state, tickCmds);
     integratePlayerMotion(state, collisionWorld);
+    integrateCombat(state, collisionWorld, graph);
     fixedStep(state);
   }
   return state;
@@ -37,9 +41,10 @@ export async function assertReplayDeterministic(
   initial: SimState,
   commands: readonly InputCommand[],
   collisionWorld: CollisionWorld,
+  graph: DeckGraph,
 ): Promise<void> {
-  const a = replay(cloneSimState(initial), commands, collisionWorld);
-  const b = replay(cloneSimState(initial), commands, collisionWorld);
+  const a = replay(cloneSimState(initial), commands, collisionWorld, graph);
+  const b = replay(cloneSimState(initial), commands, collisionWorld, graph);
   const hashA = await hashSimState(a);
   const hashB = await hashSimState(b);
   if (hashA !== hashB) {

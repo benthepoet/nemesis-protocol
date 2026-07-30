@@ -12,7 +12,9 @@ export interface ActionBinding {
 export const MOVE_KEY_CODES = ['KeyW', 'KeyA', 'KeyS', 'KeyD'] as const;
 
 export const ACTION_BINDINGS: readonly ActionBinding[] = [
-  { action: 'interact', keyboard: 'KeyE', mouseButton: 0, gamepadButton: 0 },
+  { action: 'fire', mouseButton: 0, gamepadButton: 7 },
+  { action: 'reload', keyboard: 'KeyR', gamepadButton: 2 },
+  { action: 'interact', keyboard: 'KeyE', gamepadButton: 0 },
   { action: 'cancel', keyboard: 'Escape', gamepadButton: 1 },
 ];
 

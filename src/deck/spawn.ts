@@ -42,6 +42,8 @@ function footprintCenter(node: ReturnType<typeof getNode>): { x: number; z: numb
   return polygonCenter(node.footprint.points);
 }
 
+export { footprintCenter };
+
 function pointInRect(x: number, z: number, rect: { x: number; z: number; w: number; h: number }): boolean {
   return x >= rect.x && x <= rect.x + rect.w && z >= rect.z && z <= rect.z + rect.h;
 }

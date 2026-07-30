@@ -1,9 +1,16 @@
-/** Closed set for this feature: scaffold verbs + move/aim axes. */
-export type ActionId = 'interact' | 'cancel' | 'move' | 'aim';
+/** Closed set for this feature: scaffold verbs + move/aim + combat. */
+export type ActionId =
+  | 'interact'
+  | 'cancel'
+  | 'move'
+  | 'aim'
+  | 'fire'
+  | 'reload'
+  | 'debugDamage';
 
 /**
  * Sim-facing command. NO device provenance field (Q3).
- * - interact/cancel: value 0|1; axis fields omitted
+ * - interact/cancel/fire/reload/debugDamage: value 0|1; axis fields omitted
  * - move/aim: axisX/axisZ in [-1, 1]; value unused (set 0)
  */
 export interface InputCommand {
