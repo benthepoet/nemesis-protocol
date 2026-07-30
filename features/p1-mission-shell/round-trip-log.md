@@ -10,7 +10,7 @@
 | 2026-07-30 | Stage 3 | Composer @ spec v1 FINAL — mission FSM, breach select, 5 s insertion, objective/score/fail/restart; respawn removed; 148 tests green; branch `feat/p1-mission-shell` |
 | 2026-07-30 | PR opened | #7 `feat/p1-mission-shell` → `integration` |
 | 2026-07-30 | Review round 1 | Grok Stage 4 **APPROVE** — T1–T19 verified; respawn path deleted; alarm pre-door-open guard (INSERTION verbs locked + closed door + gameplay gates); determinism (shell in tick/replay + hash); `npm run test:run` 148/148 + `npm run build` green; zero blockers |
-| 2026-07-30 | Merged | PR #7 → `integration` (Stage 4 technical approval; Gate 1 pending) |
+| 2026-07-30 | Merged | PR #7 → `integration` @ `c87a7e6` (Stage 4 technical approval; Gate 1 pending) |
 | | Gate 1 (Kimi) | |
 | | Gate 2 (Director) | |
 | | Director iterations (§3.5a) | |
