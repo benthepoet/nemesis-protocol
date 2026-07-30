@@ -2,7 +2,7 @@
 
 **Purpose:** the phase→feature breakdown. Each feature below is one pipeline instance (charter §3): one design pack, one spec, one branch/PR, one Gate 1 + Gate 2.
 **Granularity rule:** a feature is the smallest unit that can be independently gated. Target 3–8 features per phase; if a feature can't pass Gate 1 alone, it's too small; if it needs two design packs, it's too big.
-**Status:** v1.7 — P1 #1–#5 shipped (Gate 2 through 2026-07-30); phase visual-pass policy (Director ruling R1, 2026-07-30): one terminal visual-pass feature per phase; P1 #9 appended; P2–P4 visual-pass rows scoped
+**Status:** v1.7 — P1 #1–#6 shipped (Gate 2 through 2026-07-30); phase visual-pass policy (Director ruling R1, 2026-07-30): one terminal visual-pass feature per phase; P1 #9 appended; P2–P4 visual-pass rows scoped
 
 > **Director ruling (v1.2):** P1 is **solo-first**. Netcode is targeted for the P2–P3 window, and every P1 feature must satisfy the netcode-ready architecture mandate (design doc §12.1): command-pattern inputs, deterministic sim ticks, no frame-rate-coupled logic, stable entity IDs. Grok's scaffold spec (p1-project-scaffold) carries this as a primary goal.
 
@@ -37,8 +37,7 @@
 | 3 | `p1-player-controller` ✅ shipped | Angled top-down movement + aim, ~60° pitch camera rig (cutaway-ready, §7 rule 6), interaction verb | — (foundation; goals set in pack) | 2 |
 | 4 | `p1-combat-core` ✅ shipped | Firearms, projectiles, damage, health/death for player + enemies, ammo | §9 tuning (damage baselines) | 3 |
 | 5 | `p1-enemy-baseline` ✅ shipped | Security crew infantry AI (patrol → investigate → chase → attack); basic spawner; alarm stub (AL0/AL1 only) | §4 (AL0–AL1), §4.5 roster | 4 |
-| 6 | `p1-mission-shell` | Airlock entry sequence, objective placeholder ("reach Engineering"), mission end + score screen | §3 Phase 0–1 (shell only) | 2, 5 |
-| 7 | `p1-hud` | Health, ammo, objective line, alarm indicator stub; full gamepad UI navigation | §4 (indicator), §3 | 6 |
+| 6 | `p1-mission-shell` ✅ shipped | Airlock entry sequence, objective placeholder ("reach Engineering"), mission end + score screen | §3 Phase 0–1 (shell only) | 2, 5 || 7 | `p1-hud` | Health, ammo, objective line, alarm indicator stub; full gamepad UI navigation | §4 (indicator), §3 | 6 |
 | 8 | `p1-gamepad-support` | First-class gamepad: full action parity, twin-stick aim + aim-assist (§9), hot-swap mid-mission, UI navigation | §8 (input parity), §9 | 3, 4 |
 | 9 | `p1-visual-pass` | Phase visual milestone **M-P1** (visual_direction §11): hero models for player/rifle/security crew replace all capsules & blockout weapons; deck PBR materials + authored wear + section accent trim; lighting rows AL0/AL1 live (keys, practicals, contact shadows, corridor haze); muzzle/impact VFX family complete; HUD skinned to palette; §7 readability verified | visual_direction §3–§7, §11 | 5, 6, 7, 8 |
 
