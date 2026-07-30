@@ -32,10 +32,6 @@ export const SPAWN_OFFSET_TOWARD_DOOR_M = 1.0 as const;
 /** Dev-only debug fly camera URL flag (G8). */
 export const DEBUG_CAMERA_PARAM = 'debugCamera' as const;
 
-/**
- * Binding accent hex map (Q2 / visual direction §3 v1.2).
- * Keys match AccentId in src/deck/types.ts.
- */
 /** Player move speed (m/s). Design pack M1 — P1 checkpoint tunable. */
 export const PLAYER_MOVE_SPEED_MPS = 6 as const;
 
@@ -75,6 +71,10 @@ export const FOLLOW_CAMERA_POS_SMOOTH = 12 as const;
 /** Render-side focus smoothing rate. */
 export const FOLLOW_CAMERA_FOCUS_SMOOTH = 10 as const;
 
+/**
+ * Binding accent hex map (Q2 / visual direction §3 v1.2).
+ * Keys match AccentId in src/deck/types.ts.
+ */
 export const ACCENT_HEX = {
   engineering: '#ef5350',
   command: '#7986cb',
