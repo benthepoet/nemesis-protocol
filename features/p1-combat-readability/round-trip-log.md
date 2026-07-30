@@ -8,7 +8,7 @@
 | 2026-07-30 | Design pack | Inherited — `p1-combat-core` design pack **v2** addendum (no independent pack; pointer in this folder). |
 | 2026-07-30 | Spec | HOTFIX SPEC **v1 FINAL** — G10 (a)–(f), M10, R7/R8; sim-coupling guards; full G1–G9 regression; zero open clarification questions. |
 | 2026-07-30 | Stage 3 | Composer — branch `feat/p1-combat-readability`; telegraph constants, `earliestWallHit`, `combatTelegraphs`, boot wire, tests (105), README; `npm run test:run` + `npm run build` green. |
-| | PR opened | |
+| 2026-07-30 | PR opened | #5 → `integration` (commit d58ec5a) |
 | | Review round 1..5 | |
 | | Gate 1 (Kimi) | |
 | | Gate 2 (Director) | |
