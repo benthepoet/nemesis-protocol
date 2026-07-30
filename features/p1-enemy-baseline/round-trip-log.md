@@ -11,9 +11,11 @@
 | 2026-07-30 | PR opened | https://github.com/benthepoet/nemesis-protocol/pull/6 |
 | 2026-07-30 | Review round 1 | Grok Stage 4 — **REQUEST CHANGES** (6 blockers / 3 minors). Tasks 1–17 + 19 impl look spec-aligned; local `npm run test:run` 121/121 + build green; no CI workflows configured. **Hold merge.** T18 verification incomplete: vacuous E10 assert; missing E6/E19/E20/E27–E28; E8 allows PATROL. Composer must revise tests (and any defects they expose) then push for round 2. |
 | 2026-07-30 | Revision round 2 | Composer — T18 blockers 1–6: E10 real fire/dmg/cadence; E6 wall LOS + E4 leave-reset; E8 forbid PATROL @ AL1; E19 crew→player dmg+respawn; E20 friendly-fire pass-through; E27–E28 tracer/wind-up asserts. `npm run test:run` **130/130**; `npm run build` green. Awaiting Grok round 2. |
+| 2026-07-30 | Review round 2 | Grok Stage 4 — **APPROVE** (round 2/5). All 6 blockers resolved on `c3eaf92`. Minors carried (E12/E13/E25/E26/E15 coverage; G10e harness omits `integrateCrewAi`; T20 manual smoke / G10 screenshots). Pre-merge `npm run test:run` **130/130**. |
+| 2026-07-30 | Merged → integration | Local merge (GitHub `mergePullRequest` API unavailable for token; PR #6 auto-detected **MERGED**). Merge SHA **`3f50b852af10b465a167da32cae84b5c26fd9078`**. Post-merge on `integration`: `npm run test:run` **130/130**; `npm run build` green. Gate 1/2 still pending — not merged to `master`. |
 | | Gate 1 (Kimi) | pass / fail → findings |
 | | Gate 2 (Director) | accept / amend / reject → feedback ref |
 | | Director iterations (§3.5a) | cycle <n>: diagnosis <design/spec/impl> |
 | | Escalations | <E-IDs if any> |
 
-**Final state:** in pipeline (Stage 1 delivered) · **Design doc version at acceptance:** —
+**Final state:** Stage 4 APPROVED · merged to `integration` (`3f50b85`) · awaiting Gate 1 (Kimi) · **Design doc version at acceptance:** —
