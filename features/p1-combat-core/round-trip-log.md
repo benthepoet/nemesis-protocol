@@ -7,6 +7,7 @@
 | 2026-07-30 | Kickoff | Director, phase P1 (roadmap v1.5, P1 #4; dependency p1-player-controller Gate-2 accepted) |
 | 2026-07-30 | Design pack | v1 (design doc v1.12 — bumped doc-first by this pack, rulings R1/R2; visual direction v1.2; charter v1.13) |
 | 2026-07-30 | Spec | v1 FINAL — 21 tasks traced G1..G9 / M1..M9; zero open clarification questions; stand-in placements documented from deck03 footprint centers |
+| 2026-07-30 | Stage 3 | Composer: branch feat/p1-combat-core — tasks 1–21 @ spec v1; npm run test:run 92 passed (scaffold 17 in sim+input parity/hotSwap/axes per README); npm run build exit 0 |
 | | PR opened | |
 | | Review round 1..5 | |
 | | Gate 1 (Kimi) | |

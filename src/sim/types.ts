@@ -13,6 +13,10 @@ export interface Entity {
   moveIntentX: number;
   moveIntentZ: number;
   alive: boolean;
+  /** Actor hit points; 0 for non-actors / markers. */
+  hp: number;
+  /** Projectile owner; null for non-projectiles. */
+  ownerId: EntityId | null;
 }
 
 export interface WorldMeta {
@@ -22,6 +26,14 @@ export interface WorldMeta {
   interactHeld: boolean;
   cancelHeld: boolean;
   playerId: EntityId | null;
+  /** Ordered stand-in ids: spine, cargo, barracks. */
+  standInIds: EntityId[];
+  fireHeld: boolean;
+  magazine: number;
+  reserve: number;
+  reloadTicksRemaining: number;
+  fireCooldownTicks: number;
+  respawnTicksRemaining: number;
 }
 
 export interface SimState {

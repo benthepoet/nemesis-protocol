@@ -17,8 +17,8 @@ describe('player determinism (G7)', () => {
   it('E14: identical replays → same pose and hash', async () => {
     const harness = createPlayerTestHarness();
     const cmds = moveStream(45);
-    const a = replay(harness.state, cmds, harness.collisionWorld);
-    const b = replay(harness.state, cmds, harness.collisionWorld);
+    const a = replay(harness.state, cmds, harness.collisionWorld, harness.graph);
+    const b = replay(harness.state, cmds, harness.collisionWorld, harness.graph);
     const id = a.meta.playerId!;
     const ea = getEntity(a, id)!;
     const eb = getEntity(b, id)!;
@@ -30,8 +30,8 @@ describe('player determinism (G7)', () => {
 
   it('E15: different streams → different hash', async () => {
     const harness = createPlayerTestHarness();
-    const a = replay(harness.state, moveStream(10), harness.collisionWorld);
-    const b = replay(harness.state, moveStream(20), harness.collisionWorld);
+    const a = replay(harness.state, moveStream(10), harness.collisionWorld, harness.graph);
+    const b = replay(harness.state, moveStream(20), harness.collisionWorld, harness.graph);
     expect(await hashSimState(a)).not.toBe(await hashSimState(b));
   });
 });

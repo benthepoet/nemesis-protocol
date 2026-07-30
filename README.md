@@ -39,17 +39,29 @@ Both emit press/release commands into the sim meta counters (no gameplay HUD bey
 | **Mouse** | Aim (raycast onto deck plane) |
 | **Gamepad left stick** | Move |
 | **Gamepad right stick** | Aim (deadzone 0.24) |
-| **E / LMB / gamepad south** | Interact (DEV console trace on press) |
+| **E / gamepad south** | Interact (DEV console trace on press) |
 | **Escape / gamepad east** | Cancel |
+| **Mouse LMB / gamepad RT** | Fire |
+| **R / gamepad face west** | Reload |
 
-With `?debugCamera=1` in dev, free-fly owns **KeyE** (vertical rise); keyboard **E** does not emit interact. Default boot uses follow camera (~60° pitch), player capsule, and occupied-room ceiling cutaway.
+With `?debugCamera=1` in dev, free-fly owns **KeyE** (vertical rise); keyboard **E** does not emit interact. Default boot uses follow camera (~60° pitch), player capsule, three crew stand-ins, combat VFX, DEV combat readout, and occupied-room ceiling cutaway.
 
 Verification:
 
 ```bash
-npm run test:run   # scaffold (17) + deck + player suites
+npm run test:run   # scaffold (17) + deck + player + combat suites
 npm run build
-npm run dev        # WASD + mouse aim; optional ?debugCamera=1
+npm run dev        # WASD + mouse aim; LMB fire; R reload; E interact
+```
+
+## Combat core (p1-combat-core)
+
+Bindings (R1): **LMB / RT** fire; **R / face west** reload; **E / south** interact (not LMB). DEV-only `debugDamage` command for player HP testing (tests / dev enqueue only).
+
+```bash
+npm run test:run   # tests/combat/* E1–E28 + input fireReloadArbitration
+npm run build
+npm run dev
 ```
 
 ## Deck 03 (p1-deck-geometry)

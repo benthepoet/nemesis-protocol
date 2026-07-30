@@ -1,3 +1,4 @@
+import { MAGAZINE_SIZE, RESERVE_AMMO_START } from '../config.js';
 import { EntityIdAllocator } from './entityId.js';
 import type { Entity, EntityId, SimState } from './types.js';
 
@@ -15,6 +16,13 @@ function defaultMeta(): SimState['meta'] {
     interactHeld: false,
     cancelHeld: false,
     playerId: null,
+    standInIds: [],
+    fireHeld: false,
+    magazine: MAGAZINE_SIZE,
+    reserve: RESERVE_AMMO_START,
+    reloadTicksRemaining: 0,
+    fireCooldownTicks: 0,
+    respawnTicksRemaining: 0,
   };
 }
 
@@ -47,6 +55,8 @@ export function spawnEntity(state: SimState, kind: string, x: number, y: number,
     moveIntentX: 0,
     moveIntentZ: 0,
     alive: true,
+    hp: 0,
+    ownerId: null,
   };
   state.entities.set(id, entity);
   return id;
