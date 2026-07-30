@@ -257,3 +257,39 @@ export const AIM_LINE_HALO_RADIUS_M = 0.045 as const;
 /** Aim-line colors — same allied treatment as tracers (R8). */
 export const AIM_LINE_CORE_COLOR_HEX = TRACER_CORE_COLOR_HEX;
 export const AIM_LINE_HALO_COLOR_HEX = TRACER_HALO_COLOR_HEX;
+
+/** Asset base URL prefix (must match Vite static serving). */
+export const ASSET_BASE_URL = '/assets' as const;
+
+/** Muzzle-anchor parity tolerance (m) — pack R6. */
+export const MUZZLE_ANCHOR_TOLERANCE_M = 0.02 as const;
+
+/** AL0 corridor FogExp2 density (presentation). */
+export const HAZE_DENSITY_AL0 = 0.012 as const;
+
+/** AL1 corridor FogExp2 density (presentation; must be > AL0). */
+export const HAZE_DENSITY_AL1 = 0.02 as const;
+
+/** Fraction of practical fixture slots lit at AL0 (~80%). */
+export const PRACTICAL_LIVE_FRACTION_AL0 = 0.8 as const;
+
+/** Idle flicker amplitude as fraction of base intensity. */
+export const PRACTICAL_FLICKER_AMPLITUDE = 0.08 as const;
+
+/** Soft cap concurrent muzzle PointLights. */
+export const MUZZLE_LIGHT_MAX_CONCURRENT = 12 as const;
+
+/** Soft cap concurrent impact emitter groups. */
+export const IMPACT_VFX_MAX_CONCURRENT = 24 as const;
+
+/** Deck-plate impact scorch/dust lifetime (s). */
+export const DECK_IMPACT_DURATION_SEC = 0.18 as const;
+
+/** Metal-wall spark lifetime (s). */
+export const METAL_IMPACT_DURATION_SEC = 0.1 as const;
+
+/** Shadow map size for deck key/practical lights. */
+export const SHADOW_MAP_SIZE = 2048 as const;
+
+/** Corridor spine neutral accent (G6). */
+export const CORRIDOR_SPINE_NEUTRAL_HEX = '#8b949e' as const;

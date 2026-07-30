@@ -12,7 +12,9 @@ import { updateCeilingCutaway, type CutawayState } from '../render/ceilingCutawa
 import { createCombatDevReadout } from '../render/combatDevReadout.js';
 import { createCombatVfx } from '../render/combatVfx.js';
 import { createCombatTelegraphs } from '../render/combatTelegraphs.js';
+import { createDeckLighting } from '../render/createDeckLighting.js';
 import { createDeckScene } from '../render/createDeckScene.js';
+import { preloadDeckMaterials } from '../render/deckMaterials.js';
 import { createDebugFlyCamera, isDebugFlyCameraEnabled } from '../render/debugFlyCamera.js';
 import { createFollowCamera } from '../render/createFollowCamera.js';
 import { createHud } from '../render/hud/createHud.js';
@@ -21,6 +23,7 @@ import { createObjectiveBanner } from '../render/objectiveBanner.js';
 import { createObjectiveBeacon } from '../render/objectiveBeacon.js';
 import { createPlayerMesh, syncPlayerMeshPose } from '../render/createPlayerMesh.js';
 import { createStandInMesh, syncStandInMeshPose } from '../render/createStandInMesh.js';
+import { getHeroFixtures, preloadHeroAssets } from '../render/assets/preloadHeroAssets.js';
 import { createFpsOverlay } from '../render/fpsOverlay.js';
 import { createRenderer } from '../render/createRenderer.js';
 import { startFrameLoop } from '../render/frameLoop.js';
@@ -34,6 +37,9 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     throw new Error(`deck validation failed: ${report.issues.map((i) => i.code).join(', ')}`);
   }
 
+  const heroTemplates = await preloadHeroAssets();
+  const deckMaterials = await preloadDeckMaterials();
+
   const collisionRef: CollisionWorldRef = { current: buildCollisionWorld(graph) };
   const world = createMissionWorld(graph);
 
@@ -43,7 +49,9 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const bus = new CommandBus();
 
   const appRenderer = await createRenderer(canvas);
-  const deckScene = createDeckScene(graph);
+  const deckScene = createDeckScene(graph, deckMaterials);
+  const deckLighting = createDeckLighting(deckScene.scene, graph, getHeroFixtures(heroTemplates));
+
   const playerMesh = createPlayerMesh();
   playerMesh.visible = false;
   deckScene.scene.add(playerMesh);
@@ -109,6 +117,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     onFrame = (dt) => {
       fly.update(dt);
       syncPresentation();
+      deckLighting.update(dt, world.meta.alarmLevel as 0 | 1);
       combatVfx.update(dt);
     };
     flyDispose = fly.dispose;
@@ -135,6 +144,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
         updateCeilingCutaway(deckScene.roomGroups, graph, entity.x, entity.z, cutawayState);
       }
       syncPresentation();
+      deckLighting.update(dt, world.meta.alarmLevel as 0 | 1);
       combatVfx.update(dt);
     };
   }
@@ -172,6 +182,9 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   return () => {
     stopLoop();
     flyDispose?.();
+    deckLighting.dispose();
+    deckScene.disposeMaterials();
+    deckMaterials.dispose();
     telegraphs.dispose();
     combatVfx.dispose();
     combatReadout?.dispose();

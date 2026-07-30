@@ -1,48 +1,20 @@
 import * as THREE from 'three';
-import { ACCENT_HEX, BULKHEAD_THICKNESS_M, ROOM_HEIGHT_M, WALL_THICKNESS_M } from '../config.js';
+import {
+  ACCENT_HEX,
+  BULKHEAD_THICKNESS_M,
+  CORRIDOR_SPINE_NEUTRAL_HEX,
+  ROOM_HEIGHT_M,
+  WALL_THICKNESS_M,
+} from '../config.js';
 import { getNode, listNodes, listWallSegments } from '../deck/graph.js';
 import type { AccentId, DeckGraph, DeckNode, WallRole } from '../deck/types.js';
+import { createFallbackDeckMaterials, type DeckMaterialSet } from './deckMaterials.js';
 
 export interface DeckScene {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   roomGroups: ReadonlyMap<string, THREE.Group>;
-}
-
-function roomFloorMaterial(accentId: AccentId): THREE.MeshStandardMaterial {
-  const hex = ACCENT_HEX[accentId as keyof typeof ACCENT_HEX];
-  return new THREE.MeshStandardMaterial({
-    color: '#1f2a36',
-    emissive: new THREE.Color(hex),
-    emissiveIntensity: 0.25,
-    metalness: 0.65,
-    roughness: 0.45,
-  });
-}
-
-function wallMaterialForRole(role: WallRole): THREE.MeshStandardMaterial {
-  if (role === 'bulkhead') {
-    return new THREE.MeshStandardMaterial({
-      color: '#2c3947',
-      emissive: new THREE.Color('#5c7186'),
-      emissiveIntensity: 0.2,
-      metalness: 0.7,
-      roughness: 0.4,
-    });
-  }
-  if (role === 'partition') {
-    return hullSteelMaterial();
-  }
-  if (role === 'hull') {
-    return new THREE.MeshStandardMaterial({
-      color: '#243040',
-      emissive: new THREE.Color('#5c7186'),
-      emissiveIntensity: 0.15,
-      metalness: 0.75,
-      roughness: 0.35,
-    });
-  }
-  return hullSteelMaterial();
+  disposeMaterials(): void;
 }
 
 function addBox(
@@ -59,47 +31,45 @@ function addBox(
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
   mesh.position.set(x + w / 2, y + h / 2, z + d / 2);
   if (name) mesh.name = name;
+  mesh.receiveShadow = true;
+  mesh.castShadow = false;
   parent.add(mesh);
   return mesh;
 }
 
-function hullSteelMaterial(): THREE.MeshStandardMaterial {
-  return new THREE.MeshStandardMaterial({
-    color: '#1f2a36',
-    metalness: 0.65,
-    roughness: 0.45,
-  });
+function accentFloorMaterial(mats: DeckMaterialSet, accentId: AccentId): THREE.MeshStandardMaterial {
+  const hex = accentId === 'corridor' ? CORRIDOR_SPINE_NEUTRAL_HEX : ACCENT_HEX[accentId as keyof typeof ACCENT_HEX];
+  const mat = mats.floor.clone();
+  mat.emissive = new THREE.Color(hex);
+  mat.emissiveIntensity = 0.22;
+  return mat;
 }
 
-function partitionCapMaterial(): THREE.MeshStandardMaterial {
-  return new THREE.MeshStandardMaterial({
-    color: '#1f2a36',
-    emissive: new THREE.Color('#39434e'),
-    emissiveIntensity: 0.35,
-    metalness: 0.65,
-    roughness: 0.45,
-  });
+function partitionAccentStripMaterial(mats: DeckMaterialSet, accentId: AccentId): THREE.MeshStandardMaterial {
+  const hex = accentId === 'corridor' ? CORRIDOR_SPINE_NEUTRAL_HEX : ACCENT_HEX[accentId as keyof typeof ACCENT_HEX];
+  const mat = mats.hullSteel.clone();
+  mat.emissive = new THREE.Color(hex);
+  mat.emissiveIntensity = 0.38;
+  return mat;
 }
 
-function partitionAccentStripMaterial(accentId: AccentId): THREE.MeshStandardMaterial {
-  const hex = ACCENT_HEX[accentId as keyof typeof ACCENT_HEX];
-  return new THREE.MeshStandardMaterial({
-    color: '#1f2a36',
-    emissive: new THREE.Color(hex),
-    emissiveIntensity: 0.4,
-    metalness: 0.65,
-    roughness: 0.45,
-  });
-}
-
-function buildRectRoom(group: THREE.Group, node: DeckNode & { footprint: { kind: 'rect'; rect: { x: number; z: number; w: number; h: number } } }): void {
+function buildRectRoom(
+  group: THREE.Group,
+  node: DeckNode & { footprint: { kind: 'rect'; rect: { x: number; z: number; w: number; h: number } } },
+  mats: DeckMaterialSet,
+): void {
   const { x, z, w, h } = node.footprint.rect;
-  const floorMat = roomFloorMaterial(node.accentId);
+  const floorMat = accentFloorMaterial(mats, node.accentId);
   addBox(group, x, 0, z, w, 0.05, h, floorMat, `floor:${node.id}`);
-  addBox(group, x, ROOM_HEIGHT_M - 0.05, z, w, 0.05, h, floorMat.clone(), `ceiling:${node.id}`);
+  addBox(group, x, ROOM_HEIGHT_M - 0.05, z, w, 0.05, h, mats.ceiling.clone(), `ceiling:${node.id}`);
+  addSectionSign(group, node.id, node.accentId, x + w * 0.5, z + 0.15, w, mats);
 }
 
-function buildPolygonRoom(group: THREE.Group, node: DeckNode & { footprint: { kind: 'polygon'; points: { x: number; z: number }[] } }): void {
+function buildPolygonRoom(
+  group: THREE.Group,
+  node: DeckNode & { footprint: { kind: 'polygon'; points: { x: number; z: number }[] } },
+  mats: DeckMaterialSet,
+): void {
   const points = node.footprint.points;
   if (points.length < 3) return;
 
@@ -110,18 +80,49 @@ function buildPolygonRoom(group: THREE.Group, node: DeckNode & { footprint: { ki
   }
   shape.closePath();
 
-  const floorMat = roomFloorMaterial(node.accentId);
+  const floorMat = accentFloorMaterial(mats, node.accentId);
   const floorGeo = new THREE.ShapeGeometry(shape);
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.name = `floor:${node.id}`;
+  floor.receiveShadow = true;
   group.add(floor);
 
-  const ceiling = new THREE.Mesh(floorGeo.clone(), floorMat.clone());
+  const ceiling = new THREE.Mesh(floorGeo.clone(), mats.ceiling.clone());
   ceiling.rotation.x = -Math.PI / 2;
   ceiling.position.y = ROOM_HEIGHT_M;
   ceiling.name = `ceiling:${node.id}`;
+  ceiling.receiveShadow = true;
   group.add(ceiling);
+}
+
+function addSectionSign(
+  group: THREE.Group,
+  nodeId: string,
+  accentId: AccentId,
+  cx: number,
+  cz: number,
+  width: number,
+  mats: DeckMaterialSet,
+): void {
+  const bandIndex = Object.keys(ACCENT_HEX).indexOf(accentId);
+  const vOffset = Math.max(0, bandIndex) / 12;
+  const mat = new THREE.MeshBasicMaterial({
+    map: mats.signageAtlas,
+    transparent: true,
+    depthWrite: false,
+  });
+  if (mat.map) {
+    mat.map.offset.set(0, vOffset);
+    mat.map.repeat.set(1, 1 / 12);
+  }
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(Math.min(1.2, width * 0.25), 0.35), mat);
+  plane.position.set(cx, 1.6, cz);
+  plane.rotation.y = Math.PI;
+  plane.name = `signage:${nodeId}`;
+  plane.castShadow = false;
+  plane.receiveShadow = false;
+  group.add(plane);
 }
 
 function wallThicknessForRole(role: WallRole): number {
@@ -137,12 +138,15 @@ function buildPartitionWall(
   thickness: number,
   accentId: AccentId | undefined,
   name: string,
+  mats: DeckMaterialSet,
 ): void {
   const capHeight = 0.08;
   const stripWidth = 0.04;
-  const bodyMat = hullSteelMaterial();
-  const capMat = partitionCapMaterial();
-  const stripMat = partitionAccentStripMaterial(accentId ?? 'corridor');
+  const bodyMat = mats.hullSteel.clone();
+  const capMat = mats.hullSteel.clone();
+  capMat.emissive = new THREE.Color('#39434e');
+  capMat.emissiveIntensity = 0.35;
+  const stripMat = partitionAccentStripMaterial(mats, accentId ?? 'corridor');
 
   if (w >= h) {
     addBox(parent, x, 0, z, w, ROOM_HEIGHT_M - capHeight, thickness, bodyMat, `${name}:body`);
@@ -155,7 +159,7 @@ function buildPartitionWall(
   }
 }
 
-function buildWalls(scene: THREE.Scene, graph: DeckGraph): void {
+function buildWalls(scene: THREE.Scene, graph: DeckGraph, mats: DeckMaterialSet): void {
   for (const wall of listWallSegments(graph)) {
     const thickness = wallThicknessForRole(wall.role);
     const accentRoom = wall.rooms[0];
@@ -163,11 +167,14 @@ function buildWalls(scene: THREE.Scene, graph: DeckGraph): void {
     const { x, z, w, h } = wall.rect;
 
     if (wall.role === 'partition') {
-      buildPartitionWall(scene, x, z, w, h, thickness, accentId, wall.id);
+      buildPartitionWall(scene, x, z, w, h, thickness, accentId, wall.id, mats);
       continue;
     }
 
-    const mat = wallMaterialForRole(wall.role);
+    let mat: THREE.MeshStandardMaterial;
+    if (wall.role === 'bulkhead') mat = mats.bulkheadWall.clone();
+    else if (wall.role === 'hull') mat = mats.hullWall.clone();
+    else mat = mats.partitionWall.clone();
 
     if (w >= h) {
       addBox(scene, x, 0, z, w, ROOM_HEIGHT_M, thickness, mat, wall.id);
@@ -186,16 +193,12 @@ function computeMidshipsCameraTarget(graph: DeckGraph): THREE.Vector3 {
   return new THREE.Vector3(0, 0, 0);
 }
 
-export function createDeckScene(graph: DeckGraph): DeckScene {
+export function createDeckScene(graph: DeckGraph, materials?: DeckMaterialSet): DeckScene {
+  const mats = materials ?? createFallbackDeckMaterials();
+  const ownsMaterials = !materials;
+
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#05080f');
-
-  const key = new THREE.DirectionalLight('#fff2e0', 1.0);
-  key.position.set(4, 6, 2);
-  scene.add(key);
-
-  const fill = new THREE.HemisphereLight('#a8c0d8', '#05080f', 0.35);
-  scene.add(fill);
 
   const roomGroups = new Map<string, THREE.Group>();
 
@@ -203,20 +206,41 @@ export function createDeckScene(graph: DeckGraph): DeckScene {
     const group = new THREE.Group();
     group.name = `room:${node.id}`;
     if (node.footprint.kind === 'rect') {
-      buildRectRoom(group, node as DeckNode & { footprint: { kind: 'rect'; rect: { x: number; z: number; w: number; h: number } } });
+      buildRectRoom(
+        group,
+        node as DeckNode & { footprint: { kind: 'rect'; rect: { x: number; z: number; w: number; h: number } } },
+        mats,
+      );
     } else {
-      buildPolygonRoom(group, node as DeckNode & { footprint: { kind: 'polygon'; points: { x: number; z: number }[] } });
+      buildPolygonRoom(
+        group,
+        node as DeckNode & { footprint: { kind: 'polygon'; points: { x: number; z: number }[] } },
+        mats,
+      );
     }
     roomGroups.set(node.id, group);
     scene.add(group);
   }
 
-  buildWalls(scene, graph);
+  buildWalls(scene, graph, mats);
 
   const target = computeMidshipsCameraTarget(graph);
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 500);
   camera.position.set(target.x, 80, target.z + 60);
   camera.lookAt(target);
 
-  return { scene, camera, roomGroups };
+  return {
+    scene,
+    camera,
+    roomGroups,
+    disposeMaterials() {
+      if (ownsMaterials) mats.dispose();
+    },
+  };
+}
+
+export function meshUsesPbrMaps(mesh: THREE.Mesh): boolean {
+  const mat = mesh.material;
+  if (!(mat instanceof THREE.MeshStandardMaterial)) return false;
+  return Boolean(mat.map && mat.metalnessMap && mat.roughnessMap && mat.normalMap);
 }

@@ -1,31 +1,26 @@
 import * as THREE from 'three';
-import {
-  HOSTILE_COLOR_HEX,
-  PLAYER_MESH_RADIUS_M,
-  STAND_IN_MESH_HEIGHT_M,
-} from '../config.js';
 import type { Entity } from '../sim/types.js';
+import { getCachedHeroTemplates, type HeroAssetTemplates } from './assets/preloadHeroAssets.js';
+import { cloneGltfTemplate } from './assets/loadGltf.js';
+
+export async function createStandInMeshAsync(templates?: HeroAssetTemplates): Promise<THREE.Group> {
+  return createStandInMeshFromTemplates(templates ?? getCachedHeroTemplates());
+}
+
+export function createStandInMeshFromTemplates(templates: HeroAssetTemplates): THREE.Group {
+  const group = cloneGltfTemplate(templates.crew);
+  group.name = 'stand-in';
+  group.traverse((obj) => {
+    if (obj instanceof THREE.Mesh) {
+      obj.castShadow = true;
+      obj.receiveShadow = true;
+    }
+  });
+  return group;
+}
 
 export function createStandInMesh(): THREE.Group {
-  const group = new THREE.Group();
-  group.name = 'stand-in';
-
-  const mat = new THREE.MeshStandardMaterial({
-    color: HOSTILE_COLOR_HEX,
-    metalness: 0.35,
-    roughness: 0.6,
-  });
-  const capsuleGeo = new THREE.CapsuleGeometry(
-    PLAYER_MESH_RADIUS_M,
-    STAND_IN_MESH_HEIGHT_M - 2 * PLAYER_MESH_RADIUS_M,
-    8,
-    16,
-  );
-  const capsule = new THREE.Mesh(capsuleGeo, mat);
-  capsule.position.y = STAND_IN_MESH_HEIGHT_M / 2;
-  group.add(capsule);
-
-  return group;
+  return createStandInMeshFromTemplates(getCachedHeroTemplates());
 }
 
 export function syncStandInMeshPose(mesh: THREE.Group, entity: Entity): void {
@@ -34,8 +29,10 @@ export function syncStandInMeshPose(mesh: THREE.Group, entity: Entity): void {
 }
 
 export function setStandInHitFlash(mesh: THREE.Group, active: boolean): void {
-  const body = mesh.children[0] as THREE.Mesh | undefined;
-  if (!body || !(body.material instanceof THREE.MeshStandardMaterial)) return;
-  body.material.emissive.setHex(active ? 0xffffff : 0x000000);
-  body.material.emissiveIntensity = active ? 0.85 : 0;
+  mesh.traverse((obj) => {
+    if (obj instanceof THREE.Mesh && obj.material instanceof THREE.MeshStandardMaterial) {
+      obj.material.emissive.setHex(active ? 0xffffff : 0x000000);
+      obj.material.emissiveIntensity = active ? 0.85 : 0;
+    }
+  });
 }

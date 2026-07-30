@@ -8,13 +8,14 @@ import { buildHudView } from './buildHudView.js';
 import type { MissionHud } from './types.js';
 
 const ALARM_DIM_HEX = '#8b949e';
-const PANEL_STYLE = `background:${SHELL_CHROME_HEX}cc;padding:8px 12px;border-radius:4px;`;
+const HUD_FONT_STACK = '"IBM Plex Sans", "Segoe UI", "Helvetica Neue", sans-serif';
+const PANEL_STYLE = `background:${SHELL_CHROME_HEX}ee;padding:10px 14px;border-radius:2px;border:1px solid #1f2937;box-shadow:0 0 0 1px #0b1220 inset;`;
 
 export function createHud(host: HTMLElement): MissionHud {
   const root = document.createElement('div');
   root.id = 'mission-hud';
   root.style.cssText =
-    'position:fixed;inset:0;pointer-events:none;z-index:12;font:14px/1.4 sans-serif;color:#e0e0e0;';
+    `position:fixed;inset:0;pointer-events:none;z-index:12;font:14px/1.45 ${HUD_FONT_STACK};color:#e6edf3;letter-spacing:0.02em;`;
 
   const style = document.createElement('style');
   style.textContent = `@keyframes hud-low-hp-pulse {

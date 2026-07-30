@@ -1,56 +1,27 @@
 import * as THREE from 'three';
-import {
-  PLAYER_COLOR_HEX,
-  PLAYER_MESH_HEIGHT_M,
-  PLAYER_MESH_RADIUS_M,
-  PLAYER_WEDGE_LENGTH_M,
-} from '../config.js';
-import { attachRifleBlockout } from './createRifleBlockout.js';
+import { getCachedHeroTemplates, type HeroAssetTemplates } from './assets/preloadHeroAssets.js';
+import { cloneGltfTemplate } from './assets/loadGltf.js';
+import { attachRifleHero } from './createRifleBlockout.js';
+
+export async function createPlayerMeshAsync(templates?: HeroAssetTemplates): Promise<THREE.Group> {
+  return createPlayerMeshFromTemplates(templates ?? getCachedHeroTemplates());
+}
+
+export function createPlayerMeshFromTemplates(templates: HeroAssetTemplates): THREE.Group {
+  const group = cloneGltfTemplate(templates.player);
+  group.name = 'player';
+  group.traverse((obj) => {
+    if (obj instanceof THREE.Mesh) {
+      obj.castShadow = true;
+      obj.receiveShadow = true;
+    }
+  });
+  attachRifleHero(group, templates.rifle);
+  return group;
+}
 
 export function createPlayerMesh(): THREE.Group {
-  const group = new THREE.Group();
-  group.name = 'player';
-
-  const bodyMat = new THREE.MeshStandardMaterial({
-    color: PLAYER_COLOR_HEX,
-    metalness: 0.4,
-    roughness: 0.55,
-  });
-  const wedgeMat = new THREE.MeshStandardMaterial({
-    color: '#43a047',
-    emissive: new THREE.Color('#2e7d32'),
-    emissiveIntensity: 0.35,
-    metalness: 0.35,
-    roughness: 0.5,
-  });
-
-  const capsuleGeo = new THREE.CapsuleGeometry(
-    PLAYER_MESH_RADIUS_M,
-    PLAYER_MESH_HEIGHT_M - 2 * PLAYER_MESH_RADIUS_M,
-    8,
-    16,
-  );
-  const capsule = new THREE.Mesh(capsuleGeo, bodyMat);
-  capsule.position.y = PLAYER_MESH_HEIGHT_M / 2;
-  capsule.name = 'player-body';
-  group.add(capsule);
-
-  const wedgeShape = new THREE.Shape();
-  wedgeShape.moveTo(0, 0);
-  wedgeShape.lineTo(PLAYER_WEDGE_LENGTH_M, -PLAYER_MESH_RADIUS_M * 0.6);
-  wedgeShape.lineTo(PLAYER_WEDGE_LENGTH_M, PLAYER_MESH_RADIUS_M * 0.6);
-  wedgeShape.closePath();
-  const wedgeGeo = new THREE.ExtrudeGeometry(wedgeShape, { depth: 0.08, bevelEnabled: false });
-  const wedge = new THREE.Mesh(wedgeGeo, wedgeMat);
-  wedge.rotation.x = -Math.PI / 2;
-  wedge.rotation.z = -Math.PI / 2;
-  wedge.position.set(0, PLAYER_MESH_HEIGHT_M * 0.55, PLAYER_MESH_RADIUS_M);
-  wedge.name = 'player-wedge';
-  group.add(wedge);
-
-  attachRifleBlockout(group);
-
-  return group;
+  return createPlayerMeshFromTemplates(getCachedHeroTemplates());
 }
 
 export function syncPlayerMeshPose(
@@ -59,4 +30,13 @@ export function syncPlayerMeshPose(
 ): void {
   mesh.position.set(player.x, player.y, player.z);
   mesh.rotation.y = player.yaw;
+  mesh.updateMatrixWorld(true);
+}
+
+export function playerHasDebugWedge(group: THREE.Group): boolean {
+  let wedge = false;
+  group.traverse((obj) => {
+    if (obj.name === 'player-wedge') wedge = true;
+  });
+  return wedge;
 }
