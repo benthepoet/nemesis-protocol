@@ -1,5 +1,7 @@
 import type { CollisionWorld } from '../deck/collision.js';
+import type { DeckGraph } from '../deck/types.js';
 import { FIXED_DT, MAX_FRAME_DELTA_SEC } from '../config.js';
+import { integrateCombat } from '../combat/integrateCombat.js';
 import { CommandBus } from '../input/commandBus.js';
 import type { InputDevice } from '../input/types.js';
 import { integratePlayerMotion } from '../sim/playerMotion.js';
@@ -8,14 +10,17 @@ import type { SimState } from '../sim/types.js';
 import type { AppRenderer } from './createRenderer.js';
 import { maybeLogFps } from './fpsOverlay.js';
 import type * as THREE from 'three';
+import type { CombatEvent } from '../combat/types.js';
 
 export interface FixedTimestepSliceArgs {
   world: SimState;
   bus: CommandBus;
   devices: InputDevice[];
   collisionWorld: CollisionWorld;
+  graph: DeckGraph;
   dtSec: number;
   accumulator: number;
+  onCombatEvents?: (events: readonly CombatEvent[]) => void;
 }
 
 export interface FixedTimestepSliceResult {
@@ -33,6 +38,8 @@ export function runFixedTimestepSlice(args: FixedTimestepSliceArgs): FixedTimest
     const cmds = args.bus.drainForTick(args.world.tick);
     applyCommands(args.world, cmds);
     integratePlayerMotion(args.world, args.collisionWorld);
+    const events = integrateCombat(args.world, args.collisionWorld, args.graph);
+    args.onCombatEvents?.(events);
     fixedStep(args.world);
     accumulator -= FIXED_DT;
     ticksAdvanced += 1;
@@ -46,12 +53,14 @@ export function startFrameLoop(args: {
   bus: CommandBus;
   devices: InputDevice[];
   collisionWorld: CollisionWorld;
+  graph: DeckGraph;
   scene: THREE.Scene;
   camera: THREE.Camera;
   appRenderer: AppRenderer;
   fpsOverlay: { update(dtSec: number): void };
   onFrame?: (dtSec: number) => void;
   onBeforeSim?: () => void;
+  onCombatEvents?: (events: readonly CombatEvent[]) => void;
 }): () => void {
   let last = performance.now();
   let accumulator = 0;
@@ -70,8 +79,10 @@ export function startFrameLoop(args: {
       bus: args.bus,
       devices: args.devices,
       collisionWorld: args.collisionWorld,
+      graph: args.graph,
       dtSec,
       accumulator,
+      onCombatEvents: args.onCombatEvents,
     });
     accumulator = slice.accumulator;
 

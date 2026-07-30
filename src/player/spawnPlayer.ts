@@ -1,4 +1,4 @@
-import { PLAYER_KIND } from '../config.js';
+import { ACTOR_MAX_HP, MAGAZINE_SIZE, PLAYER_KIND, RESERVE_AMMO_START } from '../config.js';
 import { buildCollisionWorld } from '../deck/collision.js';
 import { computeSpawnPoint, validateSpawnPoint } from '../deck/spawn.js';
 import type { DeckGraph } from '../deck/types.js';
@@ -19,6 +19,13 @@ export function spawnPlayer(state: SimState, graph: DeckGraph): EntityId {
   const entity = state.entities.get(id)!;
   entity.moveIntentX = 0;
   entity.moveIntentZ = 0;
+  entity.hp = ACTOR_MAX_HP;
   state.meta.playerId = id;
+  state.meta.magazine = MAGAZINE_SIZE;
+  state.meta.reserve = RESERVE_AMMO_START;
+  state.meta.reloadTicksRemaining = 0;
+  state.meta.fireCooldownTicks = 0;
+  state.meta.fireHeld = false;
+  state.meta.respawnTicksRemaining = 0;
   return id;
 }

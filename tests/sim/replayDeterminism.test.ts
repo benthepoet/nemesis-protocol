@@ -13,9 +13,9 @@ describe('replay determinism (G7)', () => {
   it('E10: identical replays produce identical hashSimState', async () => {
     const initial = createWorld();
     spawnEntity(initial, 'box', 0, 0, 0);
-    await assertReplayDeterministic(initial, scriptedScaffoldSession, collisionWorld);
-    const once = replay(initial, scriptedScaffoldSession, collisionWorld);
-    const twice = replay(initial, scriptedScaffoldSession, collisionWorld);
+    await assertReplayDeterministic(initial, scriptedScaffoldSession, collisionWorld, loadTestDeck03());
+    const once = replay(initial, scriptedScaffoldSession, collisionWorld, loadTestDeck03());
+    const twice = replay(initial, scriptedScaffoldSession, collisionWorld, loadTestDeck03());
     expect(await hashSimState(once)).toBe(await hashSimState(twice));
   });
 

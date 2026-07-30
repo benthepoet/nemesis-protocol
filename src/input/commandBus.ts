@@ -1,3 +1,4 @@
+import type { ActionId } from '../sim/commands.js';
 import type { InputCommand } from '../sim/commands.js';
 import { mapSamplesToIntents } from './mapper.js';
 import type { ActionIntent, DeviceKind, DeviceSample, InputChannel, InputDevice } from './types.js';
@@ -11,6 +12,15 @@ function axisMagnitude(sample: DeviceSample): number {
   return Math.hypot(sample.axisX ?? 0, sample.axisZ ?? 0);
 }
 
+const DISCRETE_CHANNELS: InputChannel[] = ['interact', 'fire', 'reload'];
+
+function releaseHeldAction(device: InputDevice, action: ActionId): void {
+  const d = device as InputDevice & { setHeld?(action: ActionId, held: boolean): void };
+  if (typeof d.setHeld === 'function') {
+    d.setHeld(action, false);
+  }
+}
+
 export class CommandBus {
   private buffer: BufferedIntent[] = [];
   private sequence = 0;
@@ -18,6 +28,9 @@ export class CommandBus {
     move: null,
     aim: null,
     interact: null,
+    fire: null,
+    reload: null,
+    debug: null,
   };
   private deviceByKind = new Map<DeviceKind, InputDevice>();
   private axisPending: { move: BufferedIntent | null; aim: BufferedIntent | null } = {
@@ -40,8 +53,25 @@ export class CommandBus {
     }
   }
 
+  private releaseChannelOnDevice(device: InputDevice, channel: InputChannel): void {
+    for (const action of [...device.getHeldActions()]) {
+      if (channelForAction(action) === channel) {
+        this.buffer.push({ action, value: 0, synthetic: true });
+        releaseHeldAction(device, action);
+      }
+    }
+  }
+
   private ingestSample(device: InputDevice, sample: DeviceSample): void {
     const channel = channelForAction(sample.action);
+    if (channel === 'debug') {
+      const intents = mapSamplesToIntents([sample]);
+      for (const intent of intents) {
+        this.buffer.push({ ...intent, synthetic: false });
+      }
+      return;
+    }
+
     if (channel === 'move' || channel === 'aim') {
       this.ingestAxisSample(device, sample, channel);
       return;
@@ -49,10 +79,10 @@ export class CommandBus {
 
     const prevOwner = this.owner[channel];
     if (prevOwner !== null && prevOwner !== device.kind) {
-      if (channel === 'interact') {
+      if (DISCRETE_CHANNELS.includes(channel)) {
         const departing = this.deviceByKind.get(prevOwner);
         if (departing) {
-          this.flushSyntheticReleases(departing);
+          this.releaseChannelOnDevice(departing, channel);
         }
       }
     }
@@ -99,7 +129,7 @@ export class CommandBus {
 
   notifyDeviceDeparting(device: InputDevice): void {
     this.flushSyntheticReleases(device);
-    for (const ch of ['move', 'aim', 'interact'] as const) {
+    for (const ch of ['move', 'aim', 'interact', 'fire', 'reload', 'debug'] as const) {
       if (this.owner[ch] === device.kind) {
         this.owner[ch] = null;
       }
@@ -148,7 +178,14 @@ export class CommandBus {
   resetSession(): void {
     this.buffer = [];
     this.sequence = 0;
-    this.owner = { move: null, aim: null, interact: null };
+    this.owner = {
+      move: null,
+      aim: null,
+      interact: null,
+      fire: null,
+      reload: null,
+      debug: null,
+    };
     this.axisPending = { move: null, aim: null };
   }
 

@@ -12,7 +12,7 @@ function mockPad(axes: number[]): Gamepad {
     timestamp: 0,
     vibrationActuator: null,
     hapticActuators: [],
-  } as Gamepad;
+  } as unknown as Gamepad;
 }
 
 describe('GamepadDevice stick mapping (Web Gamepad: up = negative axis Y)', () => {

@@ -54,6 +54,7 @@ describe('follow camera (G5)', () => {
           bus,
           devices: [dev],
           collisionWorld: harness.collisionWorld,
+          graph: harness.graph,
           dtSec: 1 / 60,
           accumulator: acc,
         });
