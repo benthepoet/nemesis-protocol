@@ -1,4 +1,10 @@
 import { DEFAULT_PIXEL_RATIO_CAP } from '../config.js';
+import {
+  getHeroMaterialMode,
+  heroShadersExceedTextureUnitLimit,
+  initHeroMaterialMode,
+  resolveHeroMaterialMode,
+} from '../render/heroMaterialMode.js';
 import { buildCollisionWorld } from '../deck/collision.js';
 import { loadDeck03 } from '../deck/loadDeck.js';
 import { validateDeckGraph } from '../deck/validate.js';
@@ -12,20 +18,24 @@ import { updateCeilingCutaway, type CutawayState } from '../render/ceilingCutawa
 import { createCombatDevReadout } from '../render/combatDevReadout.js';
 import { createCombatVfx } from '../render/combatVfx.js';
 import { createCombatTelegraphs } from '../render/combatTelegraphs.js';
+import { createDeckLighting } from '../render/createDeckLighting.js';
 import { createDeckScene } from '../render/createDeckScene.js';
+import { preloadDeckMaterials } from '../render/deckMaterials.js';
 import { createDebugFlyCamera, isDebugFlyCameraEnabled } from '../render/debugFlyCamera.js';
 import { createFollowCamera } from '../render/createFollowCamera.js';
 import { createHud } from '../render/hud/createHud.js';
 import { createMissionShellUi } from '../render/missionShellUi.js';
 import { createObjectiveBanner } from '../render/objectiveBanner.js';
 import { createObjectiveBeacon } from '../render/objectiveBeacon.js';
-import { createPlayerMesh, syncPlayerMeshPose } from '../render/createPlayerMesh.js';
-import { createStandInMesh, syncStandInMeshPose } from '../render/createStandInMesh.js';
+import { createPlayerMesh, updatePlayerHeroPresentation, disposePlayerHeroPresentation } from '../render/createPlayerMesh.js';
+import { createStandInMesh, updateStandInHeroPresentation, disposeStandInHeroPresentation } from '../render/createStandInMesh.js';
+import { getHeroFixtures, preloadHeroAssets } from '../render/assets/preloadHeroAssets.js';
+import { attachSceneEnvironment } from '../render/sceneEnvironment.js';
 import { createFpsOverlay } from '../render/fpsOverlay.js';
+import * as THREE from 'three';
 import { createRenderer } from '../render/createRenderer.js';
 import { startFrameLoop } from '../render/frameLoop.js';
 import type { EntityId } from '../sim/types.js';
-import type * as THREE from 'three';
 
 export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): Promise<() => void> {
   const graph = loadDeck03();
@@ -33,6 +43,18 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   if (!report.ok) {
     throw new Error(`deck validation failed: ${report.issues.map((i) => i.code).join(', ')}`);
   }
+
+  const appRenderer = await createRenderer(canvas);
+
+  let maxTu: number | undefined;
+  if (appRenderer.backend === 'webgl2' && appRenderer.renderer instanceof THREE.WebGLRenderer) {
+    const gl = appRenderer.renderer.getContext();
+    maxTu = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS) as number;
+  }
+  initHeroMaterialMode(resolveHeroMaterialMode({ maxTextureImageUnits: maxTu }));
+
+  const heroTemplates = await preloadHeroAssets();
+  const deckMaterials = await preloadDeckMaterials();
 
   const collisionRef: CollisionWorldRef = { current: buildCollisionWorld(graph) };
   const world = createMissionWorld(graph);
@@ -42,8 +64,10 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const devices = [kbm, gamepad];
   const bus = new CommandBus();
 
-  const appRenderer = await createRenderer(canvas);
-  const deckScene = createDeckScene(graph);
+  const deckScene = createDeckScene(graph, deckMaterials);
+  const sceneEnv = attachSceneEnvironment(deckScene.scene, appRenderer);
+  const deckLighting = createDeckLighting(deckScene.scene, graph, getHeroFixtures(heroTemplates));
+
   const playerMesh = createPlayerMesh();
   playerMesh.visible = false;
   deckScene.scene.add(playerMesh);
@@ -79,12 +103,12 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const debugFly = isDebugFlyCameraEnabled();
   let follow: ReturnType<typeof createFollowCamera> | undefined;
 
-  const syncPresentation = () => {
+  const syncPresentation = (dtSec: number) => {
     const playerId = world.meta.playerId;
     const entity = playerId !== null ? getEntity(world, playerId) : undefined;
     if (entity) {
       playerMesh.visible = true;
-      syncPlayerMeshPose(playerMesh, entity);
+      updatePlayerHeroPresentation(playerMesh, entity, world.meta, dtSec);
       if (playerId !== null) {
         vfxRegistry.registerActorMesh(String(playerId), playerMesh);
       }
@@ -93,7 +117,8 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     }
     for (const [id, mesh] of standInMeshes) {
       const e = getEntity(world, id);
-      if (e) syncStandInMeshPose(mesh, e);
+      const ai = world.crewAi.get(id);
+      if (e) updateStandInHeroPresentation(mesh, e, ai, dtSec);
     }
     telegraphs.sync(world, collisionRef.current);
     combatReadout?.update(world);
@@ -108,7 +133,8 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     camera = fly.camera;
     onFrame = (dt) => {
       fly.update(dt);
-      syncPresentation();
+      syncPresentation(dt);
+      deckLighting.update(dt, world.meta.alarmLevel as 0 | 1);
       combatVfx.update(dt);
     };
     flyDispose = fly.dispose;
@@ -134,7 +160,8 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
         follow.update(dt, entity);
         updateCeilingCutaway(deckScene.roomGroups, graph, entity.x, entity.z, cutawayState);
       }
-      syncPresentation();
+      syncPresentation(dt);
+      deckLighting.update(dt, world.meta.alarmLevel as 0 | 1);
       combatVfx.update(dt);
     };
   }
@@ -154,6 +181,27 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   resize();
   window.addEventListener('resize', resize);
 
+  if (import.meta.env.DEV) {
+    document.body.dataset.nemesisHeroTune = getHeroMaterialMode() === 'pbr' ? 'pbr' : '4';
+  }
+
+  if (
+    appRenderer.backend === 'webgl2' &&
+    getHeroMaterialMode() === 'pbr' &&
+    appRenderer.renderer instanceof THREE.WebGLRenderer
+  ) {
+    const tuExceeded = heroShadersExceedTextureUnitLimit(
+      appRenderer.renderer,
+      deckScene.scene,
+      camera,
+    );
+    if (tuExceeded) {
+      console.error(
+        '[nemesis] hero PBR shaders exceed MAX_TEXTURE_IMAGE_UNITS — use ?heroMaterial=basic for debug or verify shadow cap.',
+      );
+    }
+  }
+
   const stopLoop = startFrameLoop({
     world,
     bus,
@@ -172,6 +220,14 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   return () => {
     stopLoop();
     flyDispose?.();
+    disposePlayerHeroPresentation(playerMesh);
+    for (const mesh of standInMeshes.values()) {
+      disposeStandInHeroPresentation(mesh);
+    }
+    sceneEnv.dispose();
+    deckLighting.dispose();
+    deckScene.disposeMaterials();
+    deckMaterials.dispose();
     telegraphs.dispose();
     combatVfx.dispose();
     combatReadout?.dispose();

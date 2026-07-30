@@ -1,7 +1,8 @@
 # Design Pack — p1-visual-pass
 
-`DESIGN PACK v1 | feature p1-visual-pass | design doc v1.17 | goals: G1..G15 | mechanics: M1..M9`
-*Owner: Kimi K3. Working versions: charter v1.13 · design doc v1.17 · visual direction v1.6 · roadmap v1.8 · assets/AGENTS.md (current). Kickoff: Director 2026-07-30, `master` @ `75675b4`.*
+`DESIGN PACK v2 | feature p1-visual-pass | design doc v1.17 | goals: G1..G17 | mechanics: M1..M11`
+*Owner: Kimi K3. Working versions: charter v1.13 · design doc v1.17 · visual direction v1.7 · roadmap v1.8 · assets/AGENTS.md (current). Kickoff: Director 2026-07-30, `master` @ `75675b4`.*
+*v2 (2026-07-30, §3.5a Director iteration on `integration` @ `931f7b3`):* Director Gate 2 feedback — **"I need those models rigged and animated"** — overrides **R8** (superseded by **R13**). Added G16–G17, M10–M11, R13–R15; visual_direction bumped to **v1.7** (§7 rule 8 + §11 M-P1 row). Design doc and roadmap unchanged (see *Doc/visual bumps*). G1–G15 unchanged in text.
 
 **Feature identity (roadmap v1.8, P1 #9 — terminal P1 feature):** phase visual milestone **M-P1** (visual_direction §11). A normal pipeline instance that depends on P1 #5–#8 and ships **no new mechanics — presentation only** (ruling R1: no G#/M# functional changes, no tuning, no sim edits). Gate 2 acceptance on this feature closes the **P1 phase checkpoint**.
 
@@ -26,6 +27,8 @@ Every goal is binary-verifiable in the running build. Mapping: **U#** = visual_d
 | G13 | VD §7 readability rules 1–7 verified at the 60° camera in the densest combat scene P1 can produce (8 living crew + sustained two-way fire): telegraph hierarchy holds — enemy telegraphs > objectives > player state > environment mood | U5 | ☐ |
 | G14 | Performance held: 60 fps @ 1080p on a mid-tier GPU with the full P1 lighting + VFX load active (VD §8) | U6 | ☐ |
 | G15 | **No functional change:** every accepted G#/M# from P1 #1–#8 behaves identically (existing automated suite green, zero binding drift); license scan clean — no third-party material in shipped paths (charter §3 Stage 5) | U7 | ☐ |
+| G16 | Player and security-crew hero GLBs are **skeletally rigged** (skinned mesh, one humanoid skeleton each per R14) and play their animation clips in-engine via the render-side animation path; the rifle remains a separate rigid GLB constrained to the right-hand grip socket with muzzle-anchor parity (R6) preserved through every pose | MP (v1.7 row) | ☐ |
+| G17 | **Minimum animation set** live, mirrored from sim state (render-side only — G15 holds): (a) `idle` loop while stationary; (b) `move` in-place locomotion loop playback-matched to sim velocity — player 6 m/s; crew patrol 2.0 / investigate 3.5 / chase 4.5 m/s (design doc §10); (c) `aim_fire` upper-body pose hold while the fire verb is active (player) and for the crew's stationary ATTACK state (design doc §10 — no move-and-shoot at P1); (d) crew `death` fall/expiry on crew sim death (neutralized count is sim-visible, design doc §3 v1.15 note); (e) foot-slide within ±10 % at the 60° camera (VD §7 rule 8). **Not required:** player death animation — death routes instantly to the score screen (design doc §10 fail flow), leaving no visibility window | MP (v1.7 row), U5 | ☐ |
 
 ## Mechanics callout (presentation surfaces only)
 
@@ -42,8 +45,10 @@ Every goal is binary-verifiable in the running build. Mapping: **U#** = visual_d
 | M7 | Muzzle/impacts VFX family: real-light muzzle flash (both sides), per-surface impacts, hit-flash retarget to hero materials | VD §6 |
 | M8 | HUD/shell UI skin (DOM chrome treatment; DOM structure and readout set untouched) | VD §3 (v1.6 UI note) |
 | M9 | Combat telegraph conformance pass: tracers (allegiance halos), aim-direction line, wind-up pre-glow — already shipped; verify only, restyle permitted within VD §7 rule 7 | VD §6, §7 rule 7 |
+| M10 | Hero skeletal rigs + minimum animation set (player boarder, security crew): clips `idle` / `move` / `aim_fire` / `death` (crew only), in-place loops, no root motion — the sim owns actor translation; animation mirrors existing sim state only (velocity, fire verb, ATTACK/wind-up, crew death) | VD §7 rule 8, §8; design doc §10 (speeds, wind-up — mirror only) |
+| M11 | Rifle grip attachment: rifle GLB constrained to the `hand_r_grip` socket bone of the player rig; muzzle-anchor parity (R6) holds in `idle`, `move`, and `aim_fire` poses | VD §6; pack R6 |
 
-**Does not exist for this feature (explicitly unlisted):** android models/racks/eye-glow (P4, M-P4); wall `intact/cracked/failed` states, sparks-&-debris, wall-failure, hull-breach, venting, curtain-seal VFX (P3, M-P3); AL2/AL3/Meltdown/Vacuum/Reactor lighting rows; reactor VFX; meltdown fires; PA/alarm telegraph treatment (P2, M-P2); locomotion/ragdoll animation systems (R8 below); any sim, AI, tuning, input, or HUD-data change.
+**Does not exist for this feature (explicitly unlisted):** android models/racks/eye-glow (P4, M-P4); wall `intact/cracked/failed` states, sparks-&-debris, wall-failure, hull-breach, venting, curtain-seal VFX (P3, M-P3); AL2/AL3/Meltdown/Vacuum/Reactor lighting rows; reactor VFX; meltdown fires; PA/alarm telegraph treatment (P2, M-P2); reload animation, skeletal hit-react, player death animation, ragdoll/physics death, facial or per-finger animation (R13 — deferred, S3 class); any sim, AI, tuning, input, or HUD-data change.
 
 ## Rule spec
 
@@ -70,7 +75,10 @@ Every goal is binary-verifiable in the running build. Mapping: **U#** = visual_d
 - **R5 — Facing wedge retires.** Facing readability is carried by the hero model's authored stance/orientation plus the shipped aim-direction line (VD §7 rule 7). The debug wedge is presentation scaffolding, not an accepted mechanic — its removal is not a functional change.
 - **R6 — Muzzle-anchor parity.** The rifle's muzzle anchor must land at the same gameplay offset the telegraph system already uses (render-side constant); tracers, aim line, and muzzle flash keep pixel-equivalent origins. Any visible mismatch is a `[blocker]`.
 - **R7 — Hit-flash preserved, retargeted.** The accepted white hit-flash telegraph (VD §6 muzzle/impacts) transfers to hero materials unchanged in duration and read.
-- **R8 — No animation system at P1.** M-P1 requires hero models to replace capsules — it does not require skeletal/locomotion animation. Hero models ship as rigid, single-pose meshes authored in a top-down-readable combat stance. Locomotion animation is deferred (post-P1 polish backlog, S3 class). This keeps the pass scoped per §11 ("scoped, not open-ended").
+- **R8 — ~~No animation system at P1.~~ SUPERSEDED by R13** (Director Gate 2 override, 2026-07-30, §3.5a). *Original text for audit: M-P1 requires hero models to replace capsules — it does not require skeletal/locomotion animation. Hero models ship as rigid, single-pose meshes authored in a top-down-readable combat stance. Locomotion animation is deferred (post-P1 polish backlog, S3 class). This keeps the pass scoped per §11 ("scoped, not open-ended").*
+- **R13 — Animation scope at P1 (supersedes R8; Director ruling "I need those models rigged and animated").** The player boarder and security crew hero models ship **skeletally rigged with the minimum animation set of G17** — `idle`, `move`, `aim_fire`, plus `death` for crew. This is the **full** set; scope discipline per VD §11 ("scoped, not open-ended") holds: **no** reload animation, **no** skeletal hit-react (the hit telegraph remains the R7 flash, unchanged in duration and read), **no** player death animation (no visibility window — death routes to the score screen), **no** ragdoll, **no** facial/finger animation. Those remain post-P1 S3 polish. Animation is **render-side presentation only**: it reads existing sim state (velocity, fire verb, crew ATTACK/wind-up states, crew death) and changes no rule, number, or binding — G15 holds. Binding telegraphs (wind-up pre-glow, tracers, hit-flash) remain the readable signals; animation may mirror them but never carries a telegraph alone (VD §7 rule 8). The rifle is **not** independently animated at P1 — it rides the rig via M11.
+- **R14 — Rig & export standard (glTF for three.js AnimationMixer).** One humanoid skeleton per character; documented bone naming — `root`, `pelvis`, `spine_01`, `spine_02`, `neck`, `head`, `clavicle_l/r`, `upperarm_l/r`, `forearm_l/r`, `hand_l/r`, `thigh_l/r`, `shin_l/r`, `foot_l/r` — plus a `hand_r_grip` socket bone aligned to the current rifle attach offset (M11). Clips named exactly `idle`, `move`, `aim_fire`, `death` (crew only), authored at 30 fps and sampled on export. **Root motion policy: none** — all loops authored in place with zero root translation; the deterministic sim owns actor translation (netcode-ready mandate, design doc §12.1) and the render layer must never drift from sim positions. `move` cadence is authored to a reference speed and playback-rate-scaled per sim velocity so foot slide stays within ±10 % (VD §7 rule 8). Skinning: max 4 bone influences per vertex, normalized weights. Unit scale, +Y-up orientation, and world origin identical to the currently shipped rigid GLBs (swap must be invisible to scene placement). LOD0–LOD3 share the single skeleton and clip set — LOD switches alter mesh density only, never silhouette (VD §8). Single skeleton per character; rifle stays a separate rigid GLB.
+- **R15 — Staged acceptance vs the unlit-Basic hotfix.** The tune-4 unlit `MeshBasicMaterial` hero presentation (round-trip log, S1 hotfix) is **interim technical debt**, not the M-P1 art read (VD §5 PBR stands). Sequencing: this iteration's Gate 1 may verify **G16/G17 (rig + animation) on the current unlit heroes** so animation correctness is judged without waiting on the WebGL sampler-budget fix; a **full Gate 1 pass — including G2/G3/G4 PBR per VD §5 — is required before this feature is presented at Gate 2.** PBR restoration is a technical problem (shadow-sampler budget), spec'd by Grok; the design bar does not move.
 - **R9 — Android racks stay absent.** Racks are P4-owned (M-P4); per §11 universal-bar exception, later-phase assets may stay placeholder — at P1 they are simply not present in frame. No rack stand-ins are added.
 - **R10 — Per-surface impacts at P1 = metal wall vs deck floor.** P1 has no composite/damage-state surfaces (those arrive with P3 wall classes); "per-surface" at M-P1 means a distinct, material-appropriate response for vertical metal (spark burst) vs deck plate (spark + brief dust/scorch read). Dust-on-composite is deferred with the P3 families.
 - **R11 — Haze implementation is render-side and camera-safe.** Volumetric haze must never obscure the gameplay mid-plane (VD §7 rule 1) and is exempt from the "no ambient confetti" anti-goal only as corridor atmosphere per §4.2 — it carries alarm-state information (density scales with alarm level).
@@ -80,7 +88,9 @@ Every goal is binary-verifiable in the running build. Mapping: **U#** = visual_d
 
 | In scope (ships with this feature) | Deferred (owner / vehicle) |
 |---|---|
-| Player, security-crew, rifle hero GLBs (M1–M3) | Locomotion/ragdoll animation — post-P1 S3 polish (R8) |
+| Player, security-crew, rifle hero GLBs (M1–M3) | Reload animation, skeletal hit-react, player death animation, ragdoll, facial/finger animation — post-P1 S3 polish (R13) |
+| **Hero skeletal rigs + minimum animation set (M10, G16–G17, R13/R14)** | Advanced locomotion (blends, strafes, turns-in-place beyond the single `move` cycle) — post-P1 S3 polish |
+| Rifle grip-socket attachment (M11) | Independently animated rifle (bolt/mag moving parts) — post-P1 S3 polish |
 | Deck PBR materials, authored wear, trim + signage (M4) | Wall damage states `intact/cracked/failed` — P3 / M-P3 |
 | AL0 + AL1 lighting rows, practicals, contact shadows (M5) | AL2/AL3/Meltdown/Vacuum/Reactor rows — P2 / M-P2, P3 / M-P3 |
 | Corridor volumetric haze baseline (M6) | Haze density scaling beyond AL0/AL1 — follows later rows |
@@ -95,19 +105,27 @@ All original, CC BY 4.0, phase-prefixed (charter §5). Models: glTF/GLB + standa
 
 | Asset | Path (assets/) | Reference board | Status |
 |-------|----------------|-----------------|--------|
-| Player boarder hero model (2K PBR) | `models/p1_player_boarder.glb` (+ `textures/p1_player_boarder_{albedo,metal,rough,normal}.png` if external) | Board A — player boarder | pending |
-| Security crew hero model (2K PBR) | `models/p1_security_crew.glb` (+ `textures/p1_security_crew_*.png` if external) | Inherited — p1-enemy-baseline board (design synthesis binding) | pending |
-| Rifle hero model (2K PBR) | `models/p1_rifle.glb` (+ `textures/p1_rifle_*.png` if external) | Board B — rifle | pending |
-| Hull-steel trim sheet (1K, structure) | `textures/p1_hull_steel_trim_{albedo,metal,rough,normal}.png` | Board C — deck materials & lighting | pending |
-| Deck plate floor set (1K) | `textures/p1_deck_plate_{albedo,metal,rough,normal}.png` | Board C | pending |
-| Wall panel set (1K) | `textures/p1_wall_panel_{albedo,metal,rough,normal}.png` | Board C | pending |
-| Ceiling panel set (1K) | `textures/p1_ceiling_panel_{albedo,metal,rough,normal}.png` | Board C | pending |
-| Authored wear masks (hand height / thresholds / door frames) | `textures/p1_wear_masks.png` | Board C (per VD §5 authored-wear rule) | pending |
-| Section signage atlas (VD §3 palette, deck-plan mockup v2.2 typography) | `textures/p1_section_signage_atlas.png` | Board C + deck-plan mockup palette | pending |
-| Corridor light fixture prop (kit-bash GLB) | `models/p1_corridor_light_fixture.glb` | Board C | pending |
-| Amber beacon fixture prop (kit-bash GLB, AL1 practical) | `models/p1_amber_beacon.glb` | Board C | pending |
+| Player boarder hero model (2K PBR) | `models/p1_player_boarder.glb` (+ `textures/p1_player_boarder_{albedo,metal,rough,normal}.png` if external) | Board A — player boarder | **delivered (v2, 2026-07-30) — rigged + animated (R13/R14): R14 21-joint skeleton, clips `idle`/`move`/`aim_fire`, supersedes rigid v1 at same path** |
+| Security crew hero model (2K PBR) | `models/p1_security_crew.glb` (+ `textures/p1_security_crew_*.png` if external) | Inherited — p1-enemy-baseline board (design synthesis binding) | **delivered (v2, 2026-07-30) — rigged + animated (R13/R14): R14 21-joint skeleton, clips `idle`/`move`/`aim_fire`/`death`, supersedes rigid v1 at same path** |
+| Rifle hero model (2K PBR) | `models/p1_rifle.glb` (+ `textures/p1_rifle_*.png` if external) | Board B — rifle | delivered (v1) — unchanged; `muzzle` anchor parity R6 must survive the grip-socket constraint (M11) |
+| Hull-steel trim sheet (1K, structure) | `textures/p1_hull_steel_trim_{albedo,metal,rough,normal}.png` | Board C — deck materials & lighting | delivered (v1) |
+| Deck plate floor set (1K) | `textures/p1_deck_plate_{albedo,metal,rough,normal}.png` | Board C | delivered (v1) |
+| Wall panel set (1K) | `textures/p1_wall_panel_{albedo,metal,rough,normal}.png` | Board C | delivered (v1) |
+| Ceiling panel set (1K) | `textures/p1_ceiling_panel_{albedo,metal,rough,normal}.png` | Board C | delivered (v1) |
+| Authored wear masks (hand height / thresholds / door frames) | `textures/p1_wear_masks.png` | Board C (per VD §5 authored-wear rule) | delivered (v1) |
+| Section signage atlas (VD §3 palette, deck-plan mockup v2.2 typography) | `textures/p1_section_signage_atlas.png` | Board C + deck-plan mockup palette | delivered (v1) |
+| Corridor light fixture prop (kit-bash GLB) | `models/p1_corridor_light_fixture.glb` | Board C | delivered (v1) |
+| Amber beacon fixture prop (kit-bash GLB, AL1 practical) | `models/p1_amber_beacon.glb` | Board C | delivered (v1) |
 
 *Texture generator scripts (R3) commit under `tools/` alongside the assets they emit. Reference image files themselves are never committed (charter v1.11) — index only.*
+
+**Blender MCP rigging/animation authoring steps (R13/R14 — hero re-delivery):** all original work, CC BY 4.0, same export paths (git history supersedes the rigid v1 GLBs).
+1. Open the authored player/crew hero scenes from the v1 delivery (meshes, materials, and proportions are accepted work — do not re-sculpt silhouettes).
+2. Build the humanoid armature per R14 naming, including the `hand_r_grip` socket bone aligned to the current rifle attach offset (muzzle anchor parity R6).
+3. Skin the mesh (≤4 bone influences/vertex, normalized weights); QA extreme poses for volume collapse at gameplay camera.
+4. Author clips at 30 fps, in place (zero root translation): `idle` (subtle combat-ready sway), `move` (single run/walk cycle authored to a reference speed, playback-rate-scaled in-engine per G17b), `aim_fire` (upper-body two-hand grip hold compatible with the muzzle flash + tracer origins), `death` (crew only — fall to deck, ends settled, no ragdoll).
+5. Export GLB with skin + named clips, +Y-up, identical scale/origin to the shipped rigid GLBs; LOD0–LOD3 on the shared skeleton.
+6. Validate before handoff: clip list/names, bone count/naming, muzzle-parity QA render through `idle`/`move`/`aim_fire`, file loads in a three.js AnimationMixer smoke check.
 
 ## Acceptance criteria (Gate 1 evidence plan)
 
@@ -127,7 +145,16 @@ All original, CC BY 4.0, phase-prefixed (charter §5). Models: glTF/GLB + standa
 | S8 — Before/after side-by-side (blockout `75675b4` vs feature build, same camera) | G1, overall milestone |
 | S9 — FPS overlay in S4 scene | G14 |
 | S10 — License/manifest check: shipped asset tree listing | G15 license scan |
+| S11 — Animation frame sequence (video capture acceptable): player `idle` → `move` at 6 m/s → stationary; crew `move` at patrol 2.0 / investigate 3.5 / chase 4.5 m/s — playback-rate match visible | G16, G17a/b |
+| S12 — Sustained-fire sequence: player `aim_fire` hold with muzzle flash + tracer origins pixel-consistent with the pre-rig build (R6 parity through the pose) | G17c, M11, R6 |
+| S13 — Crew `death`: fall on sim death → settled on deck → neutralized count increments (sim-visible event unchanged) | G17d, G15 |
+| S14 — Foot-slide check: `move` loop frames against a fixed ground reference at the 60° camera — slide within ±10 % (VD §7 rule 8) | G17e |
+| S15 — Silhouette-read sweep: hostile silhouette (VD §7 rule 2) holds across every clip's extremes in the S4 densest-combat scene | G3, G17, VD §7 rules 2+8 |
 
 ## Doc/visual bumps
 
-**None required.** Every ruling above is pack-level presentation direction that adds no rule, number, or mechanic to the design doc, and VD §11 M-P1 + §3–§8 already fully specify the bar (R5 wedge retirement and R8 no-animation are absences of presentation scaffolding, not rule changes). If the clarification loop (§3.2a) surfaces anything that *does* change a rule, it lands in the design doc with a version bump before the spec finalizes — standard path.
+**visual_direction bumped to v1.7** (2026-07-30, this iteration): **§7 rule 8** added — animation readability (in-place/no-root-motion, foot-slide ±10 %, animation never the sole telegraph carrier, silhouette holds through every clip); **§11 M-P1 row** amended — player/crew hero models now carry the skeletal rig + minimum animation set as part of the milestone bar. This records the Director's R8 override where Gate 1 will read it.
+
+**Design doc: no bump.** Animation mirrors existing, already-accepted sim numbers (player 6 m/s; crew 2.0/3.5/4.5 m/s; 0.5 s wind-up; stationary ATTACK; crew death; player death → score screen — all §10/§3 v1.15) and adds no rule, number, or mechanic; hero presentation standards live in the visual direction doc by charter §1. R8 was a pack-level ruling, never a doc rule, so its supersession is pack-level too.
+
+**Roadmap: no bump.** Scope stays inside P1 #9 (`p1-visual-pass`); the roadmap's M-P1 cell cites `visual_direction §11`, which now carries the amended bar — the row remains accurate as written. The P1 checkpoint rule (visual pass Gate-2 accepted before sign-off) is unchanged.

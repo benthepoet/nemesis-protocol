@@ -48,6 +48,10 @@ export async function createRenderer(canvas: HTMLCanvasElement): Promise<AppRend
     powerPreference: 'high-performance',
   });
   applyRendererColorPipeline(renderer);
+  if (renderer instanceof THREE.WebGLRenderer) {
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  }
   return wrapRenderer(renderer, 'webgl2');
 }
 

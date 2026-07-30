@@ -146,3 +146,38 @@ npm run test:run   # aimAssist, missionHotSwap, gamepadOnlyLoop, bindingsAudit +
 npm run build
 npm run dev        # right-stick assist near crew; mouse aim unchanged; KBM↔pad hot-swap mid-fight
 ```
+
+## Visual pass (p1-visual-pass / M-P1)
+
+Presentation-only milestone: hero GLBs, deck PBR textures, AL0/AL1 lighting, combat VFX surfaces, HUD/shell chrome. **No sim, tuning, or binding changes** — `hashSimState` / `hashDeckGraph` stay bit-identical.
+
+**Asset paths (canonical):**
+
+- Models: `assets/models/p1_*.glb`
+- Textures: `assets/textures/p1_*.png`
+- Served at `/assets/…` in dev (`vite` plugin) and copied to `dist/assets/` on build.
+
+**Regenerate procedural stand-ins (R3):**
+
+```bash
+node tools/textures/generate-p1-textures.mjs
+node tools/models/generate-p1-placeholders.mjs
+```
+
+Replace placeholders with Kimi-authored assets at the same paths before Gate 1.
+
+**AL0 / AL1:** AL0 = warm keys + corridor practicals + light haze (`HAZE_DENSITY_AL0`). AL1 = corridor amber beacons + denser haze (`HAZE_DENSITY_AL1`); rooms unchanged. Alarm never de-escalates in sim.
+
+**Verification:**
+
+```bash
+npm run test:run   # 224 tests incl. heroAnimation, heroMuzzleParityAnim, heroPbrRestore, visualPassDeterminism
+npm run build
+npm run dev        # FPS overlay (`#fps-overlay`) for G14; smoke heroes, AL1 beacons, HUD skin
+```
+
+**Hero animation (G16–G17 / M10–M11):** rigged GLBs drive render-only `AnimationMixer` instances — clips `idle`, `move`, `aim_fire`, and crew `death`. No root motion (sim still owns position/yaw). Move playback rate scales from presentation speed (player **6 m/s**; crew **2.0 / 3.5 / 4.5 m/s** by FSM). Rifle parents to bone `hand_r_grip` when present.
+
+**`HERO_MATERIAL_MODE` (`src/config.ts`, default `pbr`):** restores `MeshStandardMaterial` hero maps within the **two** shadow-casting directional cap (`SHADOW_CASTING_DIRECTIONAL_MAX`). Boot resolves mode from WebGL texture-unit headroom; debug unlit tune-4 via `?heroMaterial=basic` or `VITE_HERO_MATERIAL_MODE=basic`. DEV marker: `document.body.dataset.nemesisHeroTune === 'pbr'`.
+
+Gate 1 screenshots S1–S10: manual capture plan (optional DEV screenshot harness not landed).
