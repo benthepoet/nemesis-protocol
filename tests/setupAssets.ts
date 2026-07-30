@@ -17,6 +17,7 @@ globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise
           : 'application/octet-stream';
       return new Response(body, { status: 200, headers: { 'Content-Type': type } });
     }
+    return new Response('Not Found', { status: 404, statusText: 'Not Found' });
   }
   return nativeFetch(input, init);
 };
