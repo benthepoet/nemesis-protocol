@@ -25,4 +25,4 @@
 | 2026-07-30 | Stage 3 (anim) | Composer @ `feat/p1-visual-pass-anim` — spec v2 tasks **T21–T36**: AnimationMixer + skinned clones, `hand_r_grip` rifle attach + R6 muzzle sync, `HERO_MATERIAL_MODE` basic/pbr, hit-flash on SkinnedMesh; **224** tests + `npm run build` green; PR #12 → `integration` |
 | 2026-07-30 | Gate 2 (Director) | Director playtest on `feat/p1-visual-pass-anim`: **"Looks good"** — hero rig + animation read accepted for merge; remaining visual-pass feedback may continue on `integration`. |
 
-**Final state:** *in progress* · PR #12 pending merge · pack v2 + anim Stage 3 Director OK · Gate 1 (full M-P1 incl. PBR G2–G4 per R15) pending · **Design doc version at acceptance:** —
+**Final state:** *in progress* · merged to `integration` @ `7f835b4` (anim + rigged GLBs + spec v2) · Director anim playtest OK · Gate 1 full M-P1 (incl. PBR G2–G4 per R15) pending · **Design doc version at acceptance:** —
