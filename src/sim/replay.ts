@@ -1,6 +1,7 @@
 import type { CollisionWorld } from '../deck/collision.js';
 import type { DeckGraph } from '../deck/types.js';
 import type { InputCommand } from './commands.js';
+import { integrateCrewAi } from '../ai/integrateCrewAi.js';
 import { integrateCombat } from '../combat/integrateCombat.js';
 import { hashSimState } from './hash.js';
 import { integratePlayerMotion } from './playerMotion.js';
@@ -31,6 +32,7 @@ export function replay(
     const tickCmds = byTick.get(t) ?? [];
     applyCommands(state, tickCmds);
     integratePlayerMotion(state, collisionWorld);
+    integrateCrewAi(state, collisionWorld, graph);
     integrateCombat(state, collisionWorld, graph);
     fixedStep(state);
   }

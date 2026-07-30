@@ -1,4 +1,5 @@
 import type { ActionId } from './commands.js';
+import type { CrewAiState } from '../ai/types.js';
 
 export type EntityId = number & { readonly __brand: 'EntityId' };
 
@@ -26,8 +27,13 @@ export interface WorldMeta {
   interactHeld: boolean;
   cancelHeld: boolean;
   playerId: EntityId | null;
-  /** Ordered stand-in ids: spine, cargo, barracks. */
-  standInIds: EntityId[];
+  /** Ordered crew entity ids from spawner (length 8 after spawn). */
+  crewIds: EntityId[];
+  /** P1 stub: 0 or 1. */
+  alarmLevel: 0 | 1;
+  lkpValid: boolean;
+  lkpX: number;
+  lkpZ: number;
   fireHeld: boolean;
   magazine: number;
   reserve: number;
@@ -43,4 +49,5 @@ export interface SimState {
   meta: WorldMeta;
   /** Per-projectile range traveled (m); cloned for replay determinism (G8). */
   projectileTraveledM: Map<EntityId, number>;
+  crewAi: Map<EntityId, CrewAiState>;
 }

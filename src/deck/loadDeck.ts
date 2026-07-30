@@ -1,5 +1,7 @@
 import { polygonSvgToWorld, rectSvgToWorld, svgToWorld } from './transform.js';
 import type {
+  CrewSpawnPost,
+  CrewSpawnPostDef,
   DeckDefinition,
   DeckGraph,
   DeckNode,
@@ -142,6 +144,39 @@ function parseWallSegment(raw: unknown, path: string): WallSegmentDef {
   };
 }
 
+function parseCrewSpawnPost(raw: unknown, path: string): CrewSpawnPostDef {
+  if (raw === null || typeof raw !== 'object') {
+    throw new DeckLoadError('expected crew spawn post object', path);
+  }
+  const waypointsRaw = assertField(raw, 'waypoints', path);
+  if (!Array.isArray(waypointsRaw)) {
+    throw new DeckLoadError('expected waypoints array', `${path}.waypoints`);
+  }
+  const spawnRaw = assertField(raw, 'spawn', path);
+  if (spawnRaw === null || typeof spawnRaw !== 'object') {
+    throw new DeckLoadError('expected spawn object', `${path}.spawn`);
+  }
+  return {
+    id: assertString(assertField(raw, 'id', path), `${path}.id`),
+    homeRoomId: assertString(assertField(raw, 'homeRoomId', path), `${path}.homeRoomId`),
+    role: assertString(assertField(raw, 'role', path), `${path}.role`) as CrewSpawnPostDef['role'],
+    spawn: {
+      x: assertNumber(assertField(spawnRaw, 'x', `${path}.spawn`), `${path}.spawn.x`),
+      y: assertNumber(assertField(spawnRaw, 'y', `${path}.spawn`), `${path}.spawn.y`),
+      yawDeg: assertNumber(assertField(spawnRaw, 'yawDeg', `${path}.spawn`), `${path}.spawn.yawDeg`),
+    },
+    waypoints: waypointsRaw.map((wp, i) => {
+      if (wp === null || typeof wp !== 'object') {
+        throw new DeckLoadError('expected waypoint object', `${path}.waypoints[${i}]`);
+      }
+      return {
+        x: assertNumber(assertField(wp, 'x', `${path}.waypoints[${i}]`), `${path}.waypoints[${i}].x`),
+        y: assertNumber(assertField(wp, 'y', `${path}.waypoints[${i}]`), `${path}.waypoints[${i}].y`),
+      };
+    }),
+  };
+}
+
 export function loadDeckDefinition(raw: unknown): DeckDefinition {
   if (raw === null || typeof raw !== 'object') {
     throw new DeckLoadError('expected deck definition object');
@@ -151,12 +186,14 @@ export function loadDeckDefinition(raw: unknown): DeckDefinition {
   const wallsRaw = assertField(raw, 'wallSegments', 'root');
   const racksRaw = assertField(raw, 'androidRacks', 'root');
   const objectivesRaw = assertField(raw, 'objectives', 'root');
+  const crewSpawnRaw = assertField(raw, 'crewSpawnTable', 'root');
 
   if (!Array.isArray(nodesRaw)) throw new DeckLoadError('expected nodes array', 'nodes');
   if (!Array.isArray(doorsRaw)) throw new DeckLoadError('expected doorEdges array', 'doorEdges');
   if (!Array.isArray(wallsRaw)) throw new DeckLoadError('expected wallSegments array', 'wallSegments');
   if (!Array.isArray(racksRaw)) throw new DeckLoadError('expected androidRacks array', 'androidRacks');
   if (!Array.isArray(objectivesRaw)) throw new DeckLoadError('expected objectives array', 'objectives');
+  if (!Array.isArray(crewSpawnRaw)) throw new DeckLoadError('expected crewSpawnTable array', 'crewSpawnTable');
 
   const scaleRaw = assertField(raw, 'scale', 'root');
   if (scaleRaw === null || typeof scaleRaw !== 'object') {
@@ -194,6 +231,7 @@ export function loadDeckDefinition(raw: unknown): DeckDefinition {
         y: assertNumber(assertField(o, 'y', `objectives[${i}]`), `objectives[${i}].y`),
       };
     }),
+    crewSpawnTable: crewSpawnRaw.map((p, i) => parseCrewSpawnPost(p, `crewSpawnTable[${i}]`)),
   };
 }
 
@@ -240,6 +278,20 @@ function convertWall(def: WallSegmentDef): WallSegment {
   };
 }
 
+function convertCrewSpawnPost(def: CrewSpawnPostDef): CrewSpawnPost {
+  return {
+    id: def.id,
+    homeRoomId: def.homeRoomId,
+    role: def.role,
+    spawn: {
+      x: svgToWorld(def.spawn.x, def.spawn.y).x,
+      z: svgToWorld(def.spawn.x, def.spawn.y).z,
+      yawRad: (def.spawn.yawDeg * Math.PI) / 180,
+    },
+    waypoints: def.waypoints.map((wp) => svgToWorld(wp.x, wp.y)),
+  };
+}
+
 export function buildDeckGraph(def: DeckDefinition): DeckGraph {
   const nodes = new Map<string, DeckNode>();
   for (const nodeDef of def.nodes) {
@@ -267,6 +319,7 @@ export function buildDeckGraph(def: DeckDefinition): DeckGraph {
         position: svgToWorld(obj.x, obj.y),
       })),
     ),
+    crewSpawnTable: Object.freeze(def.crewSpawnTable.map(convertCrewSpawnPost)),
   };
 
   return Object.freeze(graph);

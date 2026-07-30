@@ -12,7 +12,7 @@ import type { InputCommand } from '../../src/sim/commands.js';
 describe('damage (G3)', () => {
   it('E7: projectile hit stand-in reduces HP 100→75 with impact events', () => {
     const harness = createCombatTestHarness();
-    const standId = harness.state.meta.standInIds[0]!;
+    const standId = harness.state.meta.crewIds[2]!;
     const stand = getEntity(harness.state, standId)!;
     const player = getEntity(harness.state, harness.state.meta.playerId!)!;
     player.x = stand.x - 1.5;
@@ -28,7 +28,7 @@ describe('damage (G3)', () => {
 
   it('E8: four projectile hits kill stand-in; later shots pass through', () => {
     const harness = createCombatTestHarness();
-    const standId = harness.state.meta.standInIds[0]!;
+    const standId = harness.state.meta.crewIds[2]!;
     const stand = getEntity(harness.state, standId)!;
     const player = getEntity(harness.state, harness.state.meta.playerId!)!;
     player.x = stand.x - 1.5;
@@ -56,7 +56,7 @@ describe('damage (G3)', () => {
 
   it('E9: applyDamage(999) clamps hp at 0', () => {
     const harness = createCombatTestHarness();
-    const standId = harness.state.meta.standInIds[0]!;
+    const standId = harness.state.meta.crewIds[2]!;
     applyDamage(harness.state, standId, 999);
     expect(getEntity(harness.state, standId)!.hp).toBe(0);
   });

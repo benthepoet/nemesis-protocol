@@ -44,7 +44,7 @@ Both emit press/release commands into the sim meta counters (no gameplay HUD bey
 | **Mouse LMB / gamepad RT** | Fire |
 | **R / gamepad face west** | Reload |
 
-With `?debugCamera=1` in dev, free-fly owns **KeyE** (vertical rise); keyboard **E** does not emit interact. Default boot uses follow camera (~60° pitch), player capsule, three crew stand-ins, combat VFX, DEV combat readout, and occupied-room ceiling cutaway.
+With `?debugCamera=1` in dev, free-fly owns **KeyE** (vertical rise); keyboard **E** does not emit interact. Default boot uses follow camera (~60° pitch), player capsule, **eight** security-crew patrol posts, combat VFX, DEV combat readout (alarm + AI states), and occupied-room ceiling cutaway.
 
 Verification:
 
@@ -72,6 +72,16 @@ World-space **projectile tracers** (R7) and a persistent **aim-direction line** 
 npm run test:run   # includes tests/combat/telegraphs.test.ts + G10(e) determinism
 npm run build
 npm run dev        # LMB/RT fire shows moving tracers; aim line dim at rest, bright while fire held
+```
+
+## Enemy baseline (p1-enemy-baseline)
+
+Eight deck-authored **security crew** (`crewSpawnTable` in `deck03.json`): two spine rovers + six room posts. **AL0 / AL1** alarm stub (no de-escalation); shared **LKP** on trip; crew FSM (patrol → chase → attack → investigate). Hostile tracers use `#ff5252` halo; ATTACK wind-up shows red pre-glow (render-only). DEV readout adds `ALn`, LKP coords, and `crewId:STATE` for all crew.
+
+```bash
+npm run test:run   # combat-core regression + tests/ai/* + tests/deck/crewSpawnTable.test.ts
+npm run build
+npm run dev        # AL0 patrol; fire in airlock without LOS → AL1 converge; sight cone → chase/attack
 ```
 
 ## Deck 03 (p1-deck-geometry)

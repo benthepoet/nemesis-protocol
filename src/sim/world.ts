@@ -16,7 +16,11 @@ function defaultMeta(): SimState['meta'] {
     interactHeld: false,
     cancelHeld: false,
     playerId: null,
-    standInIds: [],
+    crewIds: [],
+    alarmLevel: 0,
+    lkpValid: false,
+    lkpX: 0,
+    lkpZ: 0,
     fireHeld: false,
     magazine: MAGAZINE_SIZE,
     reserve: RESERVE_AMMO_START,
@@ -33,6 +37,7 @@ export function createWorld(): SimState {
     entities: new Map(),
     meta: defaultMeta(),
     projectileTraveledM: new Map(),
+    crewAi: new Map(),
   };
   attachEntityIdAllocator(state, 1);
   return state;
@@ -98,8 +103,11 @@ export function cloneSimState(state: SimState): SimState {
     tick: state.tick,
     nextEntityId: state.nextEntityId,
     entities,
-    meta: { ...state.meta },
+    meta: { ...state.meta, crewIds: [...state.meta.crewIds] },
     projectileTraveledM: new Map(state.projectileTraveledM),
+    crewAi: new Map(
+      [...state.crewAi.entries()].map(([id, ai]) => [id, { ...ai }]),
+    ),
   };
   attachEntityIdAllocator(cloned, cloned.nextEntityId);
   return cloned;

@@ -1,4 +1,9 @@
 import {
+  ACTOR_PROXY_RADIUS_M,
+  CREW_POPULATION,
+  SPAWN_CLEARANCE_M,
+} from '../config.js';
+import {
   allReachableFrom,
   bordersClassA,
   breachNodes,
@@ -7,6 +12,9 @@ import {
   listWallSegments,
   wallsForRoom,
 } from './graph.js';
+import { buildCollisionWorld, circleHitsWalls } from './collision.js';
+import { getNode } from './graph.js';
+import { pointInNodeFootprint } from './roomQuery.js';
 import type { DeckGraph, DoorEdge, WallClass } from './types.js';
 
 export interface ValidationIssue {
@@ -208,5 +216,58 @@ export function validateDeckGraph(graph: DeckGraph): ValidationReport {
     }
   }
 
+  issues.push(...validateCrewSpawnTable(graph));
+
   return { ok: issues.length === 0, issues };
+}
+
+export function validateCrewSpawnTable(graph: DeckGraph): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const table = graph.crewSpawnTable;
+  if (table.length !== CREW_POPULATION) {
+    issues.push({
+      code: 'CREW_SPAWN_COUNT',
+      message: `expected ${CREW_POPULATION} crew spawn posts, got ${table.length}`,
+    });
+    return issues;
+  }
+
+  const world = buildCollisionWorld(graph);
+  const clearanceR = ACTOR_PROXY_RADIUS_M + SPAWN_CLEARANCE_M;
+  const positions: { x: number; z: number }[] = [];
+
+  for (const post of table) {
+    if (!graph.nodes.has(post.homeRoomId)) {
+      issues.push({ code: 'CREW_SPAWN_ROOM', message: `post ${post.id} unknown homeRoomId` });
+    }
+    if (post.waypoints.length < 2) {
+      issues.push({ code: 'CREW_SPAWN_LOOP', message: `post ${post.id} needs ≥2 waypoints` });
+    }
+
+    const { x, z } = post.spawn;
+    const home = getNode(graph, post.homeRoomId);
+    if (!pointInNodeFootprint(home, x, z)) {
+      issues.push({ code: 'CREW_SPAWN_CONTAIN', message: `post ${post.id} spawn outside ${post.homeRoomId}` });
+    }
+    if (circleHitsWalls(world, x, z, clearanceR)) {
+      issues.push({ code: 'CREW_SPAWN_CLEAR', message: `post ${post.id} spawn clearance blocked` });
+    }
+    for (const wp of post.waypoints) {
+      if (!pointInNodeFootprint(home, wp.x, wp.z)) {
+        issues.push({
+          code: 'CREW_WAYPOINT_CONTAIN',
+          message: `post ${post.id} waypoint outside ${post.homeRoomId}`,
+        });
+      }
+    }
+    for (const prev of positions) {
+      const minDist = 2 * clearanceR;
+      if (Math.hypot(x - prev.x, z - prev.z) < minDist) {
+        issues.push({ code: 'CREW_SPAWN_OVERLAP', message: `post ${post.id} overlaps another spawn` });
+      }
+    }
+    positions.push({ x, z });
+  }
+
+  return issues;
 }

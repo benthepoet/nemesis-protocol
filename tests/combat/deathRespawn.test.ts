@@ -53,7 +53,7 @@ describe('death and respawn (G4)', () => {
 
   it('E11: stand-in corpse remains in entity map', () => {
     const harness = createCombatTestHarness();
-    const standId = harness.state.meta.standInIds[0]!;
+    const standId = harness.state.meta.crewIds[2]!;
     applyDamage(harness.state, standId, RIFLE_DAMAGE_PER_HIT * 4);
     expect(harness.state.entities.has(standId)).toBe(true);
     expect(getEntity(harness.state, standId)!.kind).toBe('security-crew');

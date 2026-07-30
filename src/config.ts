@@ -172,7 +172,52 @@ export const TRACER_CORE_COLOR_HEX = '#ffffff' as const;
 export const TRACER_HALO_COLOR_HEX = PLAYER_COLOR_HEX;
 
 /** Soft budget for concurrent tracer meshes (R7). */
-export const TRACER_MAX_CONCURRENT = 12 as const;
+export const TRACER_MAX_CONCURRENT = 24 as const;
+
+/** Alarm stub levels (P1). */
+export const ALARM_LEVEL_AL0 = 0 as const;
+export const ALARM_LEVEL_AL1 = 1 as const;
+
+/** Crew population (Deck 03). Design §10 / pack R2. */
+export const CREW_POPULATION = 8 as const;
+
+/** Patrol / investigate / chase speeds (m/s). */
+export const CREW_PATROL_SPEED_MPS = 2.0 as const;
+export const CREW_INVESTIGATE_SPEED_MPS = 3.5 as const;
+export const CREW_CHASE_SPEED_MPS = 4.5 as const;
+
+/** Waypoint pause on PATROL (seconds / ticks). */
+export const CREW_WAYPOINT_PAUSE_SEC = 2.0 as const;
+export const CREW_WAYPOINT_PAUSE_TICKS = Math.round(CREW_WAYPOINT_PAUSE_SEC * TICK_HZ);
+
+/** Perception. */
+export const CREW_SIGHT_RANGE_M = 20 as const;
+export const CREW_SIGHT_CONE_DEG = 110 as const;
+export const CREW_SIGHT_HALF_ANGLE_RAD = (CREW_SIGHT_CONE_DEG / 2) * (Math.PI / 180);
+export const CREW_DETECTION_DELAY_SEC = 0.25 as const;
+export const CREW_DETECTION_DELAY_TICKS = Math.round(CREW_DETECTION_DELAY_SEC * TICK_HZ);
+
+/** Attack. */
+export const CREW_ATTACK_RANGE_M = 14 as const;
+export const CREW_ATTACK_WINDUP_SEC = 0.5 as const;
+export const CREW_ATTACK_WINDUP_TICKS = Math.round(CREW_ATTACK_WINDUP_SEC * TICK_HZ);
+export const CREW_SIDEARM_DAMAGE = 10 as const;
+export const CREW_SIDEARM_INTERVAL_SEC = 0.9 as const;
+export const CREW_FIRE_INTERVAL_TICKS = Math.round(CREW_SIDEARM_INTERVAL_SEC * TICK_HZ);
+export const CREW_SIDEARM_SPREAD_HALF_DEG = 4 as const;
+
+/** Lost-contact INVESTIGATE scan. */
+export const CREW_INVESTIGATE_SCAN_SEC = 4.0 as const;
+export const CREW_INVESTIGATE_SCAN_TICKS = Math.round(CREW_INVESTIGATE_SCAN_SEC * TICK_HZ);
+
+/** Arrival tolerance at waypoint / LKP (m). */
+export const CREW_ARRIVAL_EPSILON_M = 0.15 as const;
+
+/** Deterministic spread stream seed (sim-only). */
+export const SIM_SPREAD_SEED = 0x4e3d15c1 as const;
+
+/** Hostile tracer halo (VD §3). */
+export const TRACER_HOSTILE_HALO_COLOR_HEX = HOSTILE_COLOR_HEX;
 
 /** Aim-line height above floor (m). */
 export const AIM_LINE_Y_M = 0.5 as const;

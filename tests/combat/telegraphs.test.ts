@@ -51,8 +51,11 @@ describe('combat telegraphs (G10)', () => {
     const az = 0;
     const bx = 20;
     const bz = 0;
-    const standInId = harness.state.meta.standInIds[0]!;
-    const standIn = getEntity(harness.state, standInId)!;
+    const crewId = harness.state.meta.crewIds.find((id) => {
+      const e = getEntity(harness.state, id)!;
+      return Math.hypot(e.x - 8, e.z) < 2;
+    }) ?? harness.state.meta.crewIds[0]!;
+    const standIn = getEntity(harness.state, crewId)!;
     standIn.x = 8;
     standIn.z = 0;
     standIn.alive = true;

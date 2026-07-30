@@ -12,10 +12,12 @@ import {
   PROJECTILE_KIND,
   PROJECTILE_MAX_RANGE_M,
   PROJECTILE_MUZZLE_OFFSET_M,
+  SECURITY_CREW_KIND,
   TRACER_CORE_COLOR_HEX,
   TRACER_CORE_RADIUS_M,
   TRACER_HALO_COLOR_HEX,
   TRACER_HALO_RADIUS_M,
+  TRACER_HOSTILE_HALO_COLOR_HEX,
   TRACER_LENGTH_M,
   TRACER_MAX_CONCURRENT,
   TRACER_Y_M,
@@ -50,7 +52,7 @@ function telegraphMaterial(colorHex: string, opacity: number): THREE.MeshBasicMa
   });
 }
 
-function createTracerGroup(): THREE.Group {
+function createTracerGroup(haloHex: string): THREE.Group {
   const group = new THREE.Group();
   const coreGeo = new THREE.CylinderGeometry(
     TRACER_CORE_RADIUS_M,
@@ -65,10 +67,19 @@ function createTracerGroup(): THREE.Group {
     8,
   );
   const core = new THREE.Mesh(coreGeo, telegraphMaterial(TRACER_CORE_COLOR_HEX, 1));
-  const halo = new THREE.Mesh(haloGeo, telegraphMaterial(TRACER_HALO_COLOR_HEX, 0.85));
+  const halo = new THREE.Mesh(haloGeo, telegraphMaterial(haloHex, 0.85));
   group.add(halo);
   group.add(core);
+  group.userData.haloHex = haloHex;
   return group;
+}
+
+function tracerHaloForProjectile(state: SimState, projId: EntityId): string {
+  const proj = getEntity(state, projId);
+  if (!proj?.ownerId) return TRACER_HALO_COLOR_HEX;
+  const owner = getEntity(state, proj.ownerId);
+  if (owner?.kind === SECURITY_CREW_KIND) return TRACER_HOSTILE_HALO_COLOR_HEX;
+  return TRACER_HALO_COLOR_HEX;
 }
 
 function orientHorizontalSegment(mesh: THREE.Mesh, sx: number, sy: number, sz: number, ex: number, ez: number): void {
@@ -104,6 +115,7 @@ export function createCombatTelegraphs(
 ): CombatTelegraphs {
   let enabled = opts?.enabled !== false;
   const tracers = new Map<EntityId, THREE.Group>();
+  const windupGlows = new Map<EntityId, THREE.PointLight>();
   const aimLine = new THREE.Group();
   const aimHalo = createAimSegmentMesh(AIM_LINE_HALO_RADIUS_M, AIM_LINE_HALO_COLOR_HEX);
   const aimCore = createAimSegmentMesh(AIM_LINE_CORE_RADIUS_M, AIM_LINE_CORE_COLOR_HEX);
@@ -168,13 +180,39 @@ export function createCombatTelegraphs(
 
       for (const id of liveProjectileIds) {
         const entity = getEntity(state, id)!;
+        const haloHex = tracerHaloForProjectile(state, id);
         let group = tracers.get(id);
         if (!group) {
-          group = createTracerGroup();
+          group = createTracerGroup(haloHex);
           tracers.set(id, group);
           scene.add(group);
+        } else if (group.userData.haloHex !== haloHex) {
+          const haloMesh = group.children[0] as THREE.Mesh;
+          (haloMesh.material as THREE.MeshBasicMaterial).color.set(haloHex);
+          group.userData.haloHex = haloHex;
         }
         syncTracer(entity.yaw, entity.x, entity.z, group);
+      }
+
+      for (const crewId of state.meta.crewIds) {
+        const ai = state.crewAi.get(crewId);
+        const entity = getEntity(state, crewId);
+        if (!entity?.alive || !ai || ai.fsm !== 'ATTACK' || ai.windupTicksRemaining <= 0) {
+          const light = windupGlows.get(crewId);
+          if (light) {
+            scene.remove(light);
+            light.dispose();
+            windupGlows.delete(crewId);
+          }
+          continue;
+        }
+        let light = windupGlows.get(crewId);
+        if (!light) {
+          light = new THREE.PointLight(TRACER_HOSTILE_HALO_COLOR_HEX, 0.5, 4);
+          scene.add(light);
+          windupGlows.set(crewId, light);
+        }
+        light.position.set(entity.x, 1.0, entity.z);
       }
 
       const playerId = state.meta.playerId;
@@ -213,6 +251,11 @@ export function createCombatTelegraphs(
       for (const id of [...tracers.keys()]) {
         removeTracer(id);
       }
+      for (const light of windupGlows.values()) {
+        scene.remove(light);
+        light.dispose();
+      }
+      windupGlows.clear();
       scene.remove(aimLine);
       for (const mesh of [aimCore, aimHalo]) {
         mesh.geometry.dispose();

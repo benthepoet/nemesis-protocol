@@ -1,5 +1,5 @@
 import { DEFAULT_PIXEL_RATIO_CAP } from '../config.js';
-import { spawnStandIns } from '../combat/spawnStandIns.js';
+import { spawnCrew } from '../combat/spawnCrew.js';
 import { buildCollisionWorld } from '../deck/collision.js';
 import { loadDeck03 } from '../deck/loadDeck.js';
 import { spawnDeckEntities } from '../deck/spawnDeckEntities.js';
@@ -35,7 +35,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const world = createWorld();
   spawnDeckEntities(world, graph);
   spawnPlayer(world, graph);
-  spawnStandIns(world, graph);
+  spawnCrew(world, graph);
 
   const kbm = new KeyboardMouseDevice();
   const gamepad = new GamepadDevice();
@@ -48,7 +48,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   deckScene.scene.add(playerMesh);
 
   const standInMeshes = new Map<EntityId, THREE.Group>();
-  for (const id of world.meta.standInIds) {
+  for (const id of world.meta.crewIds) {
     const mesh = createStandInMesh();
     deckScene.scene.add(mesh);
     standInMeshes.set(id, mesh);

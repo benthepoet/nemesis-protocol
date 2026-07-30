@@ -1,8 +1,9 @@
 import { buildCollisionWorld } from '../../src/deck/collision.js';
 import { spawnDeckEntities } from '../../src/deck/spawnDeckEntities.js';
-import { spawnStandIns } from '../../src/combat/spawnStandIns.js';
+import { spawnCrew } from '../../src/combat/spawnCrew.js';
 import { spawnPlayer } from '../../src/player/spawnPlayer.js';
 import { integrateCombat } from '../../src/combat/integrateCombat.js';
+import { integrateCrewAi } from '../../src/ai/integrateCrewAi.js';
 import type { CombatEvent } from '../../src/combat/types.js';
 import { integratePlayerMotion } from '../../src/sim/playerMotion.js';
 import { applyCommands, fixedStep } from '../../src/sim/step.js';
@@ -24,7 +25,7 @@ export function createCombatTestHarness(): CombatTestHarness {
   const state = createWorld();
   spawnDeckEntities(state, graph);
   spawnPlayer(state, graph);
-  spawnStandIns(state, graph);
+  spawnCrew(state, graph);
   const collisionWorld = buildCollisionWorld(graph);
   return { graph, state, collisionWorld };
 }
@@ -41,6 +42,7 @@ export function runTicks(
     const cmds = commandsByTick?.get(t) ?? [];
     applyCommands(harness.state, cmds);
     integratePlayerMotion(harness.state, harness.collisionWorld);
+    integrateCrewAi(harness.state, harness.collisionWorld, harness.graph);
     const events = integrateCombat(harness.state, harness.collisionWorld, harness.graph);
     if (options?.collectEvents) {
       allEvents.push(...events);

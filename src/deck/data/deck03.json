@@ -313,5 +313,63 @@
   "objectives": [
     { "id": "obj-primary-reactor", "roomId": "engineering", "kind": "primary", "x": 240, "y": 400 },
     { "id": "obj-secondary-bridge", "roomId": "bridge", "kind": "secondary", "x": 1020, "y": 400 }
+  ],
+  "crewSpawnTable": [
+    {
+      "id": "spine-rover-a",
+      "homeRoomId": "main-spine",
+      "role": "rover",
+      "spawn": { "x": 360, "y": 400, "yawDeg": 90 },
+      "waypoints": [{ "x": 360, "y": 400 }, { "x": 570, "y": 400 }, { "x": 780, "y": 400 }, { "x": 570, "y": 400 }]
+    },
+    {
+      "id": "spine-rover-b",
+      "homeRoomId": "main-spine",
+      "role": "rover",
+      "spawn": { "x": 780, "y": 400, "yawDeg": -90 },
+      "waypoints": [{ "x": 780, "y": 400 }, { "x": 570, "y": 400 }, { "x": 360, "y": 400 }, { "x": 570, "y": 400 }]
+    },
+    {
+      "id": "cargo-post",
+      "homeRoomId": "cargo-hold",
+      "role": "posted",
+      "spawn": { "x": 497, "y": 335, "yawDeg": 0 },
+      "waypoints": [{ "x": 497, "y": 335 }, { "x": 497, "y": 360 }]
+    },
+    {
+      "id": "armory-post",
+      "homeRoomId": "armory",
+      "role": "posted",
+      "spawn": { "x": 623, "y": 335, "yawDeg": 0 },
+      "waypoints": [{ "x": 623, "y": 335 }, { "x": 623, "y": 360 }]
+    },
+    {
+      "id": "med-bay-post",
+      "homeRoomId": "med-bay",
+      "role": "posted",
+      "spawn": { "x": 739, "y": 335, "yawDeg": 0 },
+      "waypoints": [{ "x": 739, "y": 335 }, { "x": 739, "y": 360 }]
+    },
+    {
+      "id": "barracks-post",
+      "homeRoomId": "barracks",
+      "role": "posted",
+      "spawn": { "x": 527, "y": 465, "yawDeg": 0 },
+      "waypoints": [{ "x": 527, "y": 465 }, { "x": 527, "y": 440 }]
+    },
+    {
+      "id": "life-support-post",
+      "homeRoomId": "life-support",
+      "role": "posted",
+      "spawn": { "x": 421, "y": 465, "yawDeg": 0 },
+      "waypoints": [{ "x": 421, "y": 465 }, { "x": 421, "y": 440 }]
+    },
+    {
+      "id": "cic-post",
+      "homeRoomId": "cic",
+      "role": "posted",
+      "spawn": { "x": 873.5, "y": 400, "yawDeg": 0 },
+      "waypoints": [{ "x": 873.5, "y": 400 }, { "x": 840, "y": 400 }]
+    }
   ]
 }

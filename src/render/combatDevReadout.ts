@@ -20,7 +20,17 @@ export function createCombatDevReadout(host: HTMLElement): CombatDevReadout | nu
       const player = playerId !== null ? state.entities.get(playerId) : undefined;
       const hp = player?.hp ?? 0;
       const reloading = state.meta.reloadTicksRemaining > 0;
-      el.textContent = `HP ${hp} | mag ${state.meta.magazine} | res ${state.meta.reserve}${reloading ? ' | RELOAD' : ''}`;
+      const alarm = `AL${state.meta.alarmLevel}`;
+      const lkp = state.meta.lkpValid
+        ? `LKP ${state.meta.lkpX.toFixed(1)},${state.meta.lkpZ.toFixed(1)}`
+        : 'LKP —';
+      const crewStates = state.meta.crewIds
+        .map((id) => {
+          const ai = state.crewAi.get(id);
+          return `${id}:${ai?.fsm ?? '?'}`;
+        })
+        .join(' ');
+      el.textContent = `HP ${hp} | mag ${state.meta.magazine} | res ${state.meta.reserve}${reloading ? ' | RELOAD' : ''} | ${alarm} | ${lkp} | ${crewStates}`;
     },
     dispose(): void {
       el.remove();
