@@ -49,6 +49,9 @@ export class KeyboardMouseDevice implements InputDevice {
   private aimSampler: AimAxisSampler | null = null;
   private lastPlayerX = 0;
   private lastPlayerZ = 0;
+  /** Last cursor position used for an aim sample — avoids stealing aim channel while idle (M3/M4). */
+  private lastAimEmitClientX = Number.NaN;
+  private lastAimEmitClientY = Number.NaN;
   private boundKeyDown: (e: KeyboardEvent) => void;
   private boundKeyUp: (e: KeyboardEvent) => void;
   private boundMouseDown: (e: MouseEvent) => void;
@@ -146,9 +149,16 @@ export class KeyboardMouseDevice implements InputDevice {
     out.push({ kind: this.kind, action: 'move', value: 0, axisX: move.axisX, axisZ: move.axisZ });
 
     if (this.aimSampler) {
-      const aim = this.aimSampler(this.lastPlayerX, this.lastPlayerZ);
-      if (aim && Math.hypot(aim.axisX, aim.axisZ) > 0) {
-        out.push({ kind: this.kind, action: 'aim', value: 0, axisX: aim.axisX, axisZ: aim.axisZ });
+      const cursorMoved =
+        this.mouseClientX !== this.lastAimEmitClientX ||
+        this.mouseClientY !== this.lastAimEmitClientY;
+      if (cursorMoved) {
+        const aim = this.aimSampler(this.lastPlayerX, this.lastPlayerZ);
+        if (aim && Math.hypot(aim.axisX, aim.axisZ) > 0) {
+          out.push({ kind: this.kind, action: 'aim', value: 0, axisX: aim.axisX, axisZ: aim.axisZ });
+          this.lastAimEmitClientX = this.mouseClientX;
+          this.lastAimEmitClientY = this.mouseClientY;
+        }
       }
     }
 

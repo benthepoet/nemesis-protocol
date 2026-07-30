@@ -16,7 +16,7 @@
 | 2026-07-30 | Merged (§6) | `feat/p1-player-controller` → `integration` at `4acb536`; post-merge verify 62/62 + scaffold 17/17 + build 0; PR #3 remains Gate 1–2 record thread |
 | 2026-07-30 | Gate 1 (Kimi) | **pass** — G1–G8 verified binary (pack checkboxes ☑); M1–M8 compliant, no out-of-scope (combat/sprint player/aim-assist/HUD/consumers absent; debug-fly sprint only); visual: allied green capsule+wedge, 60° follow cam, cutaway per spec; license clean (no dep changes); evidence: tests 62/62 + manual verify steps on PR #3 |
 | 2026-07-30 | Gate 2 (Director) | **pending re-test** — feedback: left/right stick up/down inverted vs §8 twin-stick; diagnosis **impl** (axis Y→Z sign); Kimi ruling: stick up = forward (−Z), no design-doc change |
-| 2026-07-30 | Director iteration 1 | Fix `gamepad.ts` Y→Z sign + regression tests (Web Gamepad up = negative axis Y) |
+| 2026-07-30 | Director iteration 2 | Gate 2 feedback: KBM aim only on cursor move — no snap to mouse after right-stick release (M3/M4) |
 | | Escalations | <E-IDs if any> |
 
 **Final state:** <accepted / rolled back / superseded> · **Design doc version at acceptance:** v<n>
