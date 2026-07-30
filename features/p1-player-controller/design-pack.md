@@ -9,14 +9,14 @@ Working from: design doc v1.11 · visual direction v1.2 · roadmap v1.4 (P1 #3) 
 
 | ID | Goal (binary-verifiable) | Verified |
 |----|--------------------------|----------|
-| G1 | A player entity exists in the sim: stable entity ID, spawns at the port airlock spawn point (M4 data from p1-deck-geometry), sim-side state = position + facing angle | ☐ |
-| G2 | Movement is command-driven and deterministic: a move-intent vector command consumed inside the fixed sim tick at 6 m/s (M1/M2), producible identically by keyboard/mouse and gamepad (§8 input parity) | ☐ |
-| G3 | Aim is twin-stick: facing angle from mouse raycast onto the gameplay plane (KBM) or right-stick direction (gamepad), stored as sim state, independent of movement direction (M3) | ☐ |
-| G4 | The player respects deck collision: cannot penetrate any wall class (A/B/C), slides along obstructing geometry, actor radius 0.4 m, and can traverse all 17 doorways incl. both blast passages (ruling R1 stands) | ☐ |
-| G5 | Camera rig: ~60° pitch perspective follow camera, player-centered with aim bias (M6), render-side only (zero sim coupling); hides the ceiling of the player's current room (visual §7 rule 6 cutaway) | ☐ |
-| G6 | The interaction verb exists as a command: `interact` pressed/released on both devices (M7), with no gameplay consumers yet — ready for p1-mission-shell | ☐ |
-| G7 | Determinism preserved: identical command streams produce identical positions/facings across runs; world hash extended to cover the player entity; no frame-rate-coupled sim logic | ☐ |
-| G8 | The debug fly camera remains dev-gated (`?debugCamera=1`); without the flag the player controller + follow camera is the default experience | ☐ |
+| G1 | A player entity exists in the sim: stable entity ID, spawns at the port airlock spawn point (M4 data from p1-deck-geometry), sim-side state = position + facing angle | ☑ |
+| G2 | Movement is command-driven and deterministic: a move-intent vector command consumed inside the fixed sim tick at 6 m/s (M1/M2), producible identically by keyboard/mouse and gamepad (§8 input parity) | ☑ |
+| G3 | Aim is twin-stick: facing angle from mouse raycast onto the gameplay plane (KBM) or right-stick direction (gamepad), stored as sim state, independent of movement direction (M3) | ☑ |
+| G4 | The player respects deck collision: cannot penetrate any wall class (A/B/C), slides along obstructing geometry, actor radius 0.4 m, and can traverse all 17 doorways incl. both blast passages (ruling R1 stands) | ☑ |
+| G5 | Camera rig: ~60° pitch perspective follow camera, player-centered with aim bias (M6), render-side only (zero sim coupling); hides the ceiling of the player's current room (visual §7 rule 6 cutaway) | ☑ |
+| G6 | The interaction verb exists as a command: `interact` pressed/released on both devices (M7), with no gameplay consumers yet — ready for p1-mission-shell | ☑ |
+| G7 | Determinism preserved: identical command streams produce identical positions/facings across runs; world hash extended to cover the player entity; no frame-rate-coupled sim logic | ☑ |
+| G8 | The debug fly camera remains dev-gated (`?debugCamera=1`); without the flag the player controller + follow camera is the default experience | ☑ |
 
 ## Mechanics callout (anti-assumption: unlisted = does not exist)
 

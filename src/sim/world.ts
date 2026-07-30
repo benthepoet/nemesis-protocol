@@ -14,6 +14,7 @@ function defaultMeta(): SimState['meta'] {
     lastAction: null,
     interactHeld: false,
     cancelHeld: false,
+    playerId: null,
   };
 }
 
@@ -36,7 +37,17 @@ export function spawnEntity(state: SimState, kind: string, x: number, y: number,
   }
   const id = allocator.allocate();
   state.nextEntityId = allocator.peekNext();
-  const entity: Entity = { id, kind, x, y, z, alive: true };
+  const entity: Entity = {
+    id,
+    kind,
+    x,
+    y,
+    z,
+    yaw: 0,
+    moveIntentX: 0,
+    moveIntentZ: 0,
+    alive: true,
+  };
   state.entities.set(id, entity);
   return id;
 }
@@ -57,6 +68,13 @@ export function setEntityPose(
     entity.x = x;
     entity.y = y;
     entity.z = z;
+  }
+}
+
+export function setEntityYaw(state: SimState, id: EntityId, yaw: number): void {
+  const entity = state.entities.get(id);
+  if (entity) {
+    entity.yaw = yaw;
   }
 }
 

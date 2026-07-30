@@ -6,8 +6,11 @@ function serializeEntity(entity: Entity): Record<string, unknown> {
     alive: entity.alive,
     id: entity.id,
     kind: entity.kind,
+    moveIntentX: entity.moveIntentX,
+    moveIntentZ: entity.moveIntentZ,
     x: entity.x,
     y: entity.y,
+    yaw: entity.yaw,
     z: entity.z,
   };
 }
@@ -25,6 +28,7 @@ function buildHashPayload(state: SimState): string {
       interactCount: state.meta.interactCount,
       interactHeld: state.meta.interactHeld,
       lastAction: state.meta.lastAction,
+      playerId: state.meta.playerId,
     },
     nextEntityId: state.nextEntityId,
     tick: state.tick,

@@ -28,11 +28,11 @@ describe('input parity (G5)', () => {
     window.dispatchEvent(
       new KeyboardEvent('keydown', { code: 'KeyE', repeat: false, bubbles: true }),
     );
-    expect(device.poll().length).toBe(1);
+    expect(device.poll().filter((s) => s.action === 'interact').length).toBe(1);
     window.dispatchEvent(
       new KeyboardEvent('keydown', { code: 'KeyE', repeat: true, bubbles: true }),
     );
-    expect(device.poll().length).toBe(0);
+    expect(device.poll().filter((s) => s.action === 'interact').length).toBe(0);
     device.dispose();
   });
 

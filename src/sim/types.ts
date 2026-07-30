@@ -8,6 +8,10 @@ export interface Entity {
   x: number;
   y: number;
   z: number;
+  /** Radians; atan2(dirX, dirZ). */
+  yaw: number;
+  moveIntentX: number;
+  moveIntentZ: number;
   alive: boolean;
 }
 
@@ -17,6 +21,7 @@ export interface WorldMeta {
   lastAction: ActionId | null;
   interactHeld: boolean;
   cancelHeld: boolean;
+  playerId: EntityId | null;
 }
 
 export interface SimState {

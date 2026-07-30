@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { FIXED_DT, MAX_FRAME_DELTA_SEC, TICK_HZ } from '../../src/config.js';
+import { buildCollisionWorld } from '../../src/deck/collision.js';
 import { CommandBus } from '../../src/input/commandBus.js';
 import { runFixedTimestepSlice } from '../../src/render/frameLoop.js';
 import { createWorld } from '../../src/sim/world.js';
+import { loadTestDeck03 } from '../helpers/deckTestUtils.js';
 import { FakeInputDevice } from '../helpers/fakeDevices.js';
 
 describe('fixed timestep (G3)', () => {
+  const collisionWorld = buildCollisionWorld(loadTestDeck03());
+
   it('E1: at 30 FPS sim advances 60 ticks per simulated second', () => {
     const world = createWorld();
     const bus = new CommandBus();
@@ -18,6 +22,7 @@ describe('fixed timestep (G3)', () => {
         world,
         bus,
         devices,
+        collisionWorld,
         dtSec: dt,
         accumulator: acc,
       });
@@ -40,6 +45,7 @@ describe('fixed timestep (G3)', () => {
         world,
         bus,
         devices,
+        collisionWorld,
         dtSec: dt,
         accumulator: acc,
       });
@@ -61,6 +67,7 @@ describe('fixed timestep (G3)', () => {
       world,
       bus,
       devices,
+      collisionWorld,
       dtSec: 1,
       accumulator: 0,
     });

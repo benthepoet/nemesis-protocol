@@ -1,4 +1,5 @@
 import type { ActionId } from '../sim/commands.js';
+import { isDebugFlyCameraEnabled } from '../render/debugFlyCamera.js';
 
 export interface ActionBinding {
   action: ActionId;
@@ -6,6 +7,9 @@ export interface ActionBinding {
   mouseButton?: number;
   gamepadButton?: number;
 }
+
+/** WASD move key codes (W=−Z, S=+Z, A=−X, D=+X). */
+export const MOVE_KEY_CODES = ['KeyW', 'KeyA', 'KeyS', 'KeyD'] as const;
 
 export const ACTION_BINDINGS: readonly ActionBinding[] = [
   { action: 'interact', keyboard: 'KeyE', mouseButton: 0, gamepadButton: 0 },
@@ -39,4 +43,13 @@ export function gamepadButtonIndices(): number[] {
     if (binding.gamepadButton !== undefined) indices.add(binding.gamepadButton);
   }
   return [...indices];
+}
+
+export function isMoveKeyCode(code: string): boolean {
+  return (MOVE_KEY_CODES as readonly string[]).includes(code);
+}
+
+/** When true, KBM must not emit interact for KeyE (debug fly owns rise). */
+export function isInteractKeyboardSuppressed(): boolean {
+  return isDebugFlyCameraEnabled();
 }
