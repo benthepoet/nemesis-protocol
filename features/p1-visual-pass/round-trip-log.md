@@ -11,7 +11,7 @@
 | 2026-07-30 | Stage 3 | Composer @ `feat/p1-visual-pass` — tasks T1–T20; procedural PNGs + placeholder GLBs via `tools/textures/` + `tools/models/`; 209 tests green; PR → `integration` |
 | | PR opened | PR #10 → `integration` (Composer Stage 3 @ `88a7735`; tip advanced with Kimi prereq assets @ `d78e2d1`) |
 | 2026-07-30 | Review round 1 | Grok Stage 4 **APPROVE** — T1–T20 verified @ `d78e2d1`; presentation-only (zero `src/sim|combat|ai|input|mission|deck` diffs; config appends presentation constants only); G15 determinism (`visualPassDeterminism` + full regression); muzzle parity ≤0.02 m (authored `muzzle` on `p1_rifle.glb` + compensatory attach); `npm run test:run` **209/209** + `npm run build` green; assets license-clean (CC BY 4.0 originals; refs index-only). Zero blockers. Minors carried: scene-wide FogExp2 (three.js API; Gate 1 mid-plane judgment); lighting.dispose omits fixture GLB detach. Self-PR: verdict in PR comment. |
-| | Merged | PR #10 → `integration` (Stage 4 technical approval; Gate 1 pending) |
+| | Merged | PR #10 → `integration` @ `aa70180` (Stage 4 technical approval; Gate 1 pending) |
 | | Gate 1 (Kimi) | |
 | | Gate 2 (Director) | |
 | | Director iterations (§3.5a) | |
