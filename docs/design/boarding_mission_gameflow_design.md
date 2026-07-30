@@ -8,7 +8,7 @@
 **License:** open source — MIT (code) / CC BY 4.0 (assets). See `LICENSE` / `LICENSE-ASSETS`.
 **Scope of this document:** Single-mission gameflow for the core loop — *board an enemy capital ship, fight through it, destroy it, get out.*
 **Reference asset:** `assets/mockups/cruiser_boarding_deck_plan.svg` — ISV *Nemesis*, Deck 03 (procgen reference layout)
-**Status:** v1.15 — locked for prototype (enemy roster approved; phase visual-pass policy; P1 crew-AI baselines; P1 mission-shell baselines)
+**Status:** v1.16 — locked for prototype (enemy roster approved; phase visual-pass policy; P1 crew-AI baselines; P1 mission-shell baselines; P1 HUD baselines)
 
 ---
 
@@ -115,6 +115,8 @@ Alarm state drives enemy behavior across the whole mission:
 Key rule: **attacking an objective raises the defense of everything else.** Speedrunners may rush — but they fight the ship at full strength the entire way.
 
 **Prototype scoping note (v1.14 — `p1-enemy-baseline` stub).** At P1 the alarm exists as a two-state stub (AL0/AL1 only). AL0→AL1 trips on the first of: (a) any player shot fired (§3 Phase 1), (b) any crew detection (§10 perception baselines), (c) any crew damage; the camera/hull-sensor trip is N/A (no sensors at P1). The AL1 effect at P1 is **converge only** — all living crew move on the shared last-known-position; lockdown (§3 Phase 2), reinforcements, and entrenchment are P2 scope (AL2+). The alarm never de-escalates at P1.
+
+**Prototype scoping note (v1.16 — `p1-hud` alarm indicator).** The HUD carries a persistent alarm indicator as **pure presentation** over the AL0/AL1 stub: label = the §4 level name (0 — UNAWARE, 1 — ALERTED) plus numeral (`AL0` / `AL1`), data-driven from a level-label table keyed by alarm level. AL0 presentation is dim/neutral; AL1 is hazard `#ff5252`. The indicator flips within one tick of a trip and never de-escalates (mirroring the stub). AL2+/MELTDOWN labels exist in the table for forward compatibility but are unreachable at P1. The indicator adds no stealth or alarm mechanics.
 
 ### 4.5 Enemy Roster (prototype — Director-approved)
 
@@ -380,7 +382,8 @@ Everything else is deferred to the roadmap (§12.5): Kill-Team and Champion need
 | Projectile max range | 60 m | Despawn; ≈1 s flight |
 | Spread / recoil | none (v1) | Deterministic; reserved tuning lever |
 | Airlock entry cycle | 5.0 s | §3 v1.15 note: gameplay verbs locked, inner airlock door closed (impassable, LOS-blocking) until cycle completes |
-| Mission clock | from sim tick 0 | Shown on score screen; in-mission clock display is `p1-hud` (#7) |
+| Mission clock | from sim tick 0 | Shown on score screen; in-mission display (`M:SS`, same sim source) ships with `p1-hud` (#7, v1.16) |
+| HUD low-health warning | ≤25 HP | `p1-hud` (v1.16, pack R2): health element pulses hazard `#ff5252` at/below threshold — presentation only; player HP model unchanged |
 | Player death (P1 solo fail flow) | mission FAILED → score screen → restart (fresh sim) | `p1-mission-shell` (v1.15) — **supersedes the v1.12 3 s respawn placeholder**; co-op downed-but-not-out (§8) arrives with netcode |
 
 ---
@@ -406,6 +409,7 @@ Everything else is deferred to the roadmap (§12.5): Kill-Team and Champion need
 - **Players: solo-first (Director ruling).** Co-op/netcode lands in the P2–P3 window. Hard requirement on the architecture: the simulation is built **netcode-ready from day one** — command-pattern inputs, deterministic sim ticks, no frame-rate-coupled logic, entities addressable by stable IDs. Solo-first must never mean retrofit-later.
 - **Camera:** angled top-down only. The first/third-person pivot is evaluated at the P1 phase checkpoint — criteria: does telegraph readability (alarm telegraphs, enemy silhouettes, vacuum cues) survive the perspective change, and does co-op target-sharing still work?
 - All systems in this document (§3–§9) operate within a single deck: gating, alarm, destructible walls, depressurization, androids.
+- **P1 HUD baselines (v1.16 — `p1-hud`):** persistent HUD chrome exists only during INSERTION and ACTIVE mission states (shell screens own BRIEFING/SCORE) with exactly five readouts — health, ammo, objective line, alarm indicator (§4 v1.16 note), mission clock (`M:SS`). All HUD is render-only. **Explicitly absent at P1:** minimap/compass, off-screen objective arrows, hit markers, damage vignettes, kill/score popups, interact prompts (no interactables exist), crosshair changes (aim presentation stays world-space), pause/options menus, co-op squad HUD.
 - **Explicitly deferred** (do not build for the prototype): vertical traversal, multi-deck alarm propagation, station grammar, elevator/hatch mechanics.
 
 ### 12.2 Architectural rule (decided now, pays off later)
@@ -471,3 +475,4 @@ This layout is the canonical grammar example for the generator: *nose = command,
 | v1.13 | §12.5: phase visual-pass policy — every phase (P1–P4) closes with a scheduled visual-pass feature before checkpoint sign-off; presentation uplift is per-phase, not prototype-end (Director ruling 2026-07-30; feature breakdown in roadmap v1.7, milestone bar in visual_direction §11) |
 | v1.14 | P1 crew-AI baselines (from `p1-enemy-baseline` design pack v1, rulings R2–R7): §4 prototype scoping note — two-state AL0/AL1 stub, trip rules, converge-only effect, no lockdown/reinforcement at P1; §10 — crew population 8 (2 spine rovers + 6 posts), waypoint pause 2 s, sight 20 m / 110° cone / 0.25 s detection delay, speeds patrol 2.0 · investigate 3.5 · chase 4.5 m/s, attack range 14 m, sidearm 10 dmg @ 1/0.9 s + 0.5 s wind-up + 4° seeded spread + no friendly fire, lost-contact flow; §10 stand-in note superseded (spawner population) |
 | v1.15 | P1 mission-shell baselines (from `p1-mission-shell` design pack v1, rulings R1–R6): §3 prototype scoping note — minimal two-breach select (Phase 0), 5.0 s airlock entry cycle with verbs locked and inner door closed (Phase 1), objective placeholder "reach Engineering" (room entry completes), mission end + placeholder score screen fields; §10 — airlock entry cycle 5.0 s, mission clock from sim tick 0, **player death = mission FAILED → score screen → restart** (v1.12 3 s respawn placeholder superseded) |
+| v1.16 | P1 HUD baselines (from `p1-hud` design pack v1, rulings R1/R2/R4/R5): §4 prototype scoping note — HUD alarm indicator as presentation over the AL0/AL1 stub (level name + numeral, data-driven, AL1 hazard `#ff5252`, never de-escalates); §10 — mission clock in-mission display format `M:SS`, new row: HUD low-health warning ≤25 HP (presentation only); §12.1 — HUD element set + visibility lifecycle (INSERTION/ACTIVE only) and the explicit-absent list |
