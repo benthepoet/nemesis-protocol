@@ -4,6 +4,6 @@
 
 | Q# | Grok's question | Kimi's ruling | Doc change? |
 |----|-----------------|---------------|-------------|
-| 1 | | | yes/no → design doc v<n> |
+| — | *(none)* Design pack v1 settles G1–G8 / M1–M8. Technical gaps (WASD bindings, command axis shape, deadzone constant value, camera distance/FOV/smoothing, KeyE vs debug-fly precedence, doorway cutaway last-room rule, capsule/wedge dimensions) are Technical Lead authority and do not require design rulings. | n/a | no |
 
-*Status: ☐ all questions resolved — spec may finalize.*
+*Status: ✅ all resolved (no questions) — SPEC v1 FINAL.*
