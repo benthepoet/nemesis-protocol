@@ -32,6 +32,7 @@ export function createWorld(): SimState {
     nextEntityId: 1,
     entities: new Map(),
     meta: defaultMeta(),
+    projectileTraveledM: new Map(),
   };
   attachEntityIdAllocator(state, 1);
   return state;
@@ -98,6 +99,7 @@ export function cloneSimState(state: SimState): SimState {
     nextEntityId: state.nextEntityId,
     entities,
     meta: { ...state.meta },
+    projectileTraveledM: new Map(state.projectileTraveledM),
   };
   attachEntityIdAllocator(cloned, cloned.nextEntityId);
   return cloned;

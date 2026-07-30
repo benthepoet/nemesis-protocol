@@ -22,17 +22,6 @@ import { applyDamage } from './applyDamage.js';
 import { earliestSegmentHit } from './projectileCollision.js';
 import type { CombatEvent } from './types.js';
 
-const projectileTraveled = new WeakMap<SimState, Map<EntityId, number>>();
-
-function getTraveledMap(state: SimState): Map<EntityId, number> {
-  let map = projectileTraveled.get(state);
-  if (!map) {
-    map = new Map();
-    projectileTraveled.set(state, map);
-  }
-  return map;
-}
-
 export function tryBeginReload(state: SimState): void {
   const meta = state.meta;
   if (meta.reloadTicksRemaining > 0) return;
@@ -49,7 +38,7 @@ export function integrateCombat(
   const events: CombatEvent[] = [];
   const meta = state.meta;
   const playerId = meta.playerId;
-  const traveled = getTraveledMap(state);
+  const traveled = state.projectileTraveledM;
 
   if (playerId !== null) {
     const player = getEntity(state, playerId);

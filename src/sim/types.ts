@@ -41,4 +41,6 @@ export interface SimState {
   nextEntityId: number;
   entities: Map<EntityId, Entity>;
   meta: WorldMeta;
+  /** Per-projectile range traveled (m); cloned for replay determinism (G8). */
+  projectileTraveledM: Map<EntityId, number>;
 }

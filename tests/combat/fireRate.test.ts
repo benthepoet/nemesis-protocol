@@ -14,9 +14,10 @@ describe('fire rate (G1)', () => {
     for (let t = 0; t < 60; t += 1) {
       cmds.set(t, [fireHeldOn(t, 0)]);
     }
-    runTicks(harness, 60, cmds);
+    const events = runTicks(harness, 60, cmds, { collectEvents: true });
     expect(harness.state.meta.magazine).toBe(MAGAZINE_SIZE - 10);
     expect(FIRE_INTERVAL_TICKS).toBe(6);
+    expect(events.filter((e) => e.type === 'muzzle').length).toBe(10);
   });
 
   it('E2: fire during reload spawns zero shots', () => {

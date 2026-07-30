@@ -3,6 +3,7 @@ import { spawnDeckEntities } from '../../src/deck/spawnDeckEntities.js';
 import { spawnStandIns } from '../../src/combat/spawnStandIns.js';
 import { spawnPlayer } from '../../src/player/spawnPlayer.js';
 import { integrateCombat } from '../../src/combat/integrateCombat.js';
+import type { CombatEvent } from '../../src/combat/types.js';
 import { integratePlayerMotion } from '../../src/sim/playerMotion.js';
 import { applyCommands, fixedStep } from '../../src/sim/step.js';
 import { createWorld } from '../../src/sim/world.js';
@@ -32,15 +33,21 @@ export function runTicks(
   harness: CombatTestHarness,
   ticks: number,
   commandsByTick?: Map<number, InputCommand[]>,
-): void {
+  options?: { collectEvents?: boolean },
+): CombatEvent[] {
+  const allEvents: CombatEvent[] = [];
   for (let i = 0; i < ticks; i += 1) {
     const t = harness.state.tick;
     const cmds = commandsByTick?.get(t) ?? [];
     applyCommands(harness.state, cmds);
     integratePlayerMotion(harness.state, harness.collisionWorld);
-    integrateCombat(harness.state, harness.collisionWorld, harness.graph);
+    const events = integrateCombat(harness.state, harness.collisionWorld, harness.graph);
+    if (options?.collectEvents) {
+      allEvents.push(...events);
+    }
     fixedStep(harness.state);
   }
+  return allEvents;
 }
 
 export function countProjectiles(state: SimState): number {
