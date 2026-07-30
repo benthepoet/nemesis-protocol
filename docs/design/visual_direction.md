@@ -2,7 +2,7 @@
 
 **Owner:** Kimi K3 (Art Lead, charter §1)
 **Applies to:** all assets, VFX, lighting, UI treatment. Binding for every phase; deviations require a version bump here + Director sign-off.
-**Status:** v1.3 — phase visual milestones (§11): per-phase visual-pass acceptance bar
+**Status:** v1.4 — combat readability telegraphs: visible projectile tracers + aim-direction line (§6 P1 row, §7 rule 7)
 
 ---
 
@@ -78,7 +78,7 @@ Inherited from the deck-plan mockups — this palette is the brand and carries i
 | **Venting** | 5 s suction (§6.4) | Full-room particle advection toward breach: papers, dust, frost; screen-edge frost on player camera |
 | **Curtain seal** | Emergency curtain (§6.4) | Hard light-bar slam + pressure-equalization mist burst |
 | **Reactor** | Proximity + arming (§3 Phase 4) | Core bloom pulse, heat distortion, ember drift; intensity = timer pressure |
-| **Muzzle/impacts** | Combat (P1) | Per-surface impact FX (sparks on metal, dust on composite); muzzle flash lights the room |
+| **Muzzle/impacts** | Combat (P1) | Per-surface impact FX (sparks on metal, dust on composite); muzzle flash lights the room; **visible projectile tracers** — emissive slug stretched along velocity, hot-white core with allied `#69f0ae` halo, render-synced to sim projectile positions; **aim-direction line** — in-world telegraph from the muzzle along facing to the first wall obstruction, dim at rest, bright while firing |
 | **Android** | §6.7 units | Cold white eye-slit glow (visible in darkness — *the* android telegraph), hydraulic vapor on wake |
 | **Meltdown fires** | Extraction hazards (§3 Phase 5) | Real area light, smoke columns that block sightlines, ember advection toward venting zones |
 
@@ -94,6 +94,7 @@ Inherited from the deck-plan mockups — this palette is the brand and carries i
 4. **Darkness is a budget, not a default.** Meltdown goes dark, but every dark room contains exactly one readable light story (exit strip, fire, beacon) — never true black.
 5. **VFX can obscure intentionally** (wall-failure dust, smoke columns) — but always as a *timed, designed* readability event, never incidental clutter.
 6. **Ceiling policy — full interiors, camera cutaway.** All rooms are built with complete geometry including ceilings (needed for the lighting model and the perspective pivot). Top-down visibility is handled by camera-driven ceiling fade/cutaway per room, **never by omitting geometry**. Wall tops must read cleanly at the camera angle.
+7. **Player combat telegraphs are world-space, never HUD chrome.** Projectile tracers and the aim-direction line live in the scene, use the allied palette only (white core / `#69f0ae` — red never decorates, and hostile fire will own `#ff5252`), sit *below* enemy telegraphs in the clarity hierarchy, and must stay legible against hull-steel floors without competing with `#ffd54f` interactables. They visualize facing and shot clearance — they are not a laser-sight cosmetic.
 
 ## 8. Technical Standards
 
@@ -152,3 +153,4 @@ Each visual pass is scoped, not open-ended: its design pack enumerates exactly t
 | v1.1 | Engine, camera model, ceiling policy |
 | v1.2 | §3 palette extended: function accents (armory `#ff8a65`, medical `#80cbc4`, comms `#5c7cfa`, mess `#a1887f`) + corridor neutral `#8b949e` — formalized from deck-plan mockup v2.2 (`p1-deck-geometry` clarification Q2) |
 | v1.3 | §11 added: phase visual milestones — universal Gate 1 bar + per-phase scope (M-P1…M-P4) for the scheduled visual-pass features (Director ruling 2026-07-30; roadmap v1.7). Changelog renumbered to §12 |
+| v1.4 | Combat readability telegraphs (Director Gate-2 iteration on `p1-combat-core`, pack v2 R7/R8): §6 muzzle/impacts row extended — visible projectile tracers (emissive slug, white core / allied `#69f0ae` halo) + aim-direction line (muzzle → first wall obstruction, dim at rest, bright while firing); §7 rule 7 added — player combat telegraphs are world-space, allied-palette, subordinate to enemy telegraphs |
