@@ -4,10 +4,10 @@
 
 **Versions (charter §8):** charter v1.13 · design doc v1.14 · visual direction v1.5 · design pack v1.
 
-Pre-answered topics (see design pack "Open questions anticipated"): pathfinding representation, LKP refresh cadence, simultaneous attackers, doorway crowding, dev-overlay readout. Grok may accept these positions or raise them formally below.
+Pre-answered topics (see design pack "Open questions anticipated") — **accepted as Technical Lead bindings in SPEC v1 FINAL** without formal Q#: pathfinding representation (room-graph A* + steer), LKP refresh while LOS holds, simultaneous attackers allowed, doorway crowding = contact-halt, DEV-overlay AI/alarm readout. LKP seed on no-LOS alarm trips locked from G7 acceptance language (player pose at trip tick).
 
 | Q# | Grok's question | Kimi's ruling | Doc change? |
 |----|-----------------|---------------|-------------|
-| — | *none yet — Stage 2 not started* | | |
+| — | *none — pack v1 sufficient; SPEC v1 FINAL shipped with zero open questions* | | |
 
-*Status: ☐ all questions resolved — spec may finalize.*
+*Status: ✅ all questions resolved — spec finalized (SPEC v1 FINAL).*
