@@ -18,6 +18,8 @@ export function createPlayerTestHarness(): PlayerTestHarness {
   const state = createWorld();
   spawnDeckEntities(state, graph);
   spawnPlayer(state, graph);
+  state.meta.missionPhase = 'ACTIVE';
+  state.meta.objectiveIssued = true;
   const collisionWorld = buildCollisionWorld(graph);
   return { graph, state, collisionWorld };
 }

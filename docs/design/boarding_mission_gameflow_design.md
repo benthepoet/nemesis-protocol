@@ -8,7 +8,7 @@
 **License:** open source — MIT (code) / CC BY 4.0 (assets). See `LICENSE` / `LICENSE-ASSETS`.
 **Scope of this document:** Single-mission gameflow for the core loop — *board an enemy capital ship, fight through it, destroy it, get out.*
 **Reference asset:** `assets/mockups/cruiser_boarding_deck_plan.svg` — ISV *Nemesis*, Deck 03 (procgen reference layout)
-**Status:** v1.14 — locked for prototype (enemy roster approved; phase visual-pass policy; P1 crew-AI baselines)
+**Status:** v1.15 — locked for prototype (enemy roster approved; phase visual-pass policy; P1 crew-AI baselines; P1 mission-shell baselines)
 
 ---
 
@@ -44,6 +44,8 @@ The solution is a **lock-and-key structure distributed across ship sections**, p
 - Airlock cycle provides a **stealth window**: enemies are on patrol routes, unaware.
 - Stealth ends on first contact, first camera/hull-sensor trip, or first fired shot → **ALARM**.
 - The alarm is the master trigger for the entire mission structure (see §4).
+
+**Prototype scoping note (v1.15 — `p1-mission-shell`).** At P1, Phases 0–1 ship as a minimal shell and Phases 2–6 do not exist. **Phase 0:** breach selection is a minimal two-option select (Port / Starboard) carrying this section's asymmetric profile text — full briefing presentation is deferred. **Phase 1:** insertion is a scripted **airlock entry cycle (5.0 s)**: the player spawns in the selected airlock, all gameplay verbs are locked, and the inner airlock door is closed (impassable, LOS-blocking) until the cycle completes; the door then opens and the stealth window (AL0, §4 v1.14 note) begins. **Objective placeholder:** "reach Engineering" — issued at door-open; completes when the living player enters the Engineering room (deck-data `obj-primary-reactor`); no reactor interaction exists. **Mission end:** completion → score screen (placeholder fields: outcome, breach point, mission time from sim tick 0, alarm-tripped status, crew neutralized count — no composite score, no persistence, no meta-progression); player death → mission FAILED → score screen (§10 fail flow, v1.15). Restart returns to breach select on a fresh sim.
 
 ### Phase 2 — Lockdown (hard gate #1)
 
@@ -377,7 +379,9 @@ Everything else is deferred to the roadmap (§12.5): Kill-Team and Champion need
 | Projectile speed | 60 m/s | Simulated projectiles, not hitscan (netcode-ready §12.1) |
 | Projectile max range | 60 m | Despawn; ≈1 s flight |
 | Spread / recoil | none (v1) | Deterministic; reserved tuning lever |
-| Player respawn (prototype placeholder) | 3 s at spawn point | Until `p1-mission-shell` defines the fail flow |
+| Airlock entry cycle | 5.0 s | §3 v1.15 note: gameplay verbs locked, inner airlock door closed (impassable, LOS-blocking) until cycle completes |
+| Mission clock | from sim tick 0 | Shown on score screen; in-mission clock display is `p1-hud` (#7) |
+| Player death (P1 solo fail flow) | mission FAILED → score screen → restart (fresh sim) | `p1-mission-shell` (v1.15) — **supersedes the v1.12 3 s respawn placeholder**; co-op downed-but-not-out (§8) arrives with netcode |
 
 ---
 
@@ -466,3 +470,4 @@ This layout is the canonical grammar example for the generator: *nose = command,
 | v1.12 | §8: P1 verb binding table — fire owns the primary trigger (mouse button 0 / right trigger); interact drops the mouse-0 binding (KBM interact = E). §10: P1 combat baselines — player/crew HP 100, rifle 25 dmg @ 10 rps automatic, magazine 30 + reserve 120, reload 2.0 s uninterruptible, projectile 60 m/s / 60 m range, no-spread v1, 3 s respawn placeholder (from `p1-combat-core` design pack v1, rulings R1/R2) |
 | v1.13 | §12.5: phase visual-pass policy — every phase (P1–P4) closes with a scheduled visual-pass feature before checkpoint sign-off; presentation uplift is per-phase, not prototype-end (Director ruling 2026-07-30; feature breakdown in roadmap v1.7, milestone bar in visual_direction §11) |
 | v1.14 | P1 crew-AI baselines (from `p1-enemy-baseline` design pack v1, rulings R2–R7): §4 prototype scoping note — two-state AL0/AL1 stub, trip rules, converge-only effect, no lockdown/reinforcement at P1; §10 — crew population 8 (2 spine rovers + 6 posts), waypoint pause 2 s, sight 20 m / 110° cone / 0.25 s detection delay, speeds patrol 2.0 · investigate 3.5 · chase 4.5 m/s, attack range 14 m, sidearm 10 dmg @ 1/0.9 s + 0.5 s wind-up + 4° seeded spread + no friendly fire, lost-contact flow; §10 stand-in note superseded (spawner population) |
+| v1.15 | P1 mission-shell baselines (from `p1-mission-shell` design pack v1, rulings R1–R6): §3 prototype scoping note — minimal two-breach select (Phase 0), 5.0 s airlock entry cycle with verbs locked and inner door closed (Phase 1), objective placeholder "reach Engineering" (room entry completes), mission end + placeholder score screen fields; §10 — airlock entry cycle 5.0 s, mission clock from sim tick 0, **player death = mission FAILED → score screen → restart** (v1.12 3 s respawn placeholder superseded) |

@@ -17,6 +17,8 @@ import { arrivedAt, steerCrewStep } from './pathing.js';
 import type { CrewAiEvent, CrewAiState } from './types.js';
 import type { SimState } from '../sim/types.js';
 import { getEntity } from '../sim/world.js';
+import { closedDoorEdgeIdSet } from '../mission/closedDoors.js';
+import { isGameplayActive } from '../mission/gameplayActive.js';
 
 function getPost(graph: DeckGraph, postId: string) {
   const post = graph.crewSpawnTable.find((p) => p.id === postId);
@@ -52,6 +54,10 @@ export function integrateCrewAi(
   graph: DeckGraph,
 ): CrewAiEvent[] {
   const events: CrewAiEvent[] = [];
+  if (!isGameplayActive(state)) {
+    return events;
+  }
+  const closedDoors = closedDoorEdgeIdSet(state.meta.closedDoorEdgeId);
   const playerId = state.meta.playerId;
   const player = playerId !== null ? getEntity(state, playerId) : undefined;
   const playerAlive = player?.alive ?? false;
@@ -146,7 +152,7 @@ export function integrateCrewAi(
         }
         const post = getPost(graph, ai.postId);
         const wp = post.waypoints[ai.waypointIndex % post.waypoints.length]!;
-        steerCrewStep(state, id, collisionWorld, graph, wp.x, wp.z, CREW_PATROL_SPEED_MPS);
+        steerCrewStep(state, id, collisionWorld, graph, wp.x, wp.z, CREW_PATROL_SPEED_MPS, closedDoors);
         if (arrivedAt(entity.x, entity.z, wp.x, wp.z)) {
           ai.pauseTicksRemaining = CREW_WAYPOINT_PAUSE_TICKS;
           ai.waypointIndex = (ai.waypointIndex + 1) % post.waypoints.length;
@@ -163,7 +169,7 @@ export function integrateCrewAi(
           gx = player.x;
           gz = player.z;
         }
-        steerCrewStep(state, id, collisionWorld, graph, gx, gz, CREW_CHASE_SPEED_MPS);
+        steerCrewStep(state, id, collisionWorld, graph, gx, gz, CREW_CHASE_SPEED_MPS, closedDoors);
         break;
       }
       case 'INVESTIGATE': {
@@ -176,6 +182,7 @@ export function integrateCrewAi(
             state.meta.lkpX,
             state.meta.lkpZ,
             CREW_INVESTIGATE_SPEED_MPS,
+            closedDoors,
           );
         } else if (ai.investigateTicksRemaining > 0) {
           ai.investigateTicksRemaining -= 1;

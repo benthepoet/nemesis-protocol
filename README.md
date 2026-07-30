@@ -96,3 +96,15 @@ After `npm run dev`, the app loads the Deck 03 blockout (floors, walls, ceilings
 | `npm run build` | Typecheck + production build |
 
 Verification: `npm run test:run` and `npm run build` must exit 0 before PR submission.
+
+## Mission shell (p1-mission-shell)
+
+Boot starts in **BRIEFING** (no player): choose **Port** or **Starboard** breach (vertical move axis), **Interact** to confirm. **INSERTION** runs a **5 s** airlock cycle with the inner spine door closed and combat verbs locked; then **ACTIVE** (door open, objective issued). Reach **Engineering** while alive for **COMPLETE**; player death is **FAILED** (no respawn). End states show a **score** screen (breach, mission time, alarm, crew neutralized); **Interact** restarts to a fresh **BRIEFING**.
+
+Verification:
+
+```bash
+npm run test:run   # includes tests/mission/* + updated combat fail-flow tests
+npm run build
+npm run dev        # BRIEFING → breach → cycle → fight → Engineering or death → score → restart
+```

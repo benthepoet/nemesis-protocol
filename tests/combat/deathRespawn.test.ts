@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  ACTOR_MAX_HP,
-  MAGAZINE_SIZE,
-  RESERVE_AMMO_START,
-  RESPAWN_DELAY_TICKS,
-  RIFLE_DAMAGE_PER_HIT,
-} from '../../src/config.js';
-import { computeSpawnPoint } from '../../src/deck/spawn.js';
+import { ACTOR_MAX_HP, RIFLE_DAMAGE_PER_HIT } from '../../src/config.js';
 import { applyDamage } from '../../src/combat/applyDamage.js';
 import { applyCommands } from '../../src/sim/step.js';
 import { getEntity } from '../../src/sim/world.js';
@@ -17,8 +10,8 @@ import {
 } from '../helpers/combatTestUtils.js';
 import type { InputCommand } from '../../src/sim/commands.js';
 
-describe('death and respawn (G4)', () => {
-  it('E10: debugDamage ×4 → dead; respawn at 180 ticks with full hp/ammo', () => {
+describe('death and mission fail (G7)', () => {
+  it('E10: debugDamage ×4 → dead; mission SCORE FAILED (no respawn)', () => {
     const harness = createCombatTestHarness();
     const playerId = harness.state.meta.playerId!;
     const cmds: InputCommand[] = [];
@@ -33,22 +26,12 @@ describe('death and respawn (G4)', () => {
     }
     runTicks(harness, 4, byTick);
     expect(getEntity(harness.state, playerId)!.alive).toBe(false);
-    expect(harness.state.meta.respawnTicksRemaining).toBeGreaterThan(0);
+    expect(harness.state.meta.missionPhase).toBe('SCORE');
+    expect(harness.state.meta.score?.outcome).toBe('FAILED');
 
-    const moveCmd = { tick: 5, sequence: 99, action: 'move' as const, value: 0 as const, axisX: 1, axisZ: 0 };
-    applyCommands(harness.state, [moveCmd]);
-    expect(getEntity(harness.state, playerId)!.moveIntentX).toBe(0);
-
-    runTicks(harness, RESPAWN_DELAY_TICKS);
-    const player = getEntity(harness.state, playerId)!;
-    expect(player.alive).toBe(true);
-    expect(player.hp).toBe(ACTOR_MAX_HP);
-    expect(harness.state.meta.magazine).toBe(MAGAZINE_SIZE);
-    expect(harness.state.meta.reserve).toBe(RESERVE_AMMO_START);
-    const spawn = computeSpawnPoint(harness.graph, 'port-airlock');
-    expect(player.x).toBeCloseTo(spawn.x, 2);
-    expect(player.z).toBeCloseTo(spawn.z, 2);
-    expect(RESPAWN_DELAY_TICKS).toBe(180);
+    runTicks(harness, 300);
+    expect(getEntity(harness.state, playerId)!.alive).toBe(false);
+    expect(harness.state.meta.missionPhase).toBe('SCORE');
   });
 
   it('E11: stand-in corpse remains in entity map', () => {

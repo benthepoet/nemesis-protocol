@@ -131,6 +131,7 @@ describe('projectiles (G2)', () => {
     expect(circleHitsWalls(collisionWorld, ax, az, 0.05)).toBe(false);
 
     const state = createWorld();
+    state.meta.missionPhase = 'ACTIVE';
     state.meta.playerId = spawnEntity(state, 'player', ax, 0, az);
     const ownerId = state.meta.playerId;
     const hit = earliestSegmentHit(state, ax, az, bx, bz, ownerId, collisionWorld);

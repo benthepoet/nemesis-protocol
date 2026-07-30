@@ -68,6 +68,33 @@ function pointInFootprint(graph: DeckGraph, roomId: string, x: number, z: number
   return pointInPolygon(x, z, node.footprint.points);
 }
 
+export function computeInsertSpawn(
+  graph: DeckGraph,
+  roomId: 'port-airlock' | 'stbd-airlock',
+): SpawnPoint {
+  const node = getNode(graph, roomId);
+  if (!node.breachProfile) {
+    throw new Error(`room ${roomId} missing breach profile`);
+  }
+
+  const center = footprintCenter(node);
+  const spineDoor = doorBetween(graph, roomId, 'main-spine');
+  if (!spineDoor) {
+    throw new Error(`no spine door for ${roomId}`);
+  }
+
+  const doorCenter = rectCenter(spineDoor.opening);
+  const yaw = Math.atan2(doorCenter.x - center.x, doorCenter.z - center.z);
+
+  return {
+    roomId,
+    profile: node.breachProfile,
+    x: center.x,
+    z: center.z,
+    yaw,
+  };
+}
+
 export function computeSpawnPoint(
   graph: DeckGraph,
   roomId: 'port-airlock' | 'stbd-airlock',

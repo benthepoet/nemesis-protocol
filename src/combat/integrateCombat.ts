@@ -1,5 +1,4 @@
 import {
-  ACTOR_MAX_HP,
   CREW_FIRE_INTERVAL_TICKS,
   CREW_SIDEARM_DAMAGE,
   FIRE_INTERVAL_TICKS,
@@ -11,16 +10,15 @@ import {
   PROJECTILE_MUZZLE_OFFSET_M,
   PROJECTILE_SPEED_MPS,
   RELOAD_DURATION_TICKS,
-  RESERVE_AMMO_START,
   RIFLE_DAMAGE_PER_HIT,
   SECURITY_CREW_KIND,
 } from '../config.js';
+import { isGameplayActive } from '../mission/gameplayActive.js';
 import { tripAlarm } from '../ai/alarm.js';
 import type { CollisionWorld } from '../deck/collision.js';
-import { computeSpawnPoint } from '../deck/spawn.js';
 import type { DeckGraph } from '../deck/types.js';
 import type { EntityId, SimState } from '../sim/types.js';
-import { getEntity, setEntityPose, setEntityYaw, spawnEntity } from '../sim/world.js';
+import { getEntity, spawnEntity } from '../sim/world.js';
 import { applyDamage } from './applyDamage.js';
 import { earliestSegmentHit } from './projectileCollision.js';
 import { sampleSpreadYawOffset } from './spread.js';
@@ -37,33 +35,15 @@ export function tryBeginReload(state: SimState): void {
 export function integrateCombat(
   state: SimState,
   collisionWorld: CollisionWorld,
-  graph: DeckGraph,
+  _graph: DeckGraph,
 ): CombatEvent[] {
   const events: CombatEvent[] = [];
+  if (!isGameplayActive(state)) {
+    return events;
+  }
   const meta = state.meta;
   const playerId = meta.playerId;
   const traveled = state.projectileTraveledM;
-
-  if (playerId !== null) {
-    const player = getEntity(state, playerId);
-    if (player && !player.alive && meta.respawnTicksRemaining > 0) {
-      meta.respawnTicksRemaining -= 1;
-      if (meta.respawnTicksRemaining === 0) {
-        const spawn = computeSpawnPoint(graph, 'port-airlock');
-        setEntityPose(state, playerId, spawn.x, 0, spawn.z);
-        setEntityYaw(state, playerId, spawn.yaw);
-        player.alive = true;
-        player.hp = ACTOR_MAX_HP;
-        player.moveIntentX = 0;
-        player.moveIntentZ = 0;
-        meta.magazine = MAGAZINE_SIZE;
-        meta.reserve = RESERVE_AMMO_START;
-        meta.reloadTicksRemaining = 0;
-        meta.fireCooldownTicks = 0;
-        meta.fireHeld = false;
-      }
-    }
-  }
 
   const reloadingAtTickStart = meta.reloadTicksRemaining > 0;
 

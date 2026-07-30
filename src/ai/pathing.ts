@@ -15,14 +15,19 @@ function openingCenter(graph: DeckGraph, roomA: string, roomB: string): { x: num
 }
 
 /** BFS on room ids via door edges; deterministic neighbor order (sorted ids). */
-export function shortestRoomPath(graph: DeckGraph, fromRoom: string, toRoom: string): string[] {
+export function shortestRoomPath(
+  graph: DeckGraph,
+  fromRoom: string,
+  toRoom: string,
+  closedDoorEdgeIds?: ReadonlySet<string>,
+): string[] {
   if (fromRoom === toRoom) return [fromRoom];
   const queue: string[][] = [[fromRoom]];
   const visited = new Set<string>([fromRoom]);
   while (queue.length > 0) {
     const path = queue.shift()!;
     const current = path[path.length - 1]!;
-    for (const next of neighbors(graph, current)) {
+    for (const next of neighbors(graph, current, closedDoorEdgeIds)) {
       if (visited.has(next)) continue;
       const nextPath = [...path, next];
       if (next === toRoom) return nextPath;
@@ -39,13 +44,14 @@ export function buildSteerPathToPoint(
   fromZ: number,
   goalX: number,
   goalZ: number,
+  closedDoorEdgeIds?: ReadonlySet<string>,
 ): { x: number; z: number }[] {
   const fromRoom = roomAtPosition(graph, fromX, fromZ);
   const toRoom = roomAtPosition(graph, goalX, goalZ);
   if (!fromRoom || !toRoom || fromRoom === toRoom) {
     return [{ x: goalX, z: goalZ }];
   }
-  const roomPath = shortestRoomPath(graph, fromRoom, toRoom);
+  const roomPath = shortestRoomPath(graph, fromRoom, toRoom, closedDoorEdgeIds);
   const points: { x: number; z: number }[] = [];
   for (let i = 0; i < roomPath.length - 1; i += 1) {
     const center = openingCenter(graph, roomPath[i]!, roomPath[i + 1]!);
@@ -85,11 +91,12 @@ export function steerCrewStep(
   goalX: number,
   goalZ: number,
   speedMps: number,
+  closedDoorEdgeIds?: ReadonlySet<string>,
 ): number {
   const entity = getEntity(state, id);
   if (!entity) return 0;
 
-  const path = buildSteerPathToPoint(graph, entity.x, entity.z, goalX, goalZ);
+  const path = buildSteerPathToPoint(graph, entity.x, entity.z, goalX, goalZ, closedDoorEdgeIds);
   let targetX = goalX;
   let targetZ = goalZ;
   const epsSq = CREW_ARRIVAL_EPSILON_M * CREW_ARRIVAL_EPSILON_M;

@@ -18,5 +18,6 @@ export function refreshLkpFromPlayer(state: SimState): void {
 export function tripAlarm(state: SimState, _reason: AlarmTripReason): void {
   if (state.meta.alarmLevel >= ALARM_LEVEL_AL1) return;
   state.meta.alarmLevel = ALARM_LEVEL_AL1;
+  state.meta.alarmTripTick = state.tick;
   refreshLkpFromPlayer(state);
 }

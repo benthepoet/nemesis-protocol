@@ -1,5 +1,6 @@
 import type { ActionId } from './commands.js';
 import type { CrewAiState } from '../ai/types.js';
+import type { MissionPhase, ScoreSnapshot } from '../mission/types.js';
 
 export type EntityId = number & { readonly __brand: 'EntityId' };
 
@@ -39,7 +40,18 @@ export interface WorldMeta {
   reserve: number;
   reloadTicksRemaining: number;
   fireCooldownTicks: number;
-  respawnTicksRemaining: number;
+  missionPhase: MissionPhase;
+  breachSelectIndex: 0 | 1;
+  breachRoomId: 'port-airlock' | 'stbd-airlock' | null;
+  insertionTicksRemaining: number;
+  closedDoorEdgeId: string | null;
+  objectiveIssued: boolean;
+  objectiveComplete: boolean;
+  alarmTripTick: number | null;
+  score: ScoreSnapshot | null;
+  shellInteractPrev: boolean;
+  shellMoveAxisX: number;
+  shellMoveAxisZ: number;
 }
 
 export interface SimState {

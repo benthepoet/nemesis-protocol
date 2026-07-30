@@ -30,7 +30,7 @@ export function createCombatDevReadout(host: HTMLElement): CombatDevReadout | nu
           return `${id}:${ai?.fsm ?? '?'}`;
         })
         .join(' ');
-      el.textContent = `HP ${hp} | mag ${state.meta.magazine} | res ${state.meta.reserve}${reloading ? ' | RELOAD' : ''} | ${alarm} | ${lkp} | ${crewStates}`;
+      el.textContent = `phase ${state.meta.missionPhase} | HP ${hp} | mag ${state.meta.magazine} | res ${state.meta.reserve}${reloading ? ' | RELOAD' : ''} | ${alarm} | ${lkp} | ${crewStates}`;
     },
     dispose(): void {
       el.remove();

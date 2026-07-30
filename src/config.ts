@@ -110,11 +110,21 @@ export const PROJECTILE_MAX_RANGE_M = 60 as const;
 /** Spawn offset along facing from actor center (m) — outside proxy radius. */
 export const PROJECTILE_MUZZLE_OFFSET_M = 0.45 as const;
 
-/** Player respawn delay (seconds). Placeholder §10. */
-export const RESPAWN_DELAY_SEC = 3.0 as const;
+/** Airlock entry cycle (seconds / ticks). Design §10 / pack R2. */
+export const AIRLOCK_ENTRY_CYCLE_SEC = 5.0 as const;
+export const AIRLOCK_ENTRY_CYCLE_TICKS = Math.round(AIRLOCK_ENTRY_CYCLE_SEC * TICK_HZ);
 
-/** Respawn delay in ticks (= 180). */
-export const RESPAWN_DELAY_TICKS = Math.round(RESPAWN_DELAY_SEC * TICK_HZ);
+/** Vertical move-axis deadzone for breach select (normalized). */
+export const SHELL_SELECT_DEADZONE = 0.5 as const;
+
+/** Shell screen void chrome (visual direction §3). */
+export const SHELL_CHROME_HEX = '#05080f' as const;
+
+/** Objective beacon allied color (VD §3 player-aligned). */
+export const OBJECTIVE_BEACON_HEX = '#69f0ae' as const;
+
+/** Objective banner copy (pack R3). */
+export const OBJECTIVE_BANNER_TEXT = 'Reach Engineering' as const;
 
 /** Hostile stand-in blockout color (VD §3 alarm/hazard). */
 export const HOSTILE_COLOR_HEX = '#ff5252' as const;

@@ -12,9 +12,14 @@ export function listNodes(graph: DeckGraph): readonly DeckNode[] {
   return [...graph.nodes.values()];
 }
 
-export function neighbors(graph: DeckGraph, id: string): readonly string[] {
+export function neighbors(
+  graph: DeckGraph,
+  id: string,
+  closedDoorEdgeIds?: ReadonlySet<string>,
+): readonly string[] {
   const result = new Set<string>();
   for (const edge of graph.doorEdges) {
+    if (closedDoorEdgeIds?.has(edge.id)) continue;
     if (edge.a === id) result.add(edge.b);
     if (edge.b === id) result.add(edge.a);
   }
