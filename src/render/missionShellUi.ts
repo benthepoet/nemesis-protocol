@@ -1,4 +1,4 @@
-import { SHELL_CHROME_HEX } from '../config.js';
+import { SHELL_CHROME_HEX, UI_FOCUS_HEX } from '../config.js';
 import {
   BREACH_OPTIONS,
   BREACH_PROFILE_PORT,
@@ -17,31 +17,80 @@ export function createMissionShellUi(host: HTMLElement): MissionShellUi {
   overlay.style.cssText = `position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:${SHELL_CHROME_HEX};color:#e0e0e0;font:16px/1.5 sans-serif;z-index:20;pointer-events:none;`;
   host.appendChild(overlay);
 
+  const renderBriefing = (idx: number): void => {
+    overlay.replaceChildren();
+    const wrap = document.createElement('div');
+    const title = document.createElement('h2');
+    title.style.cssText = 'margin:0 0 12px;font-size:20px';
+    title.textContent = 'Select breach';
+    wrap.appendChild(title);
+
+    for (const opt of BREACH_OPTIONS) {
+      const row = document.createElement('div');
+      const focused = opt.index === idx;
+      if (focused) {
+        row.style.color = UI_FOCUS_HEX;
+        row.dataset.focused = 'true';
+      }
+      const profile = opt.index === 0 ? BREACH_PROFILE_PORT : BREACH_PROFILE_STARBOARD;
+      row.textContent = `${focused ? '▸ ' : '  '}${opt.label} — ${profile}`;
+      wrap.appendChild(row);
+    }
+
+    const hint = document.createElement('p');
+    hint.style.cssText = 'margin-top:16px;opacity:0.7';
+    hint.textContent = 'Interact to confirm';
+    wrap.appendChild(hint);
+    overlay.appendChild(wrap);
+  };
+
+  const renderScore = (state: SimState): void => {
+    const s = state.meta.score!;
+    overlay.replaceChildren();
+    const wrap = document.createElement('div');
+    const title = document.createElement('h2');
+    title.style.cssText = 'margin:0 0 12px';
+    title.textContent = s.outcome;
+    wrap.appendChild(title);
+
+    const breach = document.createElement('div');
+    breach.textContent = `Breach: ${s.breachRoomId}`;
+    wrap.appendChild(breach);
+
+    const timeSec = (s.missionEndTick / 60).toFixed(1);
+    const timeLine = document.createElement('div');
+    timeLine.textContent = `Mission time: ${timeSec}s`;
+    wrap.appendChild(timeLine);
+
+    const alarmLine = document.createElement('div');
+    alarmLine.textContent = `Alarm: ${s.alarmTripped ? 'yes' : 'no'}${s.alarmTripTick !== null ? ` @ tick ${s.alarmTripTick}` : ''}`;
+    wrap.appendChild(alarmLine);
+
+    const crewLine = document.createElement('div');
+    crewLine.textContent = `Crew neutralized: ${s.crewNeutralized}/8`;
+    wrap.appendChild(crewLine);
+
+    const restart = document.createElement('p');
+    restart.style.cssText = 'margin-top:16px';
+    restart.style.color = UI_FOCUS_HEX;
+    restart.dataset.focused = 'true';
+    restart.textContent = 'Interact to restart';
+    wrap.appendChild(restart);
+
+    overlay.appendChild(wrap);
+  };
+
   return {
     update(state: SimState): void {
       const phase = state.meta.missionPhase;
       if (phase === 'BRIEFING') {
-        const idx = state.meta.breachSelectIndex;
-        const lines = BREACH_OPTIONS.map((opt) => {
-          const sel = opt.index === idx ? '▸ ' : '  ';
-          const profile =
-            opt.index === 0 ? BREACH_PROFILE_PORT : BREACH_PROFILE_STARBOARD;
-          return `${sel}${opt.label} — ${profile}`;
-        });
         overlay.style.display = 'flex';
-        overlay.innerHTML = `<div><h2 style="margin:0 0 12px;font-size:20px">Select breach</h2>${lines.map((l) => `<div>${l}</div>`).join('')}<p style="margin-top:16px;opacity:0.7">Interact to confirm</p></div>`;
+        renderBriefing(state.meta.breachSelectIndex);
         return;
       }
       if (phase === 'SCORE' && state.meta.score) {
-        const s = state.meta.score;
-        const timeSec = (s.missionEndTick / 60).toFixed(1);
         overlay.style.display = 'flex';
-        overlay.innerHTML = `<div><h2 style="margin:0 0 12px">${s.outcome}</h2>
-<div>Breach: ${s.breachRoomId}</div>
-<div>Mission time: ${timeSec}s</div>
-<div>Alarm: ${s.alarmTripped ? 'yes' : 'no'}${s.alarmTripTick !== null ? ` @ tick ${s.alarmTripTick}` : ''}</div>
-<div>Crew neutralized: ${s.crewNeutralized}/8</div>
-<p style="margin-top:16px;opacity:0.7">Interact to restart</p></div>`;
+        renderScore(state);
         return;
       }
       overlay.style.display = 'none';

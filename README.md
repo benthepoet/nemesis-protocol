@@ -108,3 +108,25 @@ npm run test:run   # includes tests/mission/* + updated combat fail-flow tests
 npm run build
 npm run dev        # BRIEFING → breach → cycle → fight → Engineering or death → score → restart
 ```
+
+## HUD (p1-hud)
+
+DOM overlay (`#mission-hud`) with **five readouts** during **INSERTION** and **ACTIVE** only: **health** and **ammo** (bottom-left, stacked), **objective line** (top-left), **alarm** and **mission clock** (top-right, stacked). Hidden during **BRIEFING** and **SCORE** (shell overlays sit above at z-index 20).
+
+| Topic | Detail |
+|-------|--------|
+| Low HP | Hazard pulse when HP ≤ **25** (`HUD_LOW_HEALTH_HP`) |
+| Ammo | `${mag} / ${reserve}`; **RELOADING** + 0.00–1.00 progress while reload ticks run |
+| Objective | Empty until issued; then **`Reach Engineering`** (banner unchanged) |
+| Alarm | **AL0 UNAWARE** (dim) / **AL1 ALERTED** (hazard `#ff5252`); table includes AL2+ labels for forward-compat |
+| Clock | **`M:SS`** from sim `tick` via `formatMissionClock` — not wall clock |
+| Shell focus | BRIEFING breach row + SCORE restart hint use **`#ffd54f`** (`UI_FOCUS_HEX`) |
+| DEV readout | **`[DEV]`** prefix, top-center — not shipped HUD chrome |
+
+Verification:
+
+```bash
+npm run test:run   # tests/render/hud*.test.ts + full regression
+npm run build
+npm run dev        # yellow breach focus → in-mission HUD → AL1 + low-HP pulse → score restart focus
+```
