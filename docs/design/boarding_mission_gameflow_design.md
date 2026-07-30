@@ -8,7 +8,7 @@
 **License:** open source — MIT (code) / CC BY 4.0 (assets). See `LICENSE` / `LICENSE-ASSETS`.
 **Scope of this document:** Single-mission gameflow for the core loop — *board an enemy capital ship, fight through it, destroy it, get out.*
 **Reference asset:** `assets/mockups/cruiser_boarding_deck_plan.svg` — ISV *Nemesis*, Deck 03 (procgen reference layout)
-**Status:** v1.12 — locked for prototype (enemy roster approved)
+**Status:** v1.13 — locked for prototype (enemy roster approved; phase visual-pass policy)
 
 ---
 
@@ -432,6 +432,8 @@ Stations drop the ship grammar (no nose, no engines-aft) and change the mission 
 2. **Vertical slice+** — second deck on the same hull; elevators + shafts only (hatches last, they're the most systemic risk).
 3. **Station** — new grammar, same mission logic; introduces civilian/faction layer.
 
+**Phase visual-pass policy (v1.13, Director ruling 2026-07-30):** every development phase (P1–P4) closes with a scheduled **visual-pass feature** before its phase checkpoint is signed. Presentation quality is uplifted phase-by-phase per `visual_direction.md` §11 — never deferred to prototype end. Feature breakdown: `feature_roadmap.md` v1.7+.
+
 ---
 
 ## 13. Reference
@@ -453,3 +455,4 @@ This layout is the canonical grammar example for the generator: *nose = command,
 | v1.0–v1.10 | History predates this changelog section |
 | v1.11 | §6.1: Class B presentation split — **bulkhead** (section-bounding gating firewall) vs **interior** (ordinary solid walls, same immunity, not section bounds); door edges carry the class of the wall they pierce; Class A is never a doorway (from `p1-deck-geometry` clarification Q1) |
 | v1.12 | §8: P1 verb binding table — fire owns the primary trigger (mouse button 0 / right trigger); interact drops the mouse-0 binding (KBM interact = E). §10: P1 combat baselines — player/crew HP 100, rifle 25 dmg @ 10 rps automatic, magazine 30 + reserve 120, reload 2.0 s uninterruptible, projectile 60 m/s / 60 m range, no-spread v1, 3 s respawn placeholder (from `p1-combat-core` design pack v1, rulings R1/R2) |
+| v1.13 | §12.5: phase visual-pass policy — every phase (P1–P4) closes with a scheduled visual-pass feature before checkpoint sign-off; presentation uplift is per-phase, not prototype-end (Director ruling 2026-07-30; feature breakdown in roadmap v1.7, milestone bar in visual_direction §11) |

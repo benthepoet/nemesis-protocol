@@ -13,6 +13,12 @@ export interface SegmentHit {
   targetId?: EntityId;
 }
 
+export interface WallHit {
+  t: number;
+  x: number;
+  z: number;
+}
+
 function segmentAabbHit(
   ax: number,
   az: number,
@@ -122,16 +128,18 @@ function isActorTarget(entity: Entity): boolean {
   return entity.alive && (entity.kind === PLAYER_KIND || entity.kind === SECURITY_CREW_KIND);
 }
 
-export function earliestSegmentHit(
-  state: SimState,
+/**
+ * First wall obstruction along segment (AABB + polyEdges).
+ * Actors ignored. Read-only vs CollisionWorld.
+ */
+export function earliestWallHit(
   ax: number,
   az: number,
   bx: number,
   bz: number,
-  ownerId: EntityId,
   world: CollisionWorld,
-): SegmentHit | null {
-  let best: SegmentHit | null = null;
+): WallHit | null {
+  let best: WallHit | null = null;
 
   for (const aabb of world.aabbs) {
     const t = segmentAabbHit(ax, az, bx, bz, aabb);
@@ -140,7 +148,6 @@ export function earliestSegmentHit(
         t,
         x: ax + (bx - ax) * t,
         z: az + (bz - az) * t,
-        kind: 'wall',
       };
     }
   }
@@ -153,9 +160,32 @@ export function earliestSegmentHit(
         t,
         x: ax + (bx - ax) * t,
         z: az + (bz - az) * t,
-        kind: 'wall',
       };
     }
+  }
+
+  return best;
+}
+
+export function earliestSegmentHit(
+  state: SimState,
+  ax: number,
+  az: number,
+  bx: number,
+  bz: number,
+  ownerId: EntityId,
+  world: CollisionWorld,
+): SegmentHit | null {
+  let best: SegmentHit | null = null;
+
+  const wallHit = earliestWallHit(ax, az, bx, bz, world);
+  if (wallHit) {
+    best = {
+      t: wallHit.t,
+      x: wallHit.x,
+      z: wallHit.z,
+      kind: 'wall',
+    };
   }
 
   for (const entity of state.entities.values()) {

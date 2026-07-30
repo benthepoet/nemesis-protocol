@@ -1,9 +1,11 @@
 # Design Pack — p1-combat-core
 
-`DESIGN PACK v1 | feature p1-combat-core | design doc v1.12 | phase P1`
+`DESIGN PACK v2 | feature p1-combat-core | design doc v1.13 | goals: G1..G10 | mechanics: M1..M10`
 *Owner: Kimi K3. Gate: must exist before Stage 2 finalizes.*
 
-**Versions cited (charter §8):** charter v1.13 · design doc v1.12 (bumped from v1.11 by this pack — rulings R1/R2 landed doc-first) · visual direction v1.2 · feature roadmap v1.5 (P1 #4) · shipped deps: `p1-project-scaffold` (sim loop, command bus, input devices), `p1-deck-geometry` (deck graph, collision, wall-class data), `p1-player-controller` (player entity, move/aim/interact verbs, camera rig).
+**Versions cited (charter §8):** charter v1.13 · design doc v1.13 · visual direction v1.4 (bumped from v1.3 by this pack — rulings R7/R8 landed doc-first) · feature roadmap v1.7 (P1 #4) · shipped deps: `p1-project-scaffold` (sim loop, command bus, input devices), `p1-deck-geometry` (deck graph, collision, wall-class data), `p1-player-controller` (player entity, move/aim/interact verbs, camera rig).
+
+> **v2 note (Director iteration 1, §3.5a):** v1 below is the accepted baseline (G1–G9 ☑, Gate 2 accepted, on `master`). v2 adds **G10 / M10 / R7 / R8** — combat readability telegraphs (visible projectiles + aim-direction line) — from Director feedback *"We need to see bullet projectiles and I need some kind of line indicating where I'm firing."* See the **v2 addendum** at the end; it is the only section in force beyond v1.
 
 **Feature (roadmap P1 #4):** firearms, projectiles, damage, health/death for player + enemies, ammo. Depends on `p1-player-controller` ✅. P1 carries **no gating, no destructibility, no AI, no HUD** — this feature is the combat *pipeline*: verbs → projectiles → damage → death, exercised against static crew stand-ins. Enemy behavior arrives in `p1-enemy-baseline` (#5).
 
@@ -94,5 +96,54 @@
 None blocking — R1–R6 pre-rule the expected conflicts. Topics Grok may still raise, with my positions:
 
 - Muzzle spawn offset / projectile-vs-self collision — technical; design constraint is only "never collides with the firing actor on the spawn tick."
-- Tracer presentation (render-side) — Grok's call within M9's readability bounds.
+- ~~Tracer presentation (render-side) — Grok's call within M9's readability bounds.~~ **Superseded by v2:** tracer presentation is no longer Grok's open call — it is a ruled requirement (R7, G10). The v1 deferral is diagnosed as the gap that produced Director iteration 1.
 - Stand-in hit-flash duration — presentation detail within visual §7; not a rule.
+
+---
+
+## v2 addendum — Director iteration 1: combat readability telegraphs (2026-07-30)
+
+**Director feedback (post-Gate-2, master shipped):** *"We need to see bullet projectiles and I need some kind of line indicating where I'm firing."*
+
+**Diagnosis (§3.5a):** design-pack gap — presentation under-specification, **not** an implementation defect and **not** a design-doc rule change. The sim is correct (projectile entities, 60 m/s, stable IDs, deterministic); G9/M9 shipped muzzle light + impacts as accepted. But the v1 pack never required visible slugs and never enumerated an aim-direction telegraph — "tracer presentation" was deferred to Grok's discretion, where the requirement fell through. Sim rules, numbers, and bindings are untouched; this is render-side readability governed by the visual direction (bumped v1.3 → **v1.4**, §6 P1 row + §7 rule 7). Routing: pack v2 → Grok hotfix spec (Stage 2, reduced ceremony, §7 hotfix discipline) → Composer on `feat/p1-combat-readability` → Gates 1–2.
+
+### New goal
+
+| ID | Goal (binary-verifiable) | Verified |
+|----|--------------------------|----------|
+| G10 | Combat readability telegraphs (M10, R7/R8): every live projectile renders as a visible emissive tracer synced to its sim entity, and the living player renders an in-world aim-direction line from the muzzle along facing to the first wall obstruction — dim at rest, bright while fire is held; both are render-only with zero sim coupling (G8 unchanged) | ☐ |
+
+### New mechanic
+
+| ID | Mechanic | Design doc ref |
+|----|----------|----------------|
+| M10 | Player combat telegraphs (render-side): projectile tracers + aim-direction line, world-space scene elements (never HUD chrome — `p1-hud` #7 remains out of scope), allied-palette, subordinate to enemy telegraphs in the readability hierarchy | visual §6 (P1 row, v1.4), §7 rule 7 (v1.4), §3 |
+
+### New rulings
+
+- **R7 — Visible projectile tracers.** Every live sim projectile renders as an **elongated emissive slug** stretched along its velocity vector: hot-white core with an allied `#69f0ae` halo (visual §3 — player-aligned indicator; hostile fire will own `#ff5252` when enemies shoot in `p1-enemy-baseline`). Visual length ≈ **1.2 m** (2 sim ticks of travel at 60 m/s — reads as motion without implying a larger hitbox; the sim entity remains a point and the tracer must never be treated as geometry). Thin additive/emissive treatment, legible against hull-steel floors at the 60° camera. Tracers are **render-only**: spawned/killed with their sim entity by stable ID, position sampled from sim state each frame (render-side interpolation permitted), zero feedback into sim — G8 determinism and world hash are unaffected. The muzzle flash light (G9) stays; tracers supplement, never replace it. Budget: ≤ ~12 concurrent tracers (10 rps × ~1 s flight + margin) — trivially inside the §6 hero-emitter budget.
+- **R8 — Aim-direction line (in-world, persistent).** A thin emissive line renders **whenever the player is alive** — from the muzzle along the current facing to the **first wall obstruction** (any class, per M2 collision semantics), clamped at the 60 m max range. **Dim at rest, bright while the fire verb is held**; visible during reload (aiming continues); **off while dead** (input inert, no facing to telegraph). Same allied treatment as R7 (white core / `#69f0ae`); it terminates on *geometry only* — actors do not stop it (their hit feedback is the M9 hit flash). Render-side read of collision/sim state only; zero sim coupling.
+  - *Why persistent rather than fire-only:* under the 60° top-down rig the player is a capsule with **no readable body orientation** — the line *is* the facing telegraph. This holds for both devices: mouse aim exists continuously (cursor raycast, §8), and gamepad right-stick aim decays to neutral exactly when the player most needs to know where facing settled. A fire-only line would answer "where did that shot go" but not the Director's actual need — "where *am I* firing." Terminating at the first obstruction also telegraphs shot clearance (is this lane clean?) without any HUD.
+  - *Why not HUD:* HUD remains `p1-hud` (#7) scope. This is a world-space combat telegraph under visual §7 rule 7 — scene readability, not chrome.
+
+### v2 acceptance criteria
+
+| Goal | Observable check |
+|------|------------------|
+| G10 | Screenshot/build evidence at the 60° rig: (a) a held-fire burst shows distinct, moving tracer slugs along the line of fire — visible against unlit hull-steel floor, white/`#69f0ae`, no red/green meaning collision; (b) tracers die at the same frame their projectile impacts/despawns (no orphaned tracers, including at 60 m max-range despawn); (c) the aim line runs muzzle → facing and visibly terminates at a wall when one blocks the lane, reaching full length in the open spine; (d) line is dim at rest, bright while firing, present during reload, absent after player death; (e) identical command stream with telegraphs enabled vs disabled → identical sim ticks, world hash, and G1–G8 outcomes (zero sim coupling); (f) G9 evidence still holds (muzzle light + impacts unchanged) |
+
+### v2 explicit non-goals (do not build)
+
+- No sim changes: projectile speed/range/damage/fire-rate, collision, HP, ammo — all frozen per v1 (R2/M1–M6). The hotfix that alters any accepted G1–G9 behavior is itself an S1 (charter §7 regression safety).
+- No hostile/enemy tracers (stand-ins don't shoot; `p1-enemy-baseline` owns that when it lands).
+- No spread/recoil visualization, no ricochets, no bullet drop — none exist in the sim (R6).
+- No HUD elements, crosshair widgets, or screen-space overlays — `p1-hud` (#7).
+- No laser-sight *attachment* fiction or hero weapon model work — blockout presentation, as v1.
+
+### What Grok's hotfix spec must cover (Stage 2, reduced ceremony)
+
+- Tracer renderer: slug mesh/material per R7 (stretch along velocity, white core + `#69f0ae` halo, additive/emissive); lifecycle bound to sim projectile entities by stable ID; per-frame position sync (interpolation allowed render-side); clean despawn on impact **and** max-range expiry.
+- Aim-line renderer: origin at muzzle, direction from current facing; termination via read-only query against deck collision (all wall classes; geometry only, actors ignored); 60 m clamp; intensity state machine (alive+idle → dim, alive+firing → bright, reloading → visible, dead → off); palette per R8.
+- Sim-coupling guard: telegraph layer strictly render-side; tests proving identical world hash / tick count / G1–G8 outcomes with telegraphs toggled on/off (mirrors the G8 replay pattern).
+- Regression suite: full G1–G9 re-verification (charter §7 — regression safety); build + screenshot evidence for G10 (a)–(d).
+- Out of scope list restating the v2 non-goals above.

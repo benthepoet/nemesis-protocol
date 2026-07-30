@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import * as THREE from 'three';
 import { integrateCombat } from '../../src/combat/integrateCombat.js';
 import type { CombatEvent } from '../../src/combat/types.js';
+import { createCombatTelegraphs } from '../../src/render/combatTelegraphs.js';
 import { hashSimState } from '../../src/sim/hash.js';
 import { integratePlayerMotion } from '../../src/sim/playerMotion.js';
 import { replay } from '../../src/sim/replay.js';
@@ -86,6 +88,42 @@ describe('combat determinism (G8)', () => {
     expect(collected.events.length).toBeGreaterThan(0);
     expect(collected.state.tick).toBe(discarded.state.tick);
     expect(await hashSimState(collected.state)).toBe(await hashSimState(discarded.state));
+  });
+
+  it('G10(e): telegraphs sync does not change sim hash', async () => {
+    const harness = createCombatTestHarness();
+    const byTick = new Map<number, InputCommand[]>();
+    for (let t = 0; t < 40; t += 1) {
+      byTick.set(t, [fireHeldOn(t, t)]);
+    }
+
+    const synced = advanceCombatTicks(
+      harness.state,
+      byTick,
+      45,
+      harness.collisionWorld,
+      harness.graph,
+      false,
+    );
+    const plain = advanceCombatTicks(
+      harness.state,
+      byTick,
+      45,
+      harness.collisionWorld,
+      harness.graph,
+      false,
+    );
+
+    const scene = new THREE.Scene();
+    const tgOn = createCombatTelegraphs(scene);
+    const tgOff = createCombatTelegraphs(scene, { enabled: false });
+    const hashBefore = await hashSimState(synced.state);
+    tgOn.sync(synced.state, harness.collisionWorld);
+    tgOff.sync(plain.state, harness.collisionWorld);
+    expect(await hashSimState(synced.state)).toBe(hashBefore);
+    expect(await hashSimState(plain.state)).toBe(await hashSimState(synced.state));
+    tgOn.dispose();
+    tgOff.dispose();
   });
 
   it('E28: no Math.random / Date.now in src/combat', () => {
