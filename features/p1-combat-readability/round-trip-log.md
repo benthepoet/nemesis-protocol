@@ -12,9 +12,10 @@
 | 2026-07-30 | Review round 1 | Grok: REQUEST CHANGES — verify 105/105 + build 0 @ `70cbead`; G9 `combatVfx` untouched; sim constants/`integrateCombat` frozen; coupling + G10(e) present. Blocker: aim-line `geo.translate(0,0.5)` + midpoint pose breaks R8/G10(c) muzzle→wall. Formal `gh pr review --request-changes` may be blocked (self-PR); verdict in PR comment. |
 | 2026-07-30 | Revision round 1 | Composer — aim-line start pose fix + `getAimLineEndpointsForTest`; 106/106 + build green. |
 | 2026-07-30 | Review round 2 | Grok: **APPROVE** — verified `aac89d9`: `orientHorizontalSegment` poses at muzzle (matches `geo.translate(0,0.5)`); `getAimLineEndpointsForTest` asserts muzzle→wall; **106/106** + build 0. Zero open blockers. Stage 4 technical approval granted. Self-PR: verdict in PR comment. |
+| 2026-07-30 | Merged → integration | `8ef3d3f` — PR #5, HOTFIX spec v1 FINAL, Stage 4 approved. Post-merge: 106/106 + build 0. |
 | | Gate 1 (Kimi) | |
 | | Gate 2 (Director) | |
 | | Director iterations (§3.5a) | cycle 1 in progress (this hotfix) |
 | | Escalations | none |
 
-**Final state:** Stage 4 approved · **Parent design pack version:** v2 · **Visual direction:** v1.4 · **Design doc:** v1.13 · **Spec:** HOTFIX v1 FINAL · **PR:** #5
+**Final state:** merged to `integration` (`8ef3d3f`) · awaiting Gate 1 · **Parent design pack version:** v2 · **Visual direction:** v1.4 · **Design doc:** v1.13 · **Spec:** HOTFIX v1 FINAL · **PR:** #5
