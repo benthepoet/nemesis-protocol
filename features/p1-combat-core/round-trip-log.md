@@ -8,8 +8,9 @@
 | 2026-07-30 | Design pack | v1 (design doc v1.12 — bumped doc-first by this pack, rulings R1/R2; visual direction v1.2; charter v1.13) |
 | 2026-07-30 | Spec | v1 FINAL — 21 tasks traced G1..G9 / M1..M9; zero open clarification questions; stand-in placements documented from deck03 footprint centers |
 | 2026-07-30 | Stage 3 | Composer: branch feat/p1-combat-core — tasks 1–21 @ spec v1; npm run test:run 92 passed (scaffold 17 in sim+input parity/hotSwap/axes per README); npm run build exit 0 |
-| | PR opened | |
-| | Review round 1..5 | |
+| 2026-07-30 | PR opened | PR #4 → integration — https://github.com/benthepoet/nemesis-protocol/pull/4 |
+| 2026-07-30 | Review round 1 | Grok: REQUEST CHANGES — verify 92/92 + scaffold 17/17 + build 0; blockers Task 19 E5/E6/E16/E21; minors E1/E7–E8/WeakMap traveled/config comment/smoke evidence; Q on projectileMotion split. Formal `gh pr review --request-changes` blocked (self-PR); verdict in PR comment. |
+| | Review round 2..5 | |
 | | Gate 1 (Kimi) | |
 | | Gate 2 (Director) | |
 | | Director iterations (§3.5a) | |
