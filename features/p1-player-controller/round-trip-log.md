@@ -14,7 +14,7 @@
 | 2026-07-30 | Stage 4 revision 1 | Addressed all round-1 findings: f3f0162 (M4 axis), 1dcd793 (E8 traversal), 6dfbbc3 (config comment); manual verify steps on PR #3. Verify: 62/62 tests, build exit 0. |
 | 2026-07-30 | Review round 2 | Grok APPROVE — all round-1 findings verified fixed; zero new blockers. Verify: 62/62 tests, scaffold 17/17, build exit 0. Comment: https://github.com/benthepoet/nemesis-protocol/pull/3#issuecomment-5133284296 |
 | 2026-07-30 | Merged (§6) | `feat/p1-player-controller` → `integration` at `4acb536`; post-merge verify 62/62 + scaffold 17/17 + build 0; PR #3 remains Gate 1–2 record thread |
-| | Gate 1 (Kimi) | pass / fail → findings |
+| 2026-07-30 | Gate 1 (Kimi) | **pass** — G1–G8 verified binary (pack checkboxes ☑); M1–M8 compliant, no out-of-scope (combat/sprint player/aim-assist/HUD/consumers absent; debug-fly sprint only); visual: allied green capsule+wedge, 60° follow cam, cutaway per spec; license clean (no dep changes); evidence: tests 62/62 + manual verify steps on PR #3 |
 | | Gate 2 (Director) | accept / amend / reject → feedback ref |
 | | Director iterations (§3.5a) | cycle <n>: diagnosis <design/spec/impl> |
 | | Escalations | <E-IDs if any> |
