@@ -14,7 +14,7 @@ export interface MissionShellUi {
 export function createMissionShellUi(host: HTMLElement): MissionShellUi {
   const overlay = document.createElement('div');
   overlay.id = 'mission-shell-ui';
-  overlay.style.cssText = `position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:${SHELL_CHROME_HEX};color:#e0e0e0;font:16px/1.5 sans-serif;z-index:20;pointer-events:none;`;
+  overlay.style.cssText = `position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:${SHELL_CHROME_HEX};color:#e6edf3;font:16px/1.5 "IBM Plex Sans", "Segoe UI", "Helvetica Neue", sans-serif;z-index:20;pointer-events:none;letter-spacing:0.02em;`;
   host.appendChild(overlay);
 
   const renderBriefing = (idx: number): void => {

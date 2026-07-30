@@ -146,3 +146,34 @@ npm run test:run   # aimAssist, missionHotSwap, gamepadOnlyLoop, bindingsAudit +
 npm run build
 npm run dev        # right-stick assist near crew; mouse aim unchanged; KBM↔pad hot-swap mid-fight
 ```
+
+## Visual pass (p1-visual-pass / M-P1)
+
+Presentation-only milestone: hero GLBs, deck PBR textures, AL0/AL1 lighting, combat VFX surfaces, HUD/shell chrome. **No sim, tuning, or binding changes** — `hashSimState` / `hashDeckGraph` stay bit-identical.
+
+**Asset paths (canonical):**
+
+- Models: `assets/models/p1_*.glb`
+- Textures: `assets/textures/p1_*.png`
+- Served at `/assets/…` in dev (`vite` plugin) and copied to `dist/assets/` on build.
+
+**Regenerate procedural stand-ins (R3):**
+
+```bash
+node tools/textures/generate-p1-textures.mjs
+node tools/models/generate-p1-placeholders.mjs
+```
+
+Replace placeholders with Kimi-authored assets at the same paths before Gate 1.
+
+**AL0 / AL1:** AL0 = warm keys + corridor practicals + light haze (`HAZE_DENSITY_AL0`). AL1 = corridor amber beacons + denser haze (`HAZE_DENSITY_AL1`); rooms unchanged. Alarm never de-escalates in sim.
+
+**Verification:**
+
+```bash
+npm run test:run   # 209 tests incl. render/heroAssets, deckLighting, combatVfxSurfaces, visualPassDeterminism
+npm run build
+npm run dev        # FPS overlay (`#fps-overlay`) for G14; smoke heroes, AL1 beacons, HUD skin
+```
+
+Gate 1 screenshots S1–S10: manual capture plan (optional DEV screenshot harness not landed).
