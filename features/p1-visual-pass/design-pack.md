@@ -105,8 +105,8 @@ All original, CC BY 4.0, phase-prefixed (charter §5). Models: glTF/GLB + standa
 
 | Asset | Path (assets/) | Reference board | Status |
 |-------|----------------|-----------------|--------|
-| Player boarder hero model (2K PBR) | `models/p1_player_boarder.glb` (+ `textures/p1_player_boarder_{albedo,metal,rough,normal}.png` if external) | Board A — player boarder | **re-delivery pending — rigged + animated (R13/R14), same path, supersedes rigid v1 delivery** |
-| Security crew hero model (2K PBR) | `models/p1_security_crew.glb` (+ `textures/p1_security_crew_*.png` if external) | Inherited — p1-enemy-baseline board (design synthesis binding) | **re-delivery pending — rigged + animated (R13/R14), same path, supersedes rigid v1 delivery** |
+| Player boarder hero model (2K PBR) | `models/p1_player_boarder.glb` (+ `textures/p1_player_boarder_{albedo,metal,rough,normal}.png` if external) | Board A — player boarder | **delivered (v2, 2026-07-30) — rigged + animated (R13/R14): R14 21-joint skeleton, clips `idle`/`move`/`aim_fire`, supersedes rigid v1 at same path** |
+| Security crew hero model (2K PBR) | `models/p1_security_crew.glb` (+ `textures/p1_security_crew_*.png` if external) | Inherited — p1-enemy-baseline board (design synthesis binding) | **delivered (v2, 2026-07-30) — rigged + animated (R13/R14): R14 21-joint skeleton, clips `idle`/`move`/`aim_fire`/`death`, supersedes rigid v1 at same path** |
 | Rifle hero model (2K PBR) | `models/p1_rifle.glb` (+ `textures/p1_rifle_*.png` if external) | Board B — rifle | delivered (v1) — unchanged; `muzzle` anchor parity R6 must survive the grip-socket constraint (M11) |
 | Hull-steel trim sheet (1K, structure) | `textures/p1_hull_steel_trim_{albedo,metal,rough,normal}.png` | Board C — deck materials & lighting | delivered (v1) |
 | Deck plate floor set (1K) | `textures/p1_deck_plate_{albedo,metal,rough,normal}.png` | Board C | delivered (v1) |
