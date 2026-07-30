@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { clone as cloneSkinnedScene } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 const loader = new GLTFLoader();
 
@@ -9,14 +10,26 @@ function sceneRoot(gltf: { scene: THREE.Group }): THREE.Group {
   return root;
 }
 
-/** Load a GLB/glTF and return a cloneable Group (scene root). */
-export function loadGltf(url: string): Promise<THREE.Group> {
-  const resolved =
-    import.meta.env.VITEST && url.startsWith('/') ? `http://vitest.local${url}` : url;
+export interface GltfLoadResult {
+  scene: THREE.Group;
+  animations: THREE.AnimationClip[];
+}
+
+function resolveUrl(url: string): string {
+  return import.meta.env.VITEST && url.startsWith('/') ? `http://vitest.local${url}` : url;
+}
+
+/** Load a GLB/glTF with animation clips preserved. */
+export function loadGltfWithAnimations(url: string): Promise<GltfLoadResult> {
   return new Promise((resolve, reject) => {
     loader.load(
-      resolved,
-      (gltf) => resolve(sceneRoot(gltf)),
+      resolveUrl(url),
+      (gltf) => {
+        resolve({
+          scene: sceneRoot(gltf),
+          animations: gltf.animations ?? [],
+        });
+      },
       undefined,
       (err) => {
         const message = err instanceof Error ? err.message : String(err);
@@ -24,6 +37,11 @@ export function loadGltf(url: string): Promise<THREE.Group> {
       },
     );
   });
+}
+
+/** Load a GLB/glTF and return a cloneable Group (scene root). */
+export function loadGltf(url: string): Promise<THREE.Group> {
+  return loadGltfWithAnimations(url).then((r) => r.scene);
 }
 
 /** Drop optional maps so fragment shaders stay under MAX_TEXTURE_IMAGE_UNITS with shadows. */
@@ -47,7 +65,12 @@ export function stripOptionalMaterialMaps(root: THREE.Object3D): void {
   });
 }
 
-/** Deep-clone a loaded template for per-instance meshes (shared geometry OK). */
+/** Deep-clone a loaded template for rigid fixtures (shared geometry OK). */
 export function cloneGltfTemplate(template: THREE.Group): THREE.Group {
   return template.clone(true);
+}
+
+/** Skinned-safe instance clone (SkeletonUtils.clone). */
+export function cloneSkinnedGltf(template: THREE.Object3D): THREE.Group {
+  return cloneSkinnedScene(template) as THREE.Group;
 }

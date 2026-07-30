@@ -34,7 +34,7 @@ function applyHitFlash(root: THREE.Object3D): { restore: () => void; touched: TH
   const touched: THREE.Object3D[] = [];
   const basicPrev = new Map<THREE.Material, number>();
   root.traverse((obj) => {
-    if (!(obj instanceof THREE.Mesh)) return;
+    if (!(obj instanceof THREE.Mesh || obj instanceof THREE.SkinnedMesh)) return;
     const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
     for (const mat of mats) {
       flashMaterialForHit(mat, true, basicPrev);
@@ -45,7 +45,7 @@ function applyHitFlash(root: THREE.Object3D): { restore: () => void; touched: TH
     touched,
     restore: () => {
       root.traverse((obj) => {
-        if (!(obj instanceof THREE.Mesh)) return;
+        if (!(obj instanceof THREE.Mesh || obj instanceof THREE.SkinnedMesh)) return;
         const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
         for (const mat of mats) flashMaterialForHit(mat, false, basicPrev);
       });

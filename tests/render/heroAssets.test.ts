@@ -6,7 +6,7 @@ import { loadGltf } from '../../src/render/assets/loadGltf.js';
 import { preloadHeroAssets } from '../../src/render/assets/preloadHeroAssets.js';
 import { createPlayerMeshFromTemplates, playerHasDebugWedge } from '../../src/render/createPlayerMesh.js';
 import { countHeroBasicMaterials } from '../../src/render/heroMaterialTune.js';
-import { getMuzzleWorldXZ } from '../../src/render/createRifleBlockout.js';
+import { getMuzzleWorldXZ, heroHasGripBone } from '../../src/render/createRifleBlockout.js';
 
 describe('hero assets (G1, M1–M3, R5, R6)', () => {
   it('E1: missing GLB rejects with path in error', async () => {
@@ -41,5 +41,11 @@ describe('hero assets (G1, M1–M3, R5, R6)', () => {
     expect(glow).toBeDefined();
     expect(glow!.color.getHexString()).toBe(new THREE.Color(PLAYER_COLOR_HEX).getHexString());
     expect(countHeroBasicMaterials(player)).toBeGreaterThan(10);
+  });
+
+  it('E3: rigged player has hand_r_grip when clips present', async () => {
+    const templates = await preloadHeroAssets();
+    expect(templates.playerClips.length).toBeGreaterThan(0);
+    expect(heroHasGripBone(templates.player)).toBe(true);
   });
 });

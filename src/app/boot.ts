@@ -1,4 +1,4 @@
-import { DEFAULT_PIXEL_RATIO_CAP } from '../config.js';
+import { DEFAULT_PIXEL_RATIO_CAP, HERO_MATERIAL_MODE } from '../config.js';
 import { buildCollisionWorld } from '../deck/collision.js';
 import { loadDeck03 } from '../deck/loadDeck.js';
 import { validateDeckGraph } from '../deck/validate.js';
@@ -21,8 +21,8 @@ import { createHud } from '../render/hud/createHud.js';
 import { createMissionShellUi } from '../render/missionShellUi.js';
 import { createObjectiveBanner } from '../render/objectiveBanner.js';
 import { createObjectiveBeacon } from '../render/objectiveBeacon.js';
-import { createPlayerMesh, syncPlayerMeshPose } from '../render/createPlayerMesh.js';
-import { createStandInMesh, syncStandInMeshPose } from '../render/createStandInMesh.js';
+import { createPlayerMesh, updatePlayerHeroPresentation, disposePlayerHeroPresentation } from '../render/createPlayerMesh.js';
+import { createStandInMesh, updateStandInHeroPresentation, disposeStandInHeroPresentation } from '../render/createStandInMesh.js';
 import { getHeroFixtures, preloadHeroAssets } from '../render/assets/preloadHeroAssets.js';
 import { attachSceneEnvironment } from '../render/sceneEnvironment.js';
 import { createFpsOverlay } from '../render/fpsOverlay.js';
@@ -89,12 +89,12 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const debugFly = isDebugFlyCameraEnabled();
   let follow: ReturnType<typeof createFollowCamera> | undefined;
 
-  const syncPresentation = () => {
+  const syncPresentation = (dtSec: number) => {
     const playerId = world.meta.playerId;
     const entity = playerId !== null ? getEntity(world, playerId) : undefined;
     if (entity) {
       playerMesh.visible = true;
-      syncPlayerMeshPose(playerMesh, entity);
+      updatePlayerHeroPresentation(playerMesh, entity, world.meta, dtSec);
       if (playerId !== null) {
         vfxRegistry.registerActorMesh(String(playerId), playerMesh);
       }
@@ -103,7 +103,8 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     }
     for (const [id, mesh] of standInMeshes) {
       const e = getEntity(world, id);
-      if (e) syncStandInMeshPose(mesh, e);
+      const ai = world.crewAi.get(id);
+      if (e) updateStandInHeroPresentation(mesh, e, ai, dtSec);
     }
     telegraphs.sync(world, collisionRef.current);
     combatReadout?.update(world);
@@ -118,7 +119,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     camera = fly.camera;
     onFrame = (dt) => {
       fly.update(dt);
-      syncPresentation();
+      syncPresentation(dt);
       deckLighting.update(dt, world.meta.alarmLevel as 0 | 1);
       combatVfx.update(dt);
     };
@@ -145,7 +146,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
         follow.update(dt, entity);
         updateCeilingCutaway(deckScene.roomGroups, graph, entity.x, entity.z, cutawayState);
       }
-      syncPresentation();
+      syncPresentation(dt);
       deckLighting.update(dt, world.meta.alarmLevel as 0 | 1);
       combatVfx.update(dt);
     };
@@ -167,7 +168,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   window.addEventListener('resize', resize);
 
   if (import.meta.env.DEV) {
-    document.body.dataset.nemesisHeroTune = '4';
+    document.body.dataset.nemesisHeroTune = HERO_MATERIAL_MODE === 'pbr' ? 'pbr' : '4';
   }
 
   const stopLoop = startFrameLoop({
@@ -188,6 +189,10 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   return () => {
     stopLoop();
     flyDispose?.();
+    disposePlayerHeroPresentation(playerMesh);
+    for (const mesh of standInMeshes.values()) {
+      disposeStandInHeroPresentation(mesh);
+    }
     sceneEnv.dispose();
     deckLighting.dispose();
     deckScene.disposeMaterials();
