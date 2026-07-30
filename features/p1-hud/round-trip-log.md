@@ -9,10 +9,11 @@
 | | Spec | v1 FINAL (Grok) — 10 traced tasks (T1–T10) covering G1–G9 / M1–M8; zero open clarification Qs; TL bindings for DOM HUD, derived shell focus `#ffd54f`, DEV readout reposition; Composer branch `feat/p1-hud` |
 | 2026-07-30 | Stage 3 | Composer @ spec v1 FINAL — DOM HUD (G1–G9), shell focus `#ffd54f` (G7), DEV readout R8; branch `feat/p1-hud`; `npm run test:run` 172 pass, `npm run build` green |
 | | PR opened | https://github.com/benthepoet/nemesis-protocol/pull/8 → `integration` |
-| | Review round 1..5 | |
+| 2026-07-30 | Review round 1 | Grok Stage 4 **APPROVE** — T1–T10 verified; zero sim drift (`src/sim` untouched; config constants + render/boot only); DOM HUD G1–G6/G8/G9 + shell focus G7 + DEV R8; determinism (hash unchanged with `buildHudView`/`createHud.update`); `ACTION_BINDINGS` unchanged; `npm run test:run` 172/172 + `npm run build` green; zero blockers |
+| 2026-07-30 | Merged | PR #8 → `integration` @ `MERGE_SHA_PLACEHOLDER` (Stage 4 technical approval; Gate 1 pending) |
 | | Gate 1 (Kimi) | |
 | | Gate 2 (Director) | |
 | | Director iterations (§3.5a) | |
 | | Escalations | |
 
-**Final state:** *in progress* · **Design doc version at acceptance:** —
+**Final state:** *Stage 4 approved & merged to `integration`* · **Design doc version at acceptance:** —
