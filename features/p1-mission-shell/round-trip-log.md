@@ -11,9 +11,9 @@
 | 2026-07-30 | PR opened | #7 `feat/p1-mission-shell` → `integration` |
 | 2026-07-30 | Review round 1 | Grok Stage 4 **APPROVE** — T1–T19 verified; respawn path deleted; alarm pre-door-open guard (INSERTION verbs locked + closed door + gameplay gates); determinism (shell in tick/replay + hash); `npm run test:run` 148/148 + `npm run build` green; zero blockers |
 | 2026-07-30 | Merged | PR #7 → `integration` @ `c87a7e6` (Stage 4 technical approval; Gate 1 pending) |
-| | Gate 1 (Kimi) | |
+| 2026-07-30 | Gate 1 (Kimi) | **PASS** on `integration` @ `c87a7e6` (HEAD `ba0da51`) — G1–G10 binary-verified (Verified column ☑); 148/148 tests + build green; anti-assumption clean; license scan clean; zero `[blocker]`s; 2 `[minor]`s (score banner wording "MISSION COMPLETE/FAILED"; alarm trip time in ticks) → deferred to `p1-visual-pass` (#9); findings + Gate 2 caveats appended to design-pack.md; verdict posted on PR #7 |
 | | Gate 2 (Director) | |
 | | Director iterations (§3.5a) | |
 | | Escalations | |
 
-**Final state:** *Stage 4 approved & merged to `integration`* · **Design doc version at acceptance:** —
+**Final state:** *Gate 1 PASSED (Kimi, 2026-07-30) — awaiting Gate 2 (Director)* · **Design doc version at acceptance:** v1.15
