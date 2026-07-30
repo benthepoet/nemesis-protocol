@@ -2,7 +2,7 @@
 
 **Purpose:** the phase→feature breakdown. Each feature below is one pipeline instance (charter §3): one design pack, one spec, one branch/PR, one Gate 1 + Gate 2.
 **Granularity rule:** a feature is the smallest unit that can be independently gated. Target 3–8 features per phase; if a feature can't pass Gate 1 alone, it's too small; if it needs two design packs, it's too big.
-**Status:** v1.5 — P1 #1–#3 shipped (Gate 2 through 2026-07-30); P1 detailed (+ gamepad parity, roster); solo-first ruling; P2–P4 scoped
+**Status:** v1.6 — P1 #1–#4 shipped (Gate 2 through 2026-07-30); P1 detailed (+ gamepad parity, roster); solo-first ruling; P2–P4 scoped
 
 > **Director ruling (v1.2):** P1 is **solo-first**. Netcode is targeted for the P2–P3 window, and every P1 feature must satisfy the netcode-ready architecture mandate (design doc §12.1): command-pattern inputs, deterministic sim ticks, no frame-rate-coupled logic, stable entity IDs. Grok's scaffold spec (p1-project-scaffold) carries this as a primary goal.
 
@@ -29,7 +29,7 @@
 | 1 | `p1-project-scaffold` ✅ shipped | three.js project setup (WebGL2/WebGPU), build pipeline, input plumbing, `master` repo conventions per charter §6 | — (technical enabler; G# defined in its design pack) | — |
 | 2 | `p1-deck-geometry` ✅ shipped | Deck 03 as playable level: room graph from the reference layout, wall-class data (A/B/C), collision, spawn-safe entry rooms | §7 topology model, §6.1 wall classes | 1 |
 | 3 | `p1-player-controller` ✅ shipped | Angled top-down movement + aim, ~60° pitch camera rig (cutaway-ready, §7 rule 6), interaction verb | — (foundation; goals set in pack) | 2 |
-| 4 | `p1-combat-core` | Firearms, projectiles, damage, health/death for player + enemies, ammo | §9 tuning (damage baselines) | 3 |
+| 4 | `p1-combat-core` ✅ shipped | Firearms, projectiles, damage, health/death for player + enemies, ammo | §9 tuning (damage baselines) | 3 |
 | 5 | `p1-enemy-baseline` | Security crew infantry AI (patrol → investigate → chase → attack); basic spawner; alarm stub (AL0/AL1 only) | §4 (AL0–AL1), §4.5 roster | 4 |
 | 6 | `p1-mission-shell` | Airlock entry sequence, objective placeholder ("reach Engineering"), mission end + score screen | §3 Phase 0–1 (shell only) | 2, 5 |
 | 7 | `p1-hud` | Health, ammo, objective line, alarm indicator stub; full gamepad UI navigation | §4 (indicator), §3 | 6 |

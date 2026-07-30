@@ -14,8 +14,8 @@
 | 2026-07-30 | Review round 2 | Grok: APPROVE — verify 97/97 + build 0 @ `3a7282a`; blockers E5/E6/E16/E21 closed; minors E1/E7–E8/traveled/ACCENT_HEX closed; smoke evidence still outstanding (non-blocking). Formal `gh pr review --approve` may be blocked (self-PR); verdict in PR comment. Stage 4 technical approval granted — ready for Gate 1 (Kimi). |
 | 2026-07-30 | Merged (§6) | `feat/p1-combat-core` → `integration` at `d39eec4`; post-merge verify 97/97 + build 0; PR #4 remains Gate 1–2 record thread |
 | 2026-07-30 | Gate 1 (Kimi) | **PASS** — G1–G9 binary-verified on `integration` @ `d39eec4` (design pack v1 checkboxes ☑; `npm run test:run` 97/97 incl. scaffold 17 regression, `npm run build` exit 0); mechanics callout compliant (M1–M9 present, nothing invented, all explicit non-goals absent — no AI/HUD/wall-damage/aim-assist/pickups/audio); license scan clean (zero dep changes, no third-party assets in diff or dist); G9 visual evidence: muzzle flash = real dynamic `PointLight` lighting deck geometry (headless capture), palette §3 conformant (`#ff5252` hostile / `#69f0ae` allied, no meaning collisions), DEV readout only (not HUD). Verdict on PR #4. |
-| | Gate 2 (Director) | |
-| | Director iterations (§3.5a) | |
-| | Escalations | |
+| 2026-07-30 | Gate 2 (Director) | **accept** — release to `master`; no Director iteration cycles |
+| | Director iterations (§3.5a) | none |
+| | Escalations | none |
 
-**Final state:** Gate 1 **PASSED** (Kimi, 2026-07-30) — awaiting Gate 2 (Director) · **Design doc version at acceptance:** v1.12
+**Final state:** accepted · **Design doc version at acceptance:** v1.12
