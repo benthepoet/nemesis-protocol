@@ -188,6 +188,12 @@ export const TRACER_MAX_CONCURRENT = 24 as const;
 export const ALARM_LEVEL_AL0 = 0 as const;
 export const ALARM_LEVEL_AL1 = 1 as const;
 
+/** UI focus / highlight (visual direction §3 interactive). */
+export const UI_FOCUS_HEX = '#ffd54f' as const;
+
+/** Low-health presentation threshold — hazard pulse at hp ≤ this. */
+export const HUD_LOW_HEALTH_HP = 25 as const;
+
 /** Crew population (Deck 03). Design §10 / pack R2. */
 export const CREW_POPULATION = 8 as const;
 

@@ -15,6 +15,7 @@ import { createCombatTelegraphs } from '../render/combatTelegraphs.js';
 import { createDeckScene } from '../render/createDeckScene.js';
 import { createDebugFlyCamera, isDebugFlyCameraEnabled } from '../render/debugFlyCamera.js';
 import { createFollowCamera } from '../render/createFollowCamera.js';
+import { createHud } from '../render/hud/createHud.js';
 import { createMissionShellUi } from '../render/missionShellUi.js';
 import { createObjectiveBanner } from '../render/objectiveBanner.js';
 import { createObjectiveBeacon } from '../render/objectiveBeacon.js';
@@ -64,6 +65,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   }
 
   const combatReadout = createCombatDevReadout(document.body);
+  const hud = createHud(document.body);
   const missionShellUi = createMissionShellUi(document.body);
   const objectiveBanner = createObjectiveBanner(document.body);
   const objectiveBeacon = createObjectiveBeacon(deckScene.scene, graph);
@@ -95,6 +97,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     }
     telegraphs.sync(world, collisionRef.current);
     combatReadout?.update(world);
+    hud.update(world);
     missionShellUi.update(world);
     objectiveBeacon.sync(world);
     objectiveBanner.sync(world, world.tick);
@@ -172,6 +175,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     telegraphs.dispose();
     combatVfx.dispose();
     combatReadout?.dispose();
+    hud.dispose();
     missionShellUi.dispose();
     objectiveBanner.dispose();
     objectiveBeacon.dispose();
