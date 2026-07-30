@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getCachedHeroTemplates, type HeroAssetTemplates } from './assets/preloadHeroAssets.js';
 import { cloneGltfTemplate } from './assets/loadGltf.js';
+import { cloneHeroMaterials, countHeroNamedMaterials, tuneHeroMaterials } from './heroMaterialTune.js';
 import { attachRifleHero } from './createRifleBlockout.js';
 
 export async function createPlayerMeshAsync(templates?: HeroAssetTemplates): Promise<THREE.Group> {
@@ -9,14 +10,19 @@ export async function createPlayerMeshAsync(templates?: HeroAssetTemplates): Pro
 
 export function createPlayerMeshFromTemplates(templates: HeroAssetTemplates): THREE.Group {
   const group = cloneGltfTemplate(templates.player);
+  tuneHeroMaterials(group, 'player');
+  cloneHeroMaterials(group);
   group.name = 'player';
   group.traverse((obj) => {
     if (obj instanceof THREE.Mesh) {
       obj.castShadow = true;
-      obj.receiveShadow = true;
+      obj.receiveShadow = false;
     }
   });
   attachRifleHero(group, templates.rifle);
+  if (import.meta.env.DEV) {
+    console.info('[nemesis] player hero p1_* material slots:', countHeroNamedMaterials(group));
+  }
   return group;
 }
 

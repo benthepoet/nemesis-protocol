@@ -35,7 +35,10 @@ function applyHitFlash(root: THREE.Object3D): { restore: () => void; touched: TH
   root.traverse((obj) => {
     if (!(obj instanceof THREE.Mesh)) return;
     const mat = obj.material;
-    if (mat instanceof THREE.MeshStandardMaterial) {
+    if (
+      mat instanceof THREE.MeshStandardMaterial ||
+      mat instanceof THREE.MeshPhysicalMaterial
+    ) {
       const prev = mat.emissive.getHex();
       const prevI = mat.emissiveIntensity;
       mat.emissive.setHex(0xffffff);

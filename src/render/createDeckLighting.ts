@@ -6,6 +6,7 @@ import {
   PRACTICAL_FLICKER_AMPLITUDE,
   PRACTICAL_LIVE_FRACTION_AL0,
   ROOM_HEIGHT_M,
+  SHADOW_CASTING_DIRECTIONAL_MAX,
   SHADOW_MAP_SIZE,
 } from '../config.js';
 import { listNodes } from '../deck/graph.js';
@@ -37,7 +38,7 @@ export function createDeckLighting(
 ): DeckLighting {
   scene.fog = new THREE.FogExp2('#05080f', HAZE_DENSITY_AL0);
 
-  const fill = new THREE.HemisphereLight('#a8c0d8', '#05080f', 0.28);
+  const fill = new THREE.HemisphereLight('#b8cce0', '#1a2430', 0.55);
   scene.add(fill);
 
   interface RoomLightBundle {
@@ -51,6 +52,7 @@ export function createDeckLighting(
   }
 
   const bundles: RoomLightBundle[] = [];
+  let shadowDirectionalsEnabled = 0;
 
   for (const node of listNodes(graph)) {
     const isCorridor = isCorridorSpace(node.id, node.accentId);
@@ -66,7 +68,12 @@ export function createDeckLighting(
     for (let i = 0; i < 2; i++) {
       const key = new THREE.DirectionalLight('#fff2e0', 0.85);
       key.position.set(center.x + (i ? -3 : 3), ROOM_HEIGHT_M + 2, center.z + (i ? 2 : -2));
-      configureShadowLight(key);
+      if (shadowDirectionalsEnabled < SHADOW_CASTING_DIRECTIONAL_MAX) {
+        configureShadowLight(key);
+        shadowDirectionalsEnabled += 1;
+      } else {
+        key.castShadow = false;
+      }
       key.target.position.set(center.x, 0, center.z);
       scene.add(key);
       scene.add(key.target);
@@ -84,10 +91,7 @@ export function createDeckLighting(
       if (s < liveCount) {
         const pl = new THREE.PointLight('#fff2e0', 0.55, 8);
         pl.position.set(fixture.position.x, ROOM_HEIGHT_M - 0.2, fixture.position.z);
-        pl.castShadow = s < 2;
-        if (pl.castShadow) {
-          pl.shadow.mapSize.set(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-        }
+        pl.castShadow = false;
         scene.add(pl);
         practicals.push(pl);
         practicalBase.push(pl.intensity);
@@ -195,6 +199,14 @@ export function countActiveCorridorBeacons(scene: THREE.Scene): number {
   let n = 0;
   scene.traverse((obj) => {
     if (obj.userData.alarmBeaconActive === true && obj.visible) n += 1;
+  });
+  return n;
+}
+
+export function countShadowCastingDirectionals(scene: THREE.Scene): number {
+  let n = 0;
+  scene.traverse((obj) => {
+    if (obj instanceof THREE.DirectionalLight && obj.castShadow) n += 1;
   });
   return n;
 }
