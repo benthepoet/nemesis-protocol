@@ -2,7 +2,7 @@
 
 **Owner:** Kimi K3 (Art Lead, charter §1)
 **Applies to:** all assets, VFX, lighting, UI treatment. Binding for every phase; deviations require a version bump here + Director sign-off.
-**Status:** v1.2 — engine, camera model, and ceiling policy specified; function-accent palette extended
+**Status:** v1.3 — phase visual milestones (§11): per-phase visual-pass acceptance bar
 
 ---
 
@@ -118,10 +118,37 @@ Inherited from the deck-plan mockups — this palette is the brand and carries i
 - No red/green meaning collisions (§3 rule).
 - No darkness so complete it hides enemy telegraphs.
 
-## 10. Changelog
+## 11. Phase Visual Milestones
+
+Every phase (P1–P4) closes with a scheduled **visual-pass feature** (`pN-visual-pass`, roadmap v1.7+) — a full pipeline instance whose only deliverable is presentation uplift. This section is the Gate 1 bar for that feature: the milestone must hold *in the running build* before the phase checkpoint can be signed.
+
+**Universal bar (every milestone, M-P1 through M-P4):**
+1. **No blockout in frame.** Zero untextured primitives/placeholder capsules visible in normal play. (Exception: assets a later phase explicitly owns may stay placeholder — e.g., android racks during P1–P3.)
+2. **Lighting-matrix rows live.** The ship states reachable in that phase render per §4.1, transition correctly, and are readable without UI (pillar 2).
+3. **Telegraphs complete.** Every mechanic shipped in the phase has its §6 VFX family and its material/damage states — particles tell you what just happened (pillar 3).
+4. **Palette language intact.** §3 section accents readable in-game (navigable by tint); interactive-vs-hostile color meanings never crossed.
+5. **Readability verified.** §7 rules checked at the 60° camera in the densest combat scene the phase can produce; spectacle never beats telegraph (pillar 4).
+6. **Performance held.** §8 target (60 fps @1080p, mid-tier GPU) with the phase's full lighting + VFX load active.
+7. **No functional change.** A visual pass alters no accepted G#, number, or rule — anything that does routes as a separate feature. License scan (charter §3 Stage 5) passes.
+
+**Per-phase milestone scope:**
+
+| Milestone | Phase | What must be true at Gate 1 |
+|-----------|-------|------------------------------|
+| **M-P1** | Core loop | Player, rifle, and security-crew hero models (textured glTF/GLB, PBR per §5) replace all capsules/blockout weapons. Deck surfaces carry hull-steel materials with authored wear + section accent trim/signage. Lighting rows **Cruise (AL0)** and **Alerted (AL1)** live: per-room key + practicals, contact-hardening shadows, corridor volumetric haze baseline (§4.2). **Muzzle/impacts** family complete — muzzle flash is a real light, per-surface impacts. HUD skinned to palette (void chrome, section/function accents). |
+| **M-P2** | Gating & alarm | Blast doors, gates, and objective props (charge, slicer/key stations) are hero assets with the `#ffd54f` interactable language. Lighting rows **Hardened (AL2)**, **Siege (AL3)**, **Meltdown**, and **Reactor proximity** live; alarm-state transitions visibly spread through the ship. **Reactor** VFX family (bloom pulse, heat distortion, ember drift). PA/alarm telegraphs carry the hazard palette. |
+| **M-P3** | Destructibility | Class A walls ship `intact / cracked / failed` material states, crack telegraph readable at gameplay distance (§5). VFX families **sparks & debris**, **wall failure** (dust-obscured hole), **hull breach**, **venting** (advection + screen frost), **curtain seal** complete. Lighting row **Vacuum zone** live (hard work-light, frozen dust, frost creep). |
+| **M-P4** | Androids & bosses | Android and rack hero models; **android eye-slit glow** readable in darkness (the android telegraph) + hydraulic wake vapor. Boss variant silhouettes distinct at camera distance. **Meltdown fires** family live (real area light, sightline-blocking smoke, ember advection). Full lighting matrix now complete end-to-end. |
+
+Each visual pass is scoped, not open-ended: its design pack enumerates exactly the assets/rows/families above that are in scope, with reference boards per charter §1 (reference-first). Polish beyond the milestone is S3 defect work, not visual-pass scope creep.
+
+---
+
+## 12. Changelog
 
 | Version | Change |
 |---------|--------|
 | v1.0 | Initial direction: pillars, palette, ship-state lighting matrix, VFX families, readability rules, technical bar |
 | v1.1 | Engine, camera model, ceiling policy |
 | v1.2 | §3 palette extended: function accents (armory `#ff8a65`, medical `#80cbc4`, comms `#5c7cfa`, mess `#a1887f`) + corridor neutral `#8b949e` — formalized from deck-plan mockup v2.2 (`p1-deck-geometry` clarification Q2) |
+| v1.3 | §11 added: phase visual milestones — universal Gate 1 bar + per-phase scope (M-P1…M-P4) for the scheduled visual-pass features (Director ruling 2026-07-30; roadmap v1.7). Changelog renumbered to §12 |
