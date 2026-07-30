@@ -8,7 +8,7 @@
 **License:** open source — MIT (code) / CC BY 4.0 (assets). See `LICENSE` / `LICENSE-ASSETS`.
 **Scope of this document:** Single-mission gameflow for the core loop — *board an enemy capital ship, fight through it, destroy it, get out.*
 **Reference asset:** `assets/mockups/cruiser_boarding_deck_plan.svg` — ISV *Nemesis*, Deck 03 (procgen reference layout)
-**Status:** v1.11 — locked for prototype (enemy roster approved)
+**Status:** v1.12 — locked for prototype (enemy roster approved)
 
 ---
 
@@ -275,6 +275,19 @@ Before shipping a generated map: solve the lock-and-key graph automatically and 
 - Downed-but-not-out during Phase 5; extraction succeeds if ≥1 player reaches the egress point. (Dramatic last stands are a feature.)
 - **Input parity is first-class:** every action is fully playable on keyboard/mouse *and* gamepad (twin-stick: left move / right aim). Gamepad gets aim-assist (§9 tuning), full UI navigation, and hot-swap — switching input device mid-mission must never require a menu trip or a restart.
 
+**P1 verb bindings (both devices, hot-swappable — v1.12):**
+
+| Verb | Keyboard/mouse | Gamepad |
+|------|----------------|---------|
+| Move | WASD | Left stick |
+| Aim | Mouse position (gameplay-plane raycast) | Right stick |
+| Fire | Mouse button 0 (hold = automatic) | Right trigger |
+| Reload | R | Face button west |
+| Interact | E | Face button south |
+| Cancel | Esc | Face button east |
+
+**Binding rule:** fire owns the primary trigger on both devices. Interact is a deliberate, non-trigger verb and never shares a binding with fire.
+
 ---
 
 ## 9. Bosses & Minibosses
@@ -345,6 +358,17 @@ Everything else is deferred to the roadmap (§12.5): Kill-Team and Champion need
 | Charge-Defender disarm channel | 20 s (interruptible) | Boss §9.2; defenseless while channeling |
 | Warden deploy trigger | AL3, or rack destroyed | Stalker miniboss (§9.2) |
 | Gamepad aim-assist | 0.35 magnetism, 10° cone | First-class input parity (§8); tune in P1 playtest |
+| Player HP | 100 | No passive regen; healing sources are mission features (§3 Phase 6 Med Bay) |
+| Security crew HP | 100 | §4.5 baseline infantry; static stand-ins until `p1-enemy-baseline` |
+| Rifle damage (vs actors) | 25 / hit | Wall chip damage is P3 scope (§6.2) — a distinct value, bound there |
+| Rifle fire rate | 10 rounds/s, automatic | Hold-to-fire |
+| Rifle magazine | 30 | Trigger-pull on empty magazine auto-starts reload |
+| Reserve ammo (mission start) | 120 | Resupply arrives with Armory/mission features |
+| Reload duration | 2.0 s, uninterruptible (P1) | Tuning lever; cancel rules revisited at P1 checkpoint |
+| Projectile speed | 60 m/s | Simulated projectiles, not hitscan (netcode-ready §12.1) |
+| Projectile max range | 60 m | Despawn; ≈1 s flight |
+| Spread / recoil | none (v1) | Deterministic; reserved tuning lever |
+| Player respawn (prototype placeholder) | 3 s at spawn point | Until `p1-mission-shell` defines the fail flow |
 
 ---
 
@@ -428,3 +452,4 @@ This layout is the canonical grammar example for the generator: *nose = command,
 |---------|--------|
 | v1.0–v1.10 | History predates this changelog section |
 | v1.11 | §6.1: Class B presentation split — **bulkhead** (section-bounding gating firewall) vs **interior** (ordinary solid walls, same immunity, not section bounds); door edges carry the class of the wall they pierce; Class A is never a doorway (from `p1-deck-geometry` clarification Q1) |
+| v1.12 | §8: P1 verb binding table — fire owns the primary trigger (mouse button 0 / right trigger); interact drops the mouse-0 binding (KBM interact = E). §10: P1 combat baselines — player/crew HP 100, rifle 25 dmg @ 10 rps automatic, magazine 30 + reserve 120, reload 2.0 s uninterruptible, projectile 60 m/s / 60 m range, no-spread v1, 3 s respawn placeholder (from `p1-combat-core` design pack v1, rulings R1/R2) |
