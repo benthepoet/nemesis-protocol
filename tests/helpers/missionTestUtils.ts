@@ -46,11 +46,16 @@ export function runMissionTicks(
   collisionRef: CollisionWorldRef,
   ticks: number,
   commandsByTick?: Map<number, InputCommand[]>,
+  options?: { aimAssist?: boolean },
 ): void {
+  const aimAssist = options?.aimAssist ?? false;
+  const applyCtx = aimAssist
+    ? { collisionWorld: collisionRef.current, aimAssist: true as const }
+    : undefined;
   for (let i = 0; i < ticks; i += 1) {
     const t = state.tick;
     const cmds = commandsByTick?.get(t) ?? [];
-    applyCommands(state, cmds);
+    applyCommands(state, cmds, applyCtx);
     integrateMissionShell(state, graph, collisionRef);
     integratePlayerMotion(state, collisionRef.current);
     integrateCrewAi(state, collisionRef.current, graph);

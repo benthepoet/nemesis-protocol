@@ -59,13 +59,17 @@ export function runTicks(
   harness: CombatTestHarness,
   ticks: number,
   commandsByTick?: Map<number, InputCommand[]>,
-  options?: { collectEvents?: boolean },
+  options?: { collectEvents?: boolean; aimAssist?: boolean },
 ): CombatEvent[] {
+  const aimAssist = options?.aimAssist ?? false;
+  const applyCtx = aimAssist
+    ? { collisionWorld: harness.collisionRef.current, aimAssist: true as const }
+    : undefined;
   const allEvents: CombatEvent[] = [];
   for (let i = 0; i < ticks; i += 1) {
     const t = harness.state.tick;
     const cmds = commandsByTick?.get(t) ?? [];
-    applyCommands(harness.state, cmds);
+    applyCommands(harness.state, cmds, applyCtx);
     integrateMissionShell(harness.state, harness.graph, harness.collisionRef);
     integratePlayerMotion(harness.state, harness.collisionRef.current);
     integrateCrewAi(harness.state, harness.collisionRef.current, harness.graph);

@@ -107,6 +107,12 @@ export const PROJECTILE_SPEED_MPS = 60 as const;
 /** Projectile max range (m). */
 export const PROJECTILE_MAX_RANGE_M = 60 as const;
 
+/** Aim-assist magnetism blend per tick (gamepad-only). */
+export const AIM_ASSIST_MAGNETISM = 0.35 as const;
+export const AIM_ASSIST_HALF_ANGLE_DEG = 10 as const;
+export const AIM_ASSIST_HALF_ANGLE_RAD = (AIM_ASSIST_HALF_ANGLE_DEG * Math.PI) / 180;
+export const AIM_ASSIST_RANGE_M = PROJECTILE_MAX_RANGE_M;
+
 /** Spawn offset along facing from actor center (m) — outside proxy radius. */
 export const PROJECTILE_MUZZLE_OFFSET_M = 0.45 as const;
 

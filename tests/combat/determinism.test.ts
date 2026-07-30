@@ -10,7 +10,7 @@ import { integratePlayerMotion } from '../../src/sim/playerMotion.js';
 import { replay } from '../../src/sim/replay.js';
 import { applyCommands, fixedStep } from '../../src/sim/step.js';
 import type { SimState } from '../../src/sim/types.js';
-import { cloneSimState } from '../../src/sim/world.js';
+import { cloneSimState, getEntity } from '../../src/sim/world.js';
 import {
   createCombatTestHarness,
   fireHeldOn,
@@ -111,5 +111,41 @@ describe('combat determinism (G8)', () => {
       expect(text).not.toMatch(/Math\.random/);
       expect(text).not.toMatch(/Date\.now/);
     }
+  });
+
+  it('E18: gamepad aimAssist replay → identical yaw series and hash', async () => {
+    const harness = createCombatTestHarness();
+    const crewId = harness.state.meta.crewIds[2]!;
+    const crew = getEntity(harness.state, crewId)!;
+    const player = getEntity(harness.state, harness.state.meta.playerId!)!;
+    player.x = crew.x - 4;
+    player.z = crew.z;
+    const aimYaw = Math.atan2(crew.x - player.x, crew.z - player.z) - 0.05;
+    const cmds: InputCommand[] = [];
+    for (let t = 0; t < 20; t += 1) {
+      cmds.push({
+        tick: t,
+        sequence: t,
+        action: 'aim',
+        value: 0,
+        axisX: Math.sin(aimYaw),
+        axisZ: Math.cos(aimYaw),
+      });
+    }
+    const opts = { aimAssist: true as const };
+    const a = replay(cloneSimState(harness.state), cmds, harness.collisionRef, harness.graph, opts);
+    const b = replay(cloneSimState(harness.state), cmds, harness.collisionRef, harness.graph, opts);
+    expect(await hashSimState(a)).toBe(await hashSimState(b));
+    const playerA = getEntity(a, a.meta.playerId!)!.yaw;
+    const playerB = getEntity(b, b.meta.playerId!)!.yaw;
+    expect(playerA).toBe(playerB);
+
+    const cmds2 = cmds.map((c) =>
+      c.tick >= 10
+        ? { ...c, axisX: Math.sin(aimYaw + 0.5), axisZ: Math.cos(aimYaw + 0.5) }
+        : c,
+    );
+    const c = replay(cloneSimState(harness.state), cmds2, harness.collisionRef, harness.graph, opts);
+    expect(await hashSimState(c)).not.toBe(await hashSimState(a));
   });
 });

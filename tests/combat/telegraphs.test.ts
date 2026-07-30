@@ -278,6 +278,42 @@ describe('combat telegraphs (G10)', () => {
     telegraphs.dispose();
   });
 
+  it('E19: aim line direction matches assisted yaw after aimAssist ticks', () => {
+    const harness = createCombatTestHarness();
+    const crewId = harness.state.meta.crewIds[2]!;
+    const crew = getEntity(harness.state, crewId)!;
+    const player = getEntity(harness.state, harness.state.meta.playerId!)!;
+    player.x = crew.x - 4;
+    player.z = crew.z;
+    const aimYaw = Math.atan2(crew.x - player.x, crew.z - player.z) - 0.08;
+    const cmds = new Map<number, InputCommand[]>();
+    for (let t = 0; t < 5; t += 1) {
+      cmds.set(t, [
+        {
+          tick: t,
+          sequence: 0,
+          action: 'aim',
+          value: 0,
+          axisX: Math.sin(aimYaw),
+          axisZ: Math.cos(aimYaw),
+        },
+      ]);
+    }
+    runTicks(harness, 5, cmds, { aimAssist: true });
+    const yaw = getEntity(harness.state, harness.state.meta.playerId!)!.yaw;
+
+    const scene = new THREE.Scene();
+    const telegraphs = createCombatTelegraphs(scene);
+    telegraphs.sync(harness.state, harness.collisionWorld);
+    const endpoints = getAimLineEndpointsForTest(telegraphs);
+    const dirX = endpoints.endX - endpoints.startX;
+    const dirZ = endpoints.endZ - endpoints.startZ;
+    const len = Math.hypot(dirX, dirZ) || 1;
+    expect(dirX / len).toBeCloseTo(Math.sin(yaw), 3);
+    expect(dirZ / len).toBeCloseTo(Math.cos(yaw), 3);
+    telegraphs.dispose();
+  });
+
   it('no Math.random / Date.now in combatTelegraphs module', () => {
     const modules = import.meta.glob('../../src/render/combatTelegraphs.ts', {
       query: '?raw',
