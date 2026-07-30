@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { HOSTILE_COLOR_HEX, PLAYER_COLOR_HEX } from '../config.js';
+import { HOSTILE_COLOR_HEX, HERO_MATERIAL_MODE, PLAYER_COLOR_HEX } from '../config.js';
 
 /** GLB material names (Blender MCP). */
 const ALLIED_GLOW_MAT = 'p1_allied_glow';
@@ -38,12 +38,7 @@ function resolveHex(role: 'player' | 'crew', name: string, fallback: THREE.Color
   return `#${fallback.getHexString()}`;
 }
 
-/**
- * Hero GLBs use factor-only glTF PBR. MeshStandard/Physical shaders still hit TU limits
- * or compile failures on some GPUs when combined with deck shadows + scene.environment.
- * Gate-2 hotfix: unlit Basic materials with explicit palette (G2/G3) — always visible.
- */
-export function tuneHeroMaterials(root: THREE.Object3D, role: 'player' | 'crew'): void {
+function tuneHeroMaterialsBasic(root: THREE.Object3D, role: 'player' | 'crew'): void {
   root.traverse((obj) => {
     if (!(obj instanceof THREE.Mesh)) return;
     const wasArray = Array.isArray(obj.material);
@@ -68,6 +63,50 @@ export function tuneHeroMaterials(root: THREE.Object3D, role: 'player' | 'crew')
 
     obj.material = wasArray ? materials : materials[0]!;
   });
+}
+
+function tuneHeroMaterialsPbr(root: THREE.Object3D, role: 'player' | 'crew'): void {
+  root.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+    const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+    for (const material of materials) {
+      const name = material.name ?? '';
+      if (
+        material instanceof THREE.MeshStandardMaterial ||
+        material instanceof THREE.MeshPhysicalMaterial
+      ) {
+        if (name === ALLIED_GLOW_MAT) {
+          material.emissive.set(PLAYER_COLOR_HEX);
+          material.emissiveIntensity = 1;
+          material.needsUpdate = true;
+        } else if (name === HOSTILE_GLOW_MAT) {
+          material.emissive.set(HOSTILE_COLOR_HEX);
+          material.emissiveIntensity = 1;
+          material.needsUpdate = true;
+        } else if (name.startsWith('p1_') && role === 'crew') {
+          material.fog = true;
+        } else if (name.startsWith('p1_')) {
+          material.fog = true;
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Hero GLBs: basic mode = tune-4 unlit palette (R15 Gate 1 anim).
+ * PBR mode retains Standard/Physical maps (R15 pre–Gate 2).
+ */
+export function tuneHeroMaterials(
+  root: THREE.Object3D,
+  role: 'player' | 'crew',
+  mode: 'basic' | 'pbr' = HERO_MATERIAL_MODE,
+): void {
+  if (mode === 'pbr') {
+    tuneHeroMaterialsPbr(root, role);
+  } else {
+    tuneHeroMaterialsBasic(root, role);
+  }
 }
 
 /** Reject Composer placeholder GLBs (no authored materials — render default white). */
@@ -124,7 +163,44 @@ export function countHeroBasicMaterials(root: THREE.Object3D): number {
   return n;
 }
 
-/** Hit-flash for unlit hero Basic materials + legacy Standard (combat VFX). */
+export function countHeroStandardBodyMaterials(root: THREE.Object3D): number {
+  let n = 0;
+  root.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh)) return;
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+    for (const m of mats) {
+      if (
+        (m instanceof THREE.MeshStandardMaterial || m instanceof THREE.MeshPhysicalMaterial) &&
+        m.name?.startsWith('p1_') &&
+        m.name !== ALLIED_GLOW_MAT &&
+        m.name !== HOSTILE_GLOW_MAT
+      ) {
+        n += 1;
+      }
+    }
+  });
+  return n;
+}
+
+export function heroBodyHasAlbedoMap(root: THREE.Object3D): boolean {
+  let found = false;
+  root.traverse((obj) => {
+    if (!(obj instanceof THREE.Mesh) || found) return;
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+    for (const m of mats) {
+      if (
+        (m instanceof THREE.MeshStandardMaterial || m instanceof THREE.MeshPhysicalMaterial) &&
+        m.name?.startsWith('p1_') &&
+        m.map
+      ) {
+        found = true;
+      }
+    }
+  });
+  return found;
+}
+
+/** Hit-flash for unlit hero Basic materials + Standard/Physical emissive (combat VFX). */
 export function flashMaterialForHit(
   material: THREE.Material,
   active: boolean,

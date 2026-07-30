@@ -171,9 +171,13 @@ Replace placeholders with Kimi-authored assets at the same paths before Gate 1.
 **Verification:**
 
 ```bash
-npm run test:run   # 209 tests incl. render/heroAssets, deckLighting, combatVfxSurfaces, visualPassDeterminism
+npm run test:run   # 224 tests incl. heroAnimation, heroMuzzleParityAnim, heroPbrRestore, visualPassDeterminism
 npm run build
 npm run dev        # FPS overlay (`#fps-overlay`) for G14; smoke heroes, AL1 beacons, HUD skin
 ```
+
+**Hero animation (G16–G17 / M10–M11):** rigged GLBs drive render-only `AnimationMixer` instances — clips `idle`, `move`, `aim_fire`, and crew `death`. No root motion (sim still owns position/yaw). Move playback rate scales from presentation speed (player **6 m/s**; crew **2.0 / 3.5 / 4.5 m/s** by FSM). Rifle parents to bone `hand_r_grip` when present.
+
+**`HERO_MATERIAL_MODE` (`src/config.ts`):** `'basic'` (default) keeps tune-4 unlit heroes for anim Gate 1; flip to `'pbr'` before Gate 2 to restore `MeshStandardMaterial` maps within the **two** shadow-casting directional cap (`SHADOW_CASTING_DIRECTIONAL_MAX`) so WebGL texture units stay safe.
 
 Gate 1 screenshots S1–S10: manual capture plan (optional DEV screenshot harness not landed).

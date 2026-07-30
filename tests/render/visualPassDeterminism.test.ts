@@ -11,8 +11,13 @@ import { createHud } from '../../src/render/hud/createHud.js';
 import { createCombatVfx } from '../../src/render/combatVfx.js';
 import { createDeckLighting } from '../../src/render/createDeckLighting.js';
 import { createDeckScene } from '../../src/render/createDeckScene.js';
+import { createPlayerMeshFromTemplates } from '../../src/render/createPlayerMesh.js';
+import { createStandInMeshFromTemplates } from '../../src/render/createStandInMesh.js';
 import { preloadHeroAssets, getHeroFixtures } from '../../src/render/assets/preloadHeroAssets.js';
 import { ALARM_LEVEL_AL0, ALARM_LEVEL_AL1 } from '../../src/config.js';
+import { updatePlayerHeroPresentation } from '../../src/render/createPlayerMesh.js';
+import { updateStandInHeroPresentation } from '../../src/render/createStandInMesh.js';
+import { getEntity } from '../../src/sim/world.js';
 
 describe('visual pass determinism (G15)', () => {
   it('E8: presentation modules do not change hashSimState or hashDeckGraph', async () => {
@@ -27,7 +32,8 @@ describe('visual pass determinism (G15)', () => {
     hud.dispose();
 
     const deck = createDeckScene(graph);
-    const fixtures = getHeroFixtures(await preloadHeroAssets());
+    const templates = await preloadHeroAssets();
+    const fixtures = getHeroFixtures(templates);
     const lighting = createDeckLighting(deck.scene, graph, fixtures);
     lighting.update(0.016, ALARM_LEVEL_AL0);
     lighting.update(0.016, ALARM_LEVEL_AL1);
@@ -35,6 +41,25 @@ describe('visual pass determinism (G15)', () => {
     vfx.push([{ type: 'impact-wall', x: 1, y: 0.5, z: 2 }]);
     vfx.update(0.05);
     vfx.dispose();
+
+    const playerMesh = createPlayerMeshFromTemplates(templates);
+    const player = state.meta.playerId !== null ? getEntity(state, state.meta.playerId) : undefined;
+    if (player) {
+      for (let i = 0; i < 30; i++) {
+        updatePlayerHeroPresentation(playerMesh, player, state.meta, 1 / 60);
+      }
+    }
+    for (const crewId of state.meta.crewIds) {
+      const mesh = createStandInMeshFromTemplates(templates);
+      const entity = getEntity(state, crewId);
+      const ai = state.crewAi.get(crewId);
+      if (entity && ai) {
+        for (let i = 0; i < 20; i++) {
+          updateStandInHeroPresentation(mesh, entity, ai, 1 / 60);
+        }
+      }
+    }
+
     lighting.dispose();
     deck.disposeMaterials();
 

@@ -296,3 +296,30 @@ export const SHADOW_CASTING_DIRECTIONAL_MAX = 2 as const;
 
 /** Corridor spine neutral accent (G6). */
 export const CORRIDOR_SPINE_NEUTRAL_HEX = '#8b949e' as const;
+
+/** R15 staged hero shading: 'basic' = tune-4 unlit (anim Gate 1); 'pbr' = VD §5 restore (pre–Gate 2). */
+export const HERO_MATERIAL_MODE: 'basic' | 'pbr' = 'basic';
+
+/** Clip names — must match R14 export exactly. */
+export const HERO_CLIP_IDLE = 'idle' as const;
+export const HERO_CLIP_MOVE = 'move' as const;
+export const HERO_CLIP_AIM_FIRE = 'aim_fire' as const;
+export const HERO_CLIP_DEATH = 'death' as const;
+
+/** Bone / socket — R14 / M11. */
+export const HERO_GRIP_BONE = 'hand_r_grip' as const;
+
+/** Player move-clip authored reference speed (m/s) → rate 1.0 at PLAYER_MOVE_SPEED_MPS. */
+export const MOVE_CLIP_REF_PLAYER_MPS = 6 as const;
+
+/** Crew move-clip authored reference speed (m/s) → rate 1.0 at patrol. */
+export const MOVE_CLIP_REF_CREW_MPS = 2.0 as const;
+
+/** Intent magnitude above this counts as moving (player). */
+export const MOVE_INTENT_EPS = 1e-4 as const;
+
+/** Presentation speed above this counts as moving (crew). */
+export const MOVE_SPEED_EPS_MPS = 0.05 as const;
+
+export const ANIM_RATE_MIN = 0.05 as const;
+export const ANIM_RATE_MAX = 3.0 as const;

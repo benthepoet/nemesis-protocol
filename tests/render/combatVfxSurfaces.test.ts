@@ -1,9 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { createCombatVfx } from '../../src/render/combatVfx.js';
-import { IMPACT_VFX_MAX_CONCURRENT } from '../../src/config.js';
+import { IMPACT_VFX_MAX_CONCURRENT, HIT_FLASH_DURATION_SEC } from '../../src/config.js';
 
 describe('combat VFX surfaces (G10, R7, R10)', () => {
+  it('E6b: hit-flash on SkinnedMesh Basic materials', () => {
+    const scene = new THREE.Scene();
+    const vfx = createCombatVfx(scene);
+    const actor = new THREE.Group();
+    const skinned = new THREE.SkinnedMesh(
+      new THREE.BoxGeometry(0.4, 1.6, 0.4),
+      new THREE.MeshBasicMaterial({ color: '#888888', name: 'p1_crew_gear' }),
+    );
+    actor.add(skinned);
+    scene.add(actor);
+    (vfx as typeof vfx & { registerActorMesh(id: string, m: THREE.Object3D): void }).registerActorMesh('2', actor);
+
+    vfx.push([{ type: 'hit-flash', targetId: 2 as import('../../src/sim/types.js').EntityId }]);
+    expect((skinned.material as THREE.MeshBasicMaterial).color.getHex()).toBe(0xffffff);
+    vfx.update(HIT_FLASH_DURATION_SEC + 0.05);
+    expect((skinned.material as THREE.MeshBasicMaterial).color.getHex()).not.toBe(0xffffff);
+    vfx.dispose();
+  });
+
   it('E6: hit-flash traverses nested hero materials', () => {
     const scene = new THREE.Scene();
     const vfx = createCombatVfx(scene);
