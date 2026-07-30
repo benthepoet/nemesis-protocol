@@ -12,6 +12,7 @@ import {
   countHeroBasicMaterials,
   countHeroStandardBodyMaterials,
   heroBodyHasAlbedoMap,
+  heroBodyHasFactorAlbedo,
   tuneHeroMaterials,
 } from '../../src/render/heroMaterialTune.js';
 
@@ -35,6 +36,8 @@ describe('hero PBR restore (G2–G4, R15)', () => {
     expect(countHeroBasicMaterials(playerRoot)).toBe(0);
     if (heroBodyHasAlbedoMap(playerRoot)) {
       expect(heroBodyHasAlbedoMap(playerRoot)).toBe(true);
+    } else {
+      expect(heroBodyHasFactorAlbedo(playerRoot)).toBe(true);
     }
 
     const graph = loadTestDeck03();

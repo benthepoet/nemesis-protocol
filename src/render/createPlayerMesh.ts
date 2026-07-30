@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { HERO_MATERIAL_MODE } from '../config.js';
+import { getHeroMaterialMode } from './heroMaterialMode.js';
 import { getCachedHeroTemplates, type HeroAssetTemplates } from './assets/preloadHeroAssets.js';
 import { cloneSkinnedGltf } from './assets/loadGltf.js';
 import {
@@ -18,7 +18,7 @@ export async function createPlayerMeshAsync(templates?: HeroAssetTemplates): Pro
 }
 
 function applyHeroShadowFlags(group: THREE.Group): void {
-  const cast = HERO_MATERIAL_MODE === 'pbr';
+  const cast = getHeroMaterialMode() === 'pbr';
   group.traverse((obj) => {
     if (obj instanceof THREE.Mesh || obj instanceof THREE.SkinnedMesh) {
       obj.castShadow = cast;
@@ -31,7 +31,7 @@ export function createPlayerMeshFromTemplates(templates: HeroAssetTemplates): TH
   const group = cloneSkinnedGltf(templates.player);
   group.name = 'player';
   attachRifleHero(group, templates.rifle);
-  tuneHeroMaterials(group, 'player', HERO_MATERIAL_MODE);
+  tuneHeroMaterials(group, 'player', getHeroMaterialMode());
   cloneHeroMaterials(group);
   const anim = bindHeroAnimation(group, templates.playerClips, 'player');
   group.userData.heroAnim = anim;
@@ -40,7 +40,7 @@ export function createPlayerMeshFromTemplates(templates: HeroAssetTemplates): TH
     const named = countHeroNamedMaterials(group);
     const basic = countHeroBasicMaterials(group);
     console.info('[nemesis] player hero p1_* material slots:', named, 'basic:', basic);
-    if (HERO_MATERIAL_MODE === 'basic' && basic !== named) {
+    if (getHeroMaterialMode() === 'basic' && basic !== named) {
       console.warn(
         '[nemesis] hero materials not fully unlit — rebuild dev server; expect basic === slots for visible palette (G2/G3).',
       );

@@ -1,4 +1,10 @@
-import { DEFAULT_PIXEL_RATIO_CAP, HERO_MATERIAL_MODE } from '../config.js';
+import { DEFAULT_PIXEL_RATIO_CAP } from '../config.js';
+import {
+  getHeroMaterialMode,
+  heroShadersExceedTextureUnitLimit,
+  initHeroMaterialMode,
+  resolveHeroMaterialMode,
+} from '../render/heroMaterialMode.js';
 import { buildCollisionWorld } from '../deck/collision.js';
 import { loadDeck03 } from '../deck/loadDeck.js';
 import { validateDeckGraph } from '../deck/validate.js';
@@ -26,10 +32,10 @@ import { createStandInMesh, updateStandInHeroPresentation, disposeStandInHeroPre
 import { getHeroFixtures, preloadHeroAssets } from '../render/assets/preloadHeroAssets.js';
 import { attachSceneEnvironment } from '../render/sceneEnvironment.js';
 import { createFpsOverlay } from '../render/fpsOverlay.js';
+import * as THREE from 'three';
 import { createRenderer } from '../render/createRenderer.js';
 import { startFrameLoop } from '../render/frameLoop.js';
 import type { EntityId } from '../sim/types.js';
-import type * as THREE from 'three';
 
 export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): Promise<() => void> {
   const graph = loadDeck03();
@@ -37,6 +43,15 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   if (!report.ok) {
     throw new Error(`deck validation failed: ${report.issues.map((i) => i.code).join(', ')}`);
   }
+
+  const appRenderer = await createRenderer(canvas);
+
+  let maxTu: number | undefined;
+  if (appRenderer.backend === 'webgl2' && appRenderer.renderer instanceof THREE.WebGLRenderer) {
+    const gl = appRenderer.renderer.getContext();
+    maxTu = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS) as number;
+  }
+  initHeroMaterialMode(resolveHeroMaterialMode({ maxTextureImageUnits: maxTu }));
 
   const heroTemplates = await preloadHeroAssets();
   const deckMaterials = await preloadDeckMaterials();
@@ -49,7 +64,6 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const devices = [kbm, gamepad];
   const bus = new CommandBus();
 
-  const appRenderer = await createRenderer(canvas);
   const deckScene = createDeckScene(graph, deckMaterials);
   const sceneEnv = attachSceneEnvironment(deckScene.scene, appRenderer);
   const deckLighting = createDeckLighting(deckScene.scene, graph, getHeroFixtures(heroTemplates));
@@ -168,7 +182,24 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   window.addEventListener('resize', resize);
 
   if (import.meta.env.DEV) {
-    document.body.dataset.nemesisHeroTune = HERO_MATERIAL_MODE === 'pbr' ? 'pbr' : '4';
+    document.body.dataset.nemesisHeroTune = getHeroMaterialMode() === 'pbr' ? 'pbr' : '4';
+  }
+
+  if (
+    appRenderer.backend === 'webgl2' &&
+    getHeroMaterialMode() === 'pbr' &&
+    appRenderer.renderer instanceof THREE.WebGLRenderer
+  ) {
+    const tuExceeded = heroShadersExceedTextureUnitLimit(
+      appRenderer.renderer,
+      deckScene.scene,
+      camera,
+    );
+    if (tuExceeded) {
+      console.error(
+        '[nemesis] hero PBR shaders exceed MAX_TEXTURE_IMAGE_UNITS — use ?heroMaterial=basic for debug or verify shadow cap.',
+      );
+    }
   }
 
   const stopLoop = startFrameLoop({

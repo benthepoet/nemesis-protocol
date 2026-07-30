@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { Entity } from '../sim/types.js';
 import type { CrewAiState } from '../ai/types.js';
-import { HERO_MATERIAL_MODE } from '../config.js';
+import { getHeroMaterialMode } from './heroMaterialMode.js';
 import { getCachedHeroTemplates, type HeroAssetTemplates } from './assets/preloadHeroAssets.js';
 import { cloneSkinnedGltf } from './assets/loadGltf.js';
 import {
@@ -22,7 +22,7 @@ export async function createStandInMeshAsync(templates?: HeroAssetTemplates): Pr
 }
 
 function applyHeroShadowFlags(group: THREE.Group): void {
-  const cast = HERO_MATERIAL_MODE === 'pbr';
+  const cast = getHeroMaterialMode() === 'pbr';
   group.traverse((obj) => {
     if (obj instanceof THREE.Mesh || obj instanceof THREE.SkinnedMesh) {
       obj.castShadow = cast;
@@ -33,7 +33,7 @@ function applyHeroShadowFlags(group: THREE.Group): void {
 
 export function createStandInMeshFromTemplates(templates: HeroAssetTemplates): THREE.Group {
   const group = cloneSkinnedGltf(templates.crew);
-  tuneHeroMaterials(group, 'crew', HERO_MATERIAL_MODE);
+  tuneHeroMaterials(group, 'crew', getHeroMaterialMode());
   cloneHeroMaterials(group);
   const anim = bindHeroAnimation(group, templates.crewClips, 'crew');
   group.userData.heroAnim = anim;
