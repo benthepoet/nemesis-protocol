@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { ACTOR_PROXY_RADIUS_M, PLAYER_MOVE_SPEED_MPS, TICK_HZ } from '../../src/config.js';
+import { ACTOR_PROXY_RADIUS_M, FIXED_DT, PLAYER_MOVE_SPEED_MPS, TICK_HZ } from '../../src/config.js';
 import { circleHitsWalls } from '../../src/deck/collision.js';
 import { listDoorEdges } from '../../src/deck/graph.js';
+import type { DoorEdge } from '../../src/deck/types.js';
 import type { InputCommand } from '../../src/sim/commands.js';
 import { integratePlayerMotion } from '../../src/sim/playerMotion.js';
 import { applyCommands, fixedStep } from '../../src/sim/step.js';
@@ -26,6 +27,56 @@ function tickMove(
   ]);
   integratePlayerMotion(state, collisionWorld);
   fixedStep(state);
+}
+
+/** Half-span for centerline sweep inset from opening edges by actor radius. */
+function doorTraverseHalfSpan(door: DoorEdge): number {
+  const r = ACTOR_PROXY_RADIUS_M;
+  const passage = Math.max(door.opening.w, door.opening.h);
+  if (passage <= 2 * r) return 0;
+  return Math.min(passage / 2 - r, passage / 4);
+}
+
+function slideThroughDoorOpening(
+  state: ReturnType<typeof createPlayerTestHarness>['state'],
+  collisionWorld: ReturnType<typeof createPlayerTestHarness>['collisionWorld'],
+  door: DoorEdge,
+): void {
+  const id = state.meta.playerId!;
+  const entity = getEntity(state, id)!;
+  const { x, z, w, h } = door.opening;
+  const cx = x + w / 2;
+  const cz = z + h / 2;
+  const axis = w >= h ? 'x' : 'z';
+  const halfSpan = doorTraverseHalfSpan(door);
+  const traverseM = halfSpan > 0 ? halfSpan * 2 : Math.max(w, h) * 0.25;
+  const r = ACTOR_PROXY_RADIUS_M;
+
+  entity.x = cx;
+  entity.z = cz;
+  expect(circleHitsWalls(collisionWorld, entity.x, entity.z, r)).toBe(false);
+
+  const runLeg = (moveX: number, moveZ: number, ticks: number): void => {
+    for (let i = 0; i < ticks; i += 1) {
+      tickMove(state, collisionWorld, moveX, moveZ);
+      expect(circleHitsWalls(collisionWorld, entity.x, entity.z, r)).toBe(false);
+    }
+  };
+
+  const ticksFor = (distanceM: number) =>
+    Math.ceil(distanceM / (PLAYER_MOVE_SPEED_MPS * FIXED_DT)) + 5;
+
+  if (axis === 'x') {
+    runLeg(-1, 0, ticksFor(traverseM / 2));
+    entity.x = cx;
+    entity.z = cz;
+    runLeg(1, 0, ticksFor(traverseM));
+  } else {
+    runLeg(0, -1, ticksFor(traverseM / 2));
+    entity.x = cx;
+    entity.z = cz;
+    runLeg(0, 1, ticksFor(traverseM));
+  }
 }
 
 describe('player motion (G2, G4)', () => {
@@ -87,16 +138,10 @@ describe('player motion (G2, G4)', () => {
     expect(circleHitsWalls(collisionWorld, end.x, end.z, ACTOR_PROXY_RADIUS_M)).toBe(false);
   });
 
-  it('E8: player proxy at each door center clears walls', () => {
+  it('E8: scripted slide through all 17 door openings at actor radius', () => {
     const { state, collisionWorld, graph } = createPlayerTestHarness();
-    const id = state.meta.playerId!;
     for (const door of listDoorEdges(graph)) {
-      const cx = door.opening.x + door.opening.w / 2;
-      const cz = door.opening.z + door.opening.h / 2;
-      const entity = getEntity(state, id)!;
-      entity.x = cx;
-      entity.z = cz;
-      expect(circleHitsWalls(collisionWorld, entity.x, entity.z, ACTOR_PROXY_RADIUS_M)).toBe(false);
+      slideThroughDoorOpening(state, collisionWorld, door);
     }
   });
 });
