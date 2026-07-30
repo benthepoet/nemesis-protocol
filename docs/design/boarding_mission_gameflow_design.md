@@ -8,7 +8,7 @@
 **License:** open source — MIT (code) / CC BY 4.0 (assets). See `LICENSE` / `LICENSE-ASSETS`.
 **Scope of this document:** Single-mission gameflow for the core loop — *board an enemy capital ship, fight through it, destroy it, get out.*
 **Reference asset:** `assets/mockups/cruiser_boarding_deck_plan.svg` — ISV *Nemesis*, Deck 03 (procgen reference layout)
-**Status:** v1.16 — locked for prototype (enemy roster approved; phase visual-pass policy; P1 crew-AI baselines; P1 mission-shell baselines; P1 HUD baselines)
+**Status:** v1.17 — locked for prototype (enemy roster approved; phase visual-pass policy; P1 crew-AI baselines; P1 mission-shell baselines; P1 HUD baselines; P1 gamepad aim-assist model)
 
 ---
 
@@ -363,7 +363,7 @@ Everything else is deferred to the roadmap (§12.5): Kill-Team and Champion need
 | Android armor | ballistic-resistant | Weak to EMP / sustained fire |
 | Charge-Defender disarm channel | 20 s (interruptible) | Boss §9.2; defenseless while channeling |
 | Warden deploy trigger | AL3, or rack destroyed | Stalker miniboss (§9.2) |
-| Gamepad aim-assist | 0.35 magnetism, 10° cone | First-class input parity (§8); tune in P1 playtest |
+| Gamepad aim-assist | 0.35 magnetism, 10° cone | First-class input parity (§8); **model (v1.17, `p1-gamepad-support` R1–R3):** cone = ±10° half-angle around the commanded right-stick aim direction; magnetism 0.35 = fraction of the angular offset toward the selected target closed per sim tick while the stick is deflected (blend, never snap/lock); eligibility = living hostile crew with unobstructed LOS (all wall classes block, §10 crew-sight rule) within 60 m (projectile max range), selection = smallest angular offset (tie → nearest distance); neutral stick = no assist (facing persists); **gamepad-only — mouse aim is never assisted**; deterministic sim-side; tune in P1 playtest |
 | Player HP | 100 | No passive regen; healing sources are mission features (§3 Phase 6 Med Bay) |
 | Security crew HP | 100 | §4.5 baseline infantry; spawner population since `p1-enemy-baseline` (v1.14) |
 | Crew population (Deck 03, initial) | 8 | `p1-enemy-baseline` spawn table: 2 spine rovers + 6 posted (Cargo, Armory, Med Bay, Barracks, Life Support, CIC); aft unposted at P1; no replacements at P1 |
@@ -476,3 +476,4 @@ This layout is the canonical grammar example for the generator: *nose = command,
 | v1.14 | P1 crew-AI baselines (from `p1-enemy-baseline` design pack v1, rulings R2–R7): §4 prototype scoping note — two-state AL0/AL1 stub, trip rules, converge-only effect, no lockdown/reinforcement at P1; §10 — crew population 8 (2 spine rovers + 6 posts), waypoint pause 2 s, sight 20 m / 110° cone / 0.25 s detection delay, speeds patrol 2.0 · investigate 3.5 · chase 4.5 m/s, attack range 14 m, sidearm 10 dmg @ 1/0.9 s + 0.5 s wind-up + 4° seeded spread + no friendly fire, lost-contact flow; §10 stand-in note superseded (spawner population) |
 | v1.15 | P1 mission-shell baselines (from `p1-mission-shell` design pack v1, rulings R1–R6): §3 prototype scoping note — minimal two-breach select (Phase 0), 5.0 s airlock entry cycle with verbs locked and inner door closed (Phase 1), objective placeholder "reach Engineering" (room entry completes), mission end + placeholder score screen fields; §10 — airlock entry cycle 5.0 s, mission clock from sim tick 0, **player death = mission FAILED → score screen → restart** (v1.12 3 s respawn placeholder superseded) |
 | v1.16 | P1 HUD baselines (from `p1-hud` design pack v1, rulings R1/R2/R4/R5): §4 prototype scoping note — HUD alarm indicator as presentation over the AL0/AL1 stub (level name + numeral, data-driven, AL1 hazard `#ff5252`, never de-escalates); §10 — mission clock in-mission display format `M:SS`, new row: HUD low-health warning ≤25 HP (presentation only); §12.1 — HUD element set + visibility lifecycle (INSERTION/ACTIVE only) and the explicit-absent list |
+| v1.17 | P1 gamepad aim-assist model (from `p1-gamepad-support` design pack v1, rulings R1–R3): §10 aim-assist row clarified — numbers unchanged (0.35 magnetism, 10° cone); cone read as ±10° half-angle around commanded stick aim; magnetism = per-tick blend fraction toward the selected target (never snap/lock); eligibility = living hostile crew, unobstructed LOS, ≤60 m, smallest-offset selection; gamepad-only; neutral stick = no assist; deterministic sim-side |

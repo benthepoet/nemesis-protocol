@@ -18,7 +18,9 @@ export function replay(
   commands: readonly InputCommand[],
   collisionRef: CollisionWorldRef,
   graph: DeckGraph,
+  options?: { aimAssist?: boolean },
 ): SimState {
+  const aimAssist = options?.aimAssist ?? false;
   const state = cloneSimState(initial);
   const byTick = new Map<number, InputCommand[]>();
   for (const cmd of commands) {
@@ -30,7 +32,13 @@ export function replay(
   const maxTick = commands.reduce((max, c) => Math.max(max, c.tick), state.tick - 1);
   for (let t = state.tick; t <= maxTick; t += 1) {
     const tickCmds = byTick.get(t) ?? [];
-    applyCommands(state, tickCmds);
+    applyCommands(
+      state,
+      tickCmds,
+      aimAssist
+        ? { collisionWorld: collisionRef.current, aimAssist: true }
+        : undefined,
+    );
     integrateMissionShell(state, graph, collisionRef);
     integratePlayerMotion(state, collisionRef.current);
     integrateCrewAi(state, collisionRef.current, graph);

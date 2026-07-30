@@ -130,3 +130,19 @@ npm run test:run   # tests/render/hud*.test.ts + full regression
 npm run build
 npm run dev        # yellow breach focus → in-mission HUD → AL1 + low-HP pulse → score restart focus
 ```
+
+## Gamepad support (p1-gamepad-support)
+
+**Gamepad-only aim assist** (sim-side): magnetism **0.35**, half-angle cone **10°**, range **60 m** (same as rifle max range). Assist runs only when the **aim channel owner** is **gamepad** (`getChannelOwner('aim') === 'gamepad'`); keyboard/mouse aim stays raw `atan2` with no pull.
+
+**Hot-swap:** per-channel MRU + synthetic releases unchanged from player-controller; mission-state verification in `tests/input/missionHotSwap.test.ts`.
+
+**Full loop:** `tests/mission/gamepadOnlyLoop.test.ts` drives BRIEFING → INSERTION → ACTIVE (assist + fire) → SCORE → restart using **only** gamepad-mapped samples (zero `keyboard-mouse` in the recorded stream).
+
+Verification:
+
+```bash
+npm run test:run   # aimAssist, missionHotSwap, gamepadOnlyLoop, bindingsAudit + full regression
+npm run build
+npm run dev        # right-stick assist near crew; mouse aim unchanged; KBM↔pad hot-swap mid-fight
+```

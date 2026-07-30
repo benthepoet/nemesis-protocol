@@ -39,7 +39,11 @@ export function runFixedTimestepSlice(args: FixedTimestepSliceArgs): FixedTimest
   while (accumulator >= FIXED_DT) {
     args.bus.enqueueFromDevices(args.devices);
     const cmds = args.bus.drainForTick(args.world.tick);
-    applyCommands(args.world, cmds);
+    const aimAssist = args.bus.getChannelOwner('aim') === 'gamepad';
+    applyCommands(args.world, cmds, {
+      collisionWorld: args.collisionRef.current,
+      aimAssist,
+    });
     integrateMissionShell(args.world, args.graph, args.collisionRef);
     integratePlayerMotion(args.world, args.collisionRef.current);
     const crewEvents = integrateCrewAi(args.world, args.collisionRef.current, args.graph);

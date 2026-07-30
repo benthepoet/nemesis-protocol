@@ -49,7 +49,7 @@ describe('command pattern (G4)', () => {
   });
 
   it('applyCommands and fixedStep accept no deltaTime parameter', () => {
-    expect(applyCommands.length).toBe(2);
+    expect(applyCommands.length).toBe(3);
     expect(fixedStep.length).toBe(1);
   });
 });

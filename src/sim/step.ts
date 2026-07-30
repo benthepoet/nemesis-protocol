@@ -3,7 +3,15 @@ import type { SimState } from './types.js';
 import { applyDamage, RIFLE_DAMAGE_PER_HIT } from '../combat/applyDamage.js';
 import { tryBeginReload } from '../combat/integrateCombat.js';
 import { isGameplayActive } from '../mission/gameplayActive.js';
+import type { CollisionWorld } from '../deck/collision.js';
+import { assistedYawFromStick } from './aimAssist.js';
 import { getEntity } from './world.js';
+
+export interface ApplyCommandsContext {
+  collisionWorld: CollisionWorld;
+  /** True only when the aim channel is owned by gamepad for this gather (live) or the harness opts in (tests/replay). */
+  aimAssist: boolean;
+}
 
 function playerCombatInputBlocked(state: SimState): boolean {
   if (!isGameplayActive(state)) return true;
@@ -13,7 +21,11 @@ function playerCombatInputBlocked(state: SimState): boolean {
   return !entity || !entity.alive;
 }
 
-export function applyCommands(state: SimState, commands: readonly InputCommand[]): void {
+export function applyCommands(
+  state: SimState,
+  commands: readonly InputCommand[],
+  ctx?: ApplyCommandsContext,
+): void {
   const sorted = [...commands].sort((a, b) => {
     if (a.tick !== b.tick) return a.tick - b.tick;
     return a.sequence - b.sequence;
@@ -47,7 +59,19 @@ export function applyCommands(state: SimState, commands: readonly InputCommand[]
       const ax = cmd.axisX ?? 0;
       const az = cmd.axisZ ?? 0;
       if (entity && Math.hypot(ax, az) > 0) {
-        entity.yaw = Math.atan2(ax, az);
+        if (ctx?.aimAssist && ctx.collisionWorld) {
+          entity.yaw = assistedYawFromStick(
+            state,
+            ctx.collisionWorld,
+            entity.x,
+            entity.z,
+            entity.yaw,
+            ax,
+            az,
+          );
+        } else {
+          entity.yaw = Math.atan2(ax, az);
+        }
       }
     } else if (cmd.action === 'fire') {
       if (combatBlocked) continue;
