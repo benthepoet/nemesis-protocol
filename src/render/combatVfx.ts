@@ -10,6 +10,7 @@ import {
   MUZZLE_LIGHT_MAX_CONCURRENT,
 } from '../config.js';
 import type { CombatEvent } from '../combat/types.js';
+import { flashMaterialForHit } from './heroMaterialTune.js';
 import { HOSTILE_COLOR_HEX, PLAYER_COLOR_HEX } from '../config.js';
 
 interface FlashEntry {
@@ -31,28 +32,24 @@ export interface CombatVfx {
 
 function applyHitFlash(root: THREE.Object3D): { restore: () => void; touched: THREE.Object3D[] } {
   const touched: THREE.Object3D[] = [];
-  const restores: (() => void)[] = [];
+  const basicPrev = new Map<THREE.Material, number>();
   root.traverse((obj) => {
     if (!(obj instanceof THREE.Mesh)) return;
-    const mat = obj.material;
-    if (
-      mat instanceof THREE.MeshStandardMaterial ||
-      mat instanceof THREE.MeshPhysicalMaterial
-    ) {
-      const prev = mat.emissive.getHex();
-      const prevI = mat.emissiveIntensity;
-      mat.emissive.setHex(0xffffff);
-      mat.emissiveIntensity = 0.9;
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+    for (const mat of mats) {
+      flashMaterialForHit(mat, true, basicPrev);
       touched.push(obj);
-      restores.push(() => {
-        mat.emissive.setHex(prev);
-        mat.emissiveIntensity = prevI;
-      });
     }
   });
   return {
     touched,
-    restore: () => restores.forEach((fn) => fn()),
+    restore: () => {
+      root.traverse((obj) => {
+        if (!(obj instanceof THREE.Mesh)) return;
+        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+        for (const mat of mats) flashMaterialForHit(mat, false, basicPrev);
+      });
+    },
   };
 }
 

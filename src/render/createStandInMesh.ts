@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { Entity } from '../sim/types.js';
 import { getCachedHeroTemplates, type HeroAssetTemplates } from './assets/preloadHeroAssets.js';
 import { cloneGltfTemplate } from './assets/loadGltf.js';
-import { cloneHeroMaterials, tuneHeroMaterials } from './heroMaterialTune.js';
+import { cloneHeroMaterials, countHeroBasicMaterials, countHeroNamedMaterials, flashMaterialForHit, tuneHeroMaterials } from './heroMaterialTune.js';
 
 export async function createStandInMeshAsync(templates?: HeroAssetTemplates): Promise<THREE.Group> {
   return createStandInMeshFromTemplates(templates ?? getCachedHeroTemplates());
@@ -15,10 +15,15 @@ export function createStandInMeshFromTemplates(templates: HeroAssetTemplates): T
   group.name = 'stand-in';
   group.traverse((obj) => {
     if (obj instanceof THREE.Mesh) {
-      obj.castShadow = true;
+      obj.castShadow = false;
       obj.receiveShadow = false;
     }
   });
+  if (import.meta.env.DEV) {
+    const named = countHeroNamedMaterials(group);
+    const basic = countHeroBasicMaterials(group);
+    console.info('[nemesis] crew stand-in p1_* material slots:', named, 'basic:', basic);
+  }
   return group;
 }
 
@@ -32,17 +37,10 @@ export function syncStandInMeshPose(mesh: THREE.Group, entity: Entity): void {
 }
 
 export function setStandInHitFlash(mesh: THREE.Group, active: boolean): void {
+  const store = new Map<THREE.Material, number>();
   mesh.traverse((obj) => {
     if (!(obj instanceof THREE.Mesh)) return;
     const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
-    for (const material of materials) {
-      if (
-        material instanceof THREE.MeshStandardMaterial ||
-        material instanceof THREE.MeshPhysicalMaterial
-      ) {
-        material.emissive.setHex(active ? 0xffffff : 0x000000);
-        material.emissiveIntensity = active ? 0.85 : 0;
-      }
-    }
+    for (const material of materials) flashMaterialForHit(material, active, store);
   });
 }

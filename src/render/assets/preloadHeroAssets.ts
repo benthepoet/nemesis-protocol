@@ -30,6 +30,7 @@ export async function preloadHeroAssets(): Promise<HeroAssetTemplates> {
   }
   tuneHeroMaterials(player, 'player');
   tuneHeroMaterials(crew, 'crew');
+  tuneHeroMaterials(rifle, 'player');
   assertHeroGlbLoaded(player, 'p1_player_boarder');
   assertHeroGlbLoaded(crew, 'p1_security_crew');
   const bundle = { player, crew, rifle, corridorLight, amberBeacon };

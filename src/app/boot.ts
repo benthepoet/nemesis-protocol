@@ -167,7 +167,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   window.addEventListener('resize', resize);
 
   if (import.meta.env.DEV) {
-    document.body.dataset.nemesisHeroTune = '3';
+    document.body.dataset.nemesisHeroTune = '4';
   }
 
   const stopLoop = startFrameLoop({

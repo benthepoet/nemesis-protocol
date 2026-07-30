@@ -5,6 +5,7 @@ import { PLAYER_COLOR_HEX, PROJECTILE_MUZZLE_OFFSET_M } from '../../src/config.j
 import { loadGltf } from '../../src/render/assets/loadGltf.js';
 import { preloadHeroAssets } from '../../src/render/assets/preloadHeroAssets.js';
 import { createPlayerMeshFromTemplates, playerHasDebugWedge } from '../../src/render/createPlayerMesh.js';
+import { countHeroBasicMaterials } from '../../src/render/heroMaterialTune.js';
 import { getMuzzleWorldXZ } from '../../src/render/createRifleBlockout.js';
 
 describe('hero assets (G1, M1–M3, R5, R6)', () => {
@@ -26,10 +27,11 @@ describe('hero assets (G1, M1–M3, R5, R6)', () => {
     expect(Math.hypot(x - expectedX, z - expectedZ)).toBeLessThanOrEqual(0.02);
   });
 
-  it('player allied-glow material uses authored #69f0ae emissive (G2)', async () => {
+  it('player allied-glow material uses authored #69f0ae (G2, unlit basic)', async () => {
     const templates = await preloadHeroAssets();
+    const player = createPlayerMeshFromTemplates(templates);
     let glow: THREE.MeshBasicMaterial | undefined;
-    templates.player.traverse((obj) => {
+    player.traverse((obj) => {
       if (!(obj instanceof THREE.Mesh)) return;
       const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
       for (const m of mats) {
@@ -38,5 +40,6 @@ describe('hero assets (G1, M1–M3, R5, R6)', () => {
     });
     expect(glow).toBeDefined();
     expect(glow!.color.getHexString()).toBe(new THREE.Color(PLAYER_COLOR_HEX).getHexString());
+    expect(countHeroBasicMaterials(player)).toBeGreaterThan(10);
   });
 });
