@@ -6,7 +6,7 @@ import {
 import { buildCollisionWorld } from '../deck/collision.js';
 import type { CollisionWorld } from '../deck/collision.js';
 import { roomAtPosition } from '../deck/roomQuery.js';
-import type { DeckGraph } from '../deck/types.js';
+import type { DeckGraph, WorldRect } from '../deck/types.js';
 import { spawnPlayerAtAirlock } from '../player/spawnPlayer.js';
 import type { SimState } from '../sim/types.js';
 import { getEntity } from '../sim/world.js';
@@ -17,6 +17,35 @@ import type { ScoreSnapshot } from './types.js';
 
 export interface CollisionWorldRef {
   current: CollisionWorld;
+  /** Static prop obstacles from deck presentation; merged into `current` on every rebuild. */
+  propOverlay?: readonly WorldRect[];
+}
+
+function propOverlayForRef(collisionRef: CollisionWorldRef): readonly WorldRect[] {
+  return collisionRef.propOverlay ?? collisionRef.current.propAabbs ?? [];
+}
+
+function syncCollisionWorld(
+  graph: DeckGraph,
+  collisionRef: CollisionWorldRef,
+  options?: Parameters<typeof buildCollisionWorld>[1],
+): void {
+  const propAabbs = propOverlayForRef(collisionRef);
+  collisionRef.current = {
+    ...buildCollisionWorld(graph, options),
+    propAabbs,
+  };
+}
+
+export function createCollisionWorldRef(
+  graph: DeckGraph,
+  propOverlay: readonly WorldRect[] = [],
+): CollisionWorldRef {
+  const overlay = Object.freeze([...propOverlay]);
+  return {
+    propOverlay: overlay,
+    current: { ...buildCollisionWorld(graph), propAabbs: overlay },
+  };
 }
 
 function countCrewNeutralized(state: SimState): number {
@@ -50,7 +79,7 @@ function rebuildIfNeeded(
   graph: DeckGraph,
   collisionRef: CollisionWorldRef,
 ): void {
-  collisionRef.current = buildCollisionWorld(graph, {
+  syncCollisionWorld(graph, collisionRef, {
     closedDoorEdgeIds: state.meta.closedDoorEdgeId ? [state.meta.closedDoorEdgeId] : undefined,
   });
 }
@@ -135,7 +164,7 @@ export function integrateMissionShell(
   } else if (phase === 'SCORE') {
     if (interactRisingEdge(state)) {
       resetMission(state, graph);
-      collisionRef.current = buildCollisionWorld(graph);
+      syncCollisionWorld(graph, collisionRef);
     }
   }
 

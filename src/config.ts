@@ -412,3 +412,12 @@ export const MOVE_SPEED_EPS_MPS = 0.05 as const;
 
 export const ANIM_RATE_MIN = 0.05 as const;
 export const ANIM_RATE_MAX = 3.0 as const;
+
+/** R-BM4 / G4 — default deck presentation. Override with ?deckVisual= or VITE_DECK_VISUAL. */
+export const DECK_VISUAL_MODE: 'blender' | 'procedural' = 'blender';
+
+/** R-BM6 — max room footprint AABB drift (m) vs deck03 graph; audit-only. */
+export const DECK_GLB_ALIGN_EPSILON_M = 0.05 as const;
+
+/** G5 — blender Mesh count ≤ ceil(ratio × procedural Mesh count) at construction. */
+export const DECK_VISUAL_MESH_RATIO_MAX = 1.5 as const;

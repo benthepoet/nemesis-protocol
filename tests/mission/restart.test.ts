@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { buildHashPayloadForTests } from '../../src/sim/hash.js';
-import { buildCollisionWorld } from '../../src/deck/collision.js';
 import { footprintCenter } from '../../src/deck/spawn.js';
 import { getNode } from '../../src/deck/graph.js';
 import { setEntityPose } from '../../src/sim/world.js';
 import { createMissionWorld, resetMission } from '../../src/mission/createMissionWorld.js';
+import { createCollisionWorldRef } from '../../src/mission/integrateMissionShell.js';
 import {
   confirmBreachAndSkipToActive,
   createMissionTestWorld,
@@ -37,7 +37,7 @@ describe('restart (G8)', () => {
     runMissionTicks(state, graph, collisionRef, 1);
     expect(state.meta.missionPhase).toBe('SCORE');
     resetMission(state, graph);
-    collisionRef.current = buildCollisionWorld(graph);
+    collisionRef.current = createCollisionWorldRef(graph).current;
     expect(buildHashPayloadForTests(state)).toBe(buildHashPayloadForTests(fresh));
   });
 

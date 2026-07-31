@@ -1,9 +1,18 @@
+/** @vitest-environment jsdom */
 import { describe, expect, it } from 'vitest';
 import { buildCollisionWorld } from '../../src/deck/collision.js';
 import { hashDeckGraph } from '../../src/deck/hashDeck.js';
 import { createDeckScene } from '../../src/render/createDeckScene.js';
+import { createBlenderDeckScene } from '../../src/render/createBlenderDeckScene.js';
+import { loadGltf } from '../../src/render/assets/loadGltf.js';
+import { P1_NEMESIS_DECK03_GLB } from '../../src/render/assets/urls.js';
 import { createFallbackDeckMaterials } from '../../src/render/deckMaterials.js';
 import { loadTestDeck03 } from '../helpers/deckTestUtils.js';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+const GLB_PATH = join(process.cwd(), 'assets/models/p1_nemesis_deck03.glb');
+const hasDeckGlb = existsSync(GLB_PATH);
 
 function collisionSnapshot(graph: ReturnType<typeof loadTestDeck03>) {
   const world = buildCollisionWorld(graph);
@@ -21,6 +30,19 @@ describe('collision drift snapshot (G7)', () => {
     const deckHash = await hashDeckGraph(graph);
 
     createDeckScene(graph, createFallbackDeckMaterials()).disposeMaterials();
+
+    expect(collisionSnapshot(graph)).toBe(snap);
+    expect(await hashDeckGraph(graph)).toBe(deckHash);
+  });
+
+  it.skipIf(!hasDeckGlb)('identical after blender deck presentation build', async () => {
+    const graph = loadTestDeck03();
+    const snap = collisionSnapshot(graph);
+    const deckHash = await hashDeckGraph(graph);
+    const mats = createFallbackDeckMaterials();
+    const glbRoot = await loadGltf(P1_NEMESIS_DECK03_GLB);
+    createBlenderDeckScene(graph, { glbRoot, materials: mats }).disposeMaterials();
+    mats.dispose();
 
     expect(collisionSnapshot(graph)).toBe(snap);
     expect(await hashDeckGraph(graph)).toBe(deckHash);

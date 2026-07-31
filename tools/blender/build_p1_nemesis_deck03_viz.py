@@ -787,7 +787,166 @@ def setup_render():
     sc.compositing_node_group = ng
 
 # ---------------------------------------------------------------- SECTION 10: build + save + renders
-def main(render=False):
+# ---------------------------------------------------------------- SECTION 10b: engine GLB export (R-BM8 / p1-deck-blender-mesh)
+
+ROOM_IDS_EXPORT = [r[0] for r in ROOMS] + ["bridge"]
+
+APERTURE_EXPORT_RENAMES = {
+    "apg_AP-PORT-AIRLOCK": "aperture:port-airlock:wall-c-port-airlock-top",
+    "apg_AP-PORT-AIRLOCK-2": "aperture:port-airlock:wall-c-port-airlock-left",
+    "apg_AP-STBD-AIRLOCK": "aperture:stbd-airlock:wall-c-stbd-airlock-bottom",
+    "apg_AP-CARGO": "aperture:cargo-hold:wall-c-cargo-top",
+    "apg_AP-MED": "aperture:med-bay:wall-c-med-top",
+}
+
+EXPORT_SKIP_PREFIXES = ("CAM_", "key_", "spine_prac_", "reactor_light", "airlock_gel_", "key_sun", "fill_sun")
+EXPORT_SKIP_COLLECTIONS = ("SIGNAGE", "LIGHTS", "CAMERAS")
+
+
+def _mesh_in_export_collection(ob):
+    for col in ob.users_collection:
+        if col.name in EXPORT_SKIP_COLLECTIONS:
+            return False
+    return True
+
+
+def prepare_export_hierarchy(MAT):
+    """Naming + engine-origin transform for y-up GLB (R-BM6)."""
+    hull_mat = MAT.get("hull") or MAT.get("machine")
+
+    for rid in ROOM_IDS_EXPORT:
+        cn = "ceil_" + rid if rid != "bridge" else "ceil_bridge"
+        ob = bpy.data.objects.get(cn)
+        if ob:
+            ob.name = "ceiling:" + rid
+        fn = "floor_" + rid if rid != "bridge" else "floor_bridge"
+        fo = bpy.data.objects.get(fn)
+        if fo:
+            fo.name = "floor:" + rid
+
+    dh = bpy.data.objects.get("deckhead")
+    if dh:
+        bpy.data.objects.remove(dh, do_unlink=True)
+
+    haze = bpy.data.objects.get("spine_haze")
+    if haze:
+        bpy.data.objects.remove(haze, do_unlink=True)
+
+    for old, new in APERTURE_EXPORT_RENAMES.items():
+        ob = bpy.data.objects.get(old)
+        if not ob:
+            continue
+        ob.name = new
+        if ob.data and hasattr(ob.data, "materials") and hull_mat:
+            ob.data.materials.clear()
+            ob.data.materials.append(hull_mat)
+
+    ng = bpy.data.objects.get("nose_glass_0")
+    if ng:
+        ng.name = "aperture:bridge:wall-c-bridge-nose"
+        if ng.data and hasattr(ng.data, "materials") and hull_mat:
+            ng.data.materials.clear()
+            ng.data.materials.append(hull_mat)
+
+    shift_x, shift_y = CX * M, CY * M
+    to_xform = [
+        ob for ob in bpy.data.objects
+        if ob.type in ("MESH", "EMPTY")
+        and _mesh_in_export_collection(ob)
+        and not ob.name.startswith(EXPORT_SKIP_PREFIXES)
+    ]
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in to_xform:
+        ob.location.x += shift_x
+        ob.location.y += shift_y
+        if ob.type == "MESH":
+            ob.select_set(True)
+            bpy.context.view_layer.objects.active = ob
+            bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)
+            ob.select_set(False)
+
+    if bpy.data.objects.get("hullEnvelope") is None:
+        hull_empty = bpy.data.objects.new("hullEnvelope", None)
+        COL["STRUCTURE"].objects.link(hull_empty)
+    else:
+        hull_empty = bpy.data.objects["hullEnvelope"]
+
+    for rid in ROOM_IDS_EXPORT:
+        rname = "room:" + rid
+        if bpy.data.objects.get(rname) is None:
+            empty = bpy.data.objects.new(rname, None)
+            COL["STRUCTURE"].objects.link(empty)
+        else:
+            empty = bpy.data.objects[rname]
+        for child_name in ("ceiling:" + rid, "floor:" + rid):
+            child = bpy.data.objects.get(child_name)
+            if child and child.parent != empty:
+                child.parent = empty
+
+
+def _merge_meshes_by_material(objects):
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for ob in objects:
+        if ob.type != "MESH":
+            continue
+        key = ob.data.materials[0].name if ob.data.materials else "__none__"
+        groups[key].append(ob)
+    for obs in groups.values():
+        if len(obs) < 2:
+            continue
+        bpy.ops.object.select_all(action="DESELECT")
+        for ob in obs:
+            ob.select_set(True)
+        bpy.context.view_layer.objects.active = obs[0]
+        bpy.ops.object.join()
+
+
+def merge_meshes_for_export():
+    """G5 proxy — reduce draw-call-heavy dressing/exterior mesh count (R-BM5)."""
+    skip_prefix = (
+        "ceiling:", "floor:", "room:", "aperture:", "hull-", "wall_", "door_", "bay_",
+        "interstitial", "hullEnvelope",
+    )
+    for cname in ("DRESSING", "EXTERIOR", "TRIM"):
+        col = COL.get(cname)
+        if not col:
+            continue
+        candidates = [
+            ob for ob in col.objects
+            if ob.type == "MESH" and not any(ob.name.startswith(p) for p in skip_prefix)
+        ]
+        _merge_meshes_by_material(candidates)
+
+
+def export_glb(filepath=None):
+    """
+    Write shipped deck GLB for the engine (R-BM8).
+    Run after main() build or from saved .blend with prepare already applied once.
+    """
+    filepath = filepath or "/home/benh/Source/nemesis-protocol/assets/models/p1_nemesis_deck03.glb"
+    for cname in EXPORT_SKIP_COLLECTIONS:
+        col = COL.get(cname)
+        if not col:
+            continue
+        col.hide_render = True
+        col.hide_viewport = True
+        for ob in col.objects:
+            ob.hide_render = True
+
+    bpy.ops.export_scene.gltf(
+        filepath=filepath,
+        export_format='GLB',
+        use_selection=False,
+        export_yup=True,
+        export_apply=True,
+        export_lights=False,
+        export_cameras=False,
+    )
+    print("EXPORT OK", filepath)
+
+
+def main(render=False, export_after=False):
     reset()
     for name in ("STRUCTURE", "ENVELOPE", "CEILINGS", "DRESSING", "EXTERIOR", "PROPS", "TRIM", "SIGNAGE", "LIGHTS", "CAMERAS"):
         COL[name] = collection(name)
@@ -824,4 +983,11 @@ def main(render=False):
             print("RENDERED", fname)
         COL["CEILINGS"].hide_render = False
 
-main(render=False)
+    if export_after:
+        prepare_export_hierarchy(MAT)
+        merge_meshes_for_export()
+        export_glb()
+
+import sys
+
+main(render=False, export_after="--export-glb" in sys.argv)

@@ -137,6 +137,27 @@ export function buildInterstitialShape(bounds: WorldRect, roomPolys: { points: W
   return shape;
 }
 
+/** Thin interstitial ceiling with room footprint holes (M8) — shared by procedural hull + Blender deck path. */
+export function buildInterstitialCeilingMesh(
+  graph: DeckGraph,
+  mats: DeckMaterialSet,
+): THREE.Mesh {
+  const bounds = computeDeckBounds(graph);
+  const roomPolys = buildRoomFootprintPolygons(graph);
+  const shape = buildInterstitialShape(bounds, roomPolys);
+  const ceilingGeo = new THREE.ShapeGeometry(shape);
+  const ceilingMat = createInterstitialMaterial(mats.ceiling);
+  ceilingMat.transparent = true;
+  ceilingMat.opacity = 1;
+  ceilingMat.depthWrite = true;
+  const ceiling = new THREE.Mesh(ceilingGeo, ceilingMat);
+  ceiling.rotation.x = -Math.PI / 2;
+  ceiling.position.y = ROOM_HEIGHT_M;
+  ceiling.name = 'hull-interstitial:ceiling';
+  ceiling.receiveShadow = true;
+  return ceiling;
+}
+
 /** Full-bounds slab outline (no footprint holes) for the raised maintenance deck (R-DP16). */
 function buildDeckSlabShape(bounds: WorldRect): THREE.Shape {
   const shape = new THREE.Shape();
@@ -372,8 +393,6 @@ export function buildHullEnvelope(graph: DeckGraph, mats: DeckMaterialSet): THRE
   group.name = 'hull-envelope';
 
   const bounds = computeDeckBounds(graph);
-  const roomPolys = buildRoomFootprintPolygons(graph);
-  const shape = buildInterstitialShape(bounds, roomPolys);
 
   // R-DP16: raised maintenance deck — solid slab spanning the full bounds
   // (room floor boxes sit on top), top at y = INTERSTITIAL_FLOOR_Y +
@@ -391,19 +410,7 @@ export function buildHullEnvelope(graph: DeckGraph, mats: DeckMaterialSet): THRE
   floor.receiveShadow = true;
   group.add(floor);
 
-  // Interstitial ceiling keeps footprint holes so it never z-fights room
-  // ceiling slabs at ROOM_HEIGHT_M; fade policy (M8) drives its opacity.
-  const ceilingGeo = new THREE.ShapeGeometry(shape);
-  const ceilingMat = createInterstitialMaterial(mats.ceiling);
-  ceilingMat.transparent = true;
-  ceilingMat.opacity = 1;
-  ceilingMat.depthWrite = true;
-  const ceiling = new THREE.Mesh(ceilingGeo, ceilingMat);
-  ceiling.rotation.x = -Math.PI / 2;
-  ceiling.position.y = ROOM_HEIGHT_M;
-  ceiling.name = 'hull-interstitial:ceiling';
-  ceiling.receiveShadow = true;
-  group.add(ceiling);
+  group.add(buildInterstitialCeilingMesh(graph, mats));
 
   const shellBase = mats.hullWall.clone();
   const t = HULL_ENVELOPE_SHELL_THICKNESS_M;

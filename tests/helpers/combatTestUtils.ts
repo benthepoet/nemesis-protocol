@@ -1,6 +1,6 @@
 import { buildCollisionWorld } from '../../src/deck/collision.js';
 import { createMissionWorld } from '../../src/mission/createMissionWorld.js';
-import { integrateMissionShell, type CollisionWorldRef } from '../../src/mission/integrateMissionShell.js';
+import { createCollisionWorldRef, integrateMissionShell, type CollisionWorldRef } from '../../src/mission/integrateMissionShell.js';
 import { spawnPlayerAtAirlock } from '../../src/player/spawnPlayer.js';
 import { integrateCombat } from '../../src/combat/integrateCombat.js';
 import { integrateCrewAi } from '../../src/ai/integrateCrewAi.js';
@@ -25,7 +25,7 @@ export interface CombatTestHarness {
 export function createCombatTestHarness(): CombatTestHarness {
   const graph = loadTestDeck03();
   const state = createMissionWorld(graph);
-  const collisionRef: CollisionWorldRef = { current: buildCollisionWorld(graph) };
+  const collisionRef = createCollisionWorldRef(graph);
   bootstrapMissionActive(state, graph, collisionRef, 'port-airlock');
   return { graph, state, collisionRef, collisionWorld: collisionRef.current };
 }
@@ -52,7 +52,10 @@ export function bootstrapMissionActive(
   state.meta.objectiveIssued = true;
   state.meta.objectiveComplete = false;
   state.meta.missionPhase = 'ACTIVE';
-  collisionRef.current = buildCollisionWorld(graph);
+  collisionRef.current = {
+    ...buildCollisionWorld(graph),
+    propAabbs: collisionRef.propOverlay ?? collisionRef.current.propAabbs ?? [],
+  };
 }
 
 export function runTicks(

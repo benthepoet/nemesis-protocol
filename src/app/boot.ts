@@ -8,11 +8,14 @@ import {
   setHeroMaterialModeDevMarker,
 } from '../render/heroMaterialMode.js';
 import { retuneHeroActorsBasic } from '../render/heroMaterialTune.js';
-import { buildCollisionWorld } from '../deck/collision.js';
+import { buildPropCollisionAABBs } from '../deck/propCollision.js';
 import { loadDeck03 } from '../deck/loadDeck.js';
 import { validateDeckGraph } from '../deck/validate.js';
 import { createMissionWorld } from '../mission/createMissionWorld.js';
-import type { CollisionWorldRef } from '../mission/integrateMissionShell.js';
+import {
+  createCollisionWorldRef,
+  type CollisionWorldRef,
+} from '../mission/integrateMissionShell.js';
 import { CommandBus } from '../input/commandBus.js';
 import { GamepadDevice } from '../input/gamepad.js';
 import { computeMouseAimAxis, KeyboardMouseDevice } from '../input/keyboardMouse.js';
@@ -23,6 +26,10 @@ import { createCombatVfx } from '../render/combatVfx.js';
 import { createCombatTelegraphs } from '../render/combatTelegraphs.js';
 import { createDeckLighting } from '../render/createDeckLighting.js';
 import { createDeckScene } from '../render/createDeckScene.js';
+import { createBlenderDeckScene } from '../render/createBlenderDeckScene.js';
+import { resolveDeckVisualMode } from '../render/deckVisualMode.js';
+import { loadGltf } from '../render/assets/loadGltf.js';
+import { P1_NEMESIS_DECK03_GLB } from '../render/assets/urls.js';
 import { preloadDeckMaterials } from '../render/deckMaterials.js';
 import { createDebugFlyCamera, isDebugFlyCameraEnabled } from '../render/debugFlyCamera.js';
 import { createFollowCamera } from '../render/createFollowCamera.js';
@@ -61,7 +68,6 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const heroTemplates = await preloadHeroAssets();
   const deckMaterials = await preloadDeckMaterials();
 
-  const collisionRef: CollisionWorldRef = { current: buildCollisionWorld(graph) };
   const world = createMissionWorld(graph);
 
   const kbm = new KeyboardMouseDevice();
@@ -69,7 +75,30 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const devices = [kbm, gamepad];
   const bus = new CommandBus();
 
-  const deckScene = createDeckScene(graph, deckMaterials);
+  const deckVisualMode = resolveDeckVisualMode();
+  let deckScene: Awaited<ReturnType<typeof createDeckScene>>;
+  if (deckVisualMode === 'blender') {
+    try {
+      const glbRoot = await loadGltf(P1_NEMESIS_DECK03_GLB);
+      deckScene = createBlenderDeckScene(graph, { glbRoot, materials: deckMaterials });
+    } catch (err) {
+      console.error(
+        '[deckVisual] blender path failed; falling back to procedural',
+        P1_NEMESIS_DECK03_GLB,
+        err,
+      );
+      deckScene = createDeckScene(graph, deckMaterials);
+    }
+  } else {
+    deckScene = createDeckScene(graph, deckMaterials);
+  }
+
+  const propOverlay =
+    deckScene.collisionRoot !== undefined
+      ? Object.freeze(buildPropCollisionAABBs(deckScene.collisionRoot, graph))
+      : Object.freeze([]);
+  const collisionRef: CollisionWorldRef = createCollisionWorldRef(graph, propOverlay);
+
   const sceneEnv = attachSceneEnvironment(deckScene.scene, appRenderer);
   const deckLighting = createDeckLighting(deckScene.scene, graph, getHeroFixtures(heroTemplates));
 
@@ -156,6 +185,32 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   let flyDispose: (() => void) | undefined;
   const cutawayState: CutawayState = createCutawayState();
 
+  const runCeilingCutaway = (dt: number, camera: THREE.PerspectiveCamera, entity?: { x: number; z: number }) => {
+    const interstitial =
+      deckScene.hullEnvelope?.getObjectByName('hull-interstitial:ceiling') ?? null;
+    let x: number;
+    let z: number;
+    if (entity) {
+      x = entity.x;
+      z = entity.z;
+    } else {
+      const p = new THREE.Vector3();
+      camera.getWorldPosition(p);
+      x = p.x;
+      z = p.z;
+    }
+    updateCeilingCutaway(
+      deckScene.roomGroups,
+      graph,
+      x,
+      z,
+      cutawayState,
+      camera,
+      dt,
+      interstitial,
+    );
+  };
+
   const debugFly = isDebugFlyCameraEnabled();
   let follow: ReturnType<typeof createFollowCamera> | undefined;
 
@@ -192,6 +247,9 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     onFrame = (dt) => {
       tryGamepadUnlockAudio();
       fly.update(dt);
+      const playerId = world.meta.playerId;
+      const entity = playerId !== null ? getEntity(world, playerId) : undefined;
+      runCeilingCutaway(dt, fly.camera, entity);
       syncPresentation(dt);
       deckLighting.update(dt, world.meta.alarmLevel as 0 | 1);
       combatVfx.update(dt);
@@ -219,16 +277,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
       const entity = playerId !== null ? getEntity(world, playerId) : undefined;
       if (entity && follow) {
         follow.update(dt, entity);
-        updateCeilingCutaway(
-          deckScene.roomGroups,
-          graph,
-          entity.x,
-          entity.z,
-          cutawayState,
-          follow.camera,
-          dt,
-          deckScene.hullEnvelope?.getObjectByName('hull-interstitial:ceiling') ?? null,
-        );
+        runCeilingCutaway(dt, follow.camera, entity);
       }
       syncPresentation(dt);
       deckLighting.update(dt, world.meta.alarmLevel as 0 | 1);

@@ -1,4 +1,6 @@
 /** @vitest-environment jsdom */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import {
@@ -8,13 +10,18 @@ import {
 } from '../../src/config.js';
 import { loadTestDeck03 } from '../helpers/deckTestUtils.js';
 import { createDeckScene } from '../../src/render/createDeckScene.js';
+import { createBlenderDeckScene } from '../../src/render/createBlenderDeckScene.js';
+import { loadGltf } from '../../src/render/assets/loadGltf.js';
+import { P1_NEMESIS_DECK03_GLB } from '../../src/render/assets/urls.js';
+import { createFallbackDeckMaterials } from '../../src/render/deckMaterials.js';
 import {
   createCutawayState,
   getCeilingOpacity,
   updateCeilingCutaway,
 } from '../../src/render/ceilingCutaway.js';
 import { computeSpawnPoint } from '../../src/deck/spawn.js';
-import { listAdjacentRooms } from '../../src/deck/graph.js';
+import { getNode, listAdjacentRooms } from '../../src/deck/graph.js';
+import { footprintCenter } from '../../src/deck/spawn.js';
 import { roomAtPosition } from '../../src/deck/roomQuery.js';
 
 describe('ceiling cutaway opacity (G9–G12, M8)', () => {
@@ -139,5 +146,76 @@ describe('ceiling cutaway opacity (G9–G12, M8)', () => {
       1,
     );
     deck.disposeMaterials();
+  });
+});
+
+const GLB_PATH = join(process.cwd(), 'assets/models/p1_nemesis_deck03.glb');
+const hasDeckGlb = existsSync(GLB_PATH);
+
+describe.skipIf(!hasDeckGlb)('ceiling cutaway on blender roomGroups (G2, S10/S11)', () => {
+  it('G9: active room ceiling targets zero opacity on blender path', async () => {
+    const graph = loadTestDeck03();
+    const mats = createFallbackDeckMaterials();
+    const glbRoot = await loadGltf(P1_NEMESIS_DECK03_GLB);
+    const deck = createBlenderDeckScene(graph, { glbRoot, materials: mats });
+    const spawn = computeSpawnPoint(graph, 'port-airlock');
+    const state = createCutawayState();
+    const cam = new THREE.PerspectiveCamera(50, 1, 0.1, 500);
+    cam.position.set(spawn.x, 40, spawn.z + 30);
+    cam.lookAt(spawn.x, 0, spawn.z);
+    cam.updateMatrixWorld();
+
+    for (let i = 0; i < 30; i++) {
+      updateCeilingCutaway(
+        deck.roomGroups,
+        graph,
+        spawn.x,
+        spawn.z,
+        state,
+        cam,
+        0.05,
+        deck.hullEnvelope!.getObjectByName('hull-interstitial:ceiling'),
+      );
+    }
+
+    const roomId = roomAtPosition(graph, spawn.x, spawn.z)!;
+    const activeCeiling = deck.roomGroups.get(roomId)!.getObjectByName(`ceiling:${roomId}`) as THREE.Mesh;
+    expect(getCeilingOpacity(activeCeiling)).toBeLessThan(0.05);
+    deck.disposeMaterials();
+    mats.dispose();
+  });
+
+  it('G9: main-spine ceiling fades when active in corridor', async () => {
+    const graph = loadTestDeck03();
+    const mats = createFallbackDeckMaterials();
+    const glbRoot = await loadGltf(P1_NEMESIS_DECK03_GLB);
+    const deck = createBlenderDeckScene(graph, { glbRoot, materials: mats });
+    const center = footprintCenter(getNode(graph, 'main-spine'));
+    const spawn = { x: center.x, z: center.z };
+    const state = createCutawayState();
+    const cam = new THREE.PerspectiveCamera(50, 1, 0.1, 500);
+    cam.position.set(spawn.x, 40, spawn.z + 30);
+    cam.lookAt(spawn.x, 0, spawn.z);
+    cam.updateMatrixWorld();
+
+    for (let i = 0; i < 35; i++) {
+      updateCeilingCutaway(
+        deck.roomGroups,
+        graph,
+        spawn.x,
+        spawn.z,
+        state,
+        cam,
+        0.05,
+        deck.hullEnvelope!.getObjectByName('hull-interstitial:ceiling'),
+      );
+    }
+
+    const activeCeiling = deck.roomGroups
+      .get('main-spine')!
+      .getObjectByName('ceiling:main-spine') as THREE.Mesh;
+    expect(getCeilingOpacity(activeCeiling)).toBeLessThan(0.05);
+    deck.disposeMaterials();
+    mats.dispose();
   });
 });
