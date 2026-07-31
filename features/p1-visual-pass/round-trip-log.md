@@ -27,4 +27,4 @@
 | 2026-07-30 | Stage 3 (PBR) | Composer @ `feat/p1-visual-pass-pbr` — spec v2 **T33–T36** / Kimi Gate 1 blockers G2–G4: default `HERO_MATERIAL_MODE='pbr'` with TU-budget resolve + `?heroMaterial=basic` debug fallback, boot shader compile check for `MAX_TEXTURE_IMAGE_UNITS`, `heroPbrRestore` factor-albedo assert; **227** tests + `npm run build` green; merged to `integration` @ `8bb987f` |
 | 2026-07-30 | Gate 2 (Director) | Director **Proceed** — accept `p1-visual-pass` on `integration` (anim + PBR path + core loop presentation); merge to **`master`**. Kimi full S1–S15 evidence pack deferred; P1 phase checkpoint may follow per roadmap. |
 
-**Final state:** **Gate 2 accepted** · merged to **`master`** (see merge SHA) · design doc **v1.17** at acceptance · P1 #9 terminal feature signed by Director Proceed · phase checkpoint pending roadmap sign-off
+**Final state:** **Gate 2 accepted** · merged to **`master`** @ **`d4809d6`** (integration @ `56e9cac`) · design doc **v1.17** at acceptance · P1 #9 terminal feature signed by Director Proceed · **P1 phase checkpoint** per roadmap (M-P1) — Director sign-off when ready

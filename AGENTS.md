@@ -74,7 +74,7 @@ Open source: **MIT** for code, **CC BY 4.0** for art assets (`assets/`, mockups,
 
 ## Current state
 
-- Design doc **v1.17**, visual direction **v1.6**, roadmap **v1.8**, team charter **v1.13**, mockups **v2.2** (deck plan) / flow overlay companion.
-- Shipped: `p1-project-scaffold` (P1 #1) … `p1-gamepad-support` (P1 #8). **Active:** `p1-visual-pass` (P1 #9) — Stage 1 design pack, milestone **M-P1** (Director kickoff 2026-07-30). **P1 phase checkpoint** pending Gate 2 on this feature.
+- Design doc **v1.17**, visual direction **v1.7**, roadmap **v1.8**, team charter **v1.13**, mockups **v2.2** (deck plan) / flow overlay companion.
+- Shipped: `p1-project-scaffold` (P1 #1) … **`p1-visual-pass` (P1 #9, Gate 2 @ `master` `d4809d6`, 2026-07-30)** — M-P1 visual milestone. **P1 phase checkpoint** pending Director sign-off per roadmap.
 - Rulings in force: solo-first with netcode-ready architecture (netcode P2–P3 window); enemy roster = ship's crew as defense (aliens deferred, post-prototype); gamepad first-class input parity; MIT + CC BY 4.0; **phase visual-pass policy** (roadmap R1, 2026-07-30 — every phase P1–P4 ends with a terminal `pN-visual-pass` feature, Gate-2 accepted before the phase checkpoint is signed; milestone bar in `visual_direction.md` §11).
 - Roadmap: P1 core loop → P2 gating & alarm → P3 destructibility & depressurization → P4 androids + prototype bosses (Charge-Defender, Warden). Feature-level breakdown: `docs/design/feature_roadmap.md`.
