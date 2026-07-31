@@ -2,7 +2,7 @@
 
 **Owner:** Kimi K3 (Art Lead, charter §1)
 **Applies to:** all assets, VFX, lighting, UI treatment. Binding for every phase; deviations require a version bump here + Director sign-off.
-**Status:** v1.7 — animation readability rule (§7 rule 8) + M-P1 hero rig/animation scope (Director Gate 2 iteration on `p1-visual-pass`, design pack v2 R13)
+**Status:** v1.9 — Director R2 follow-up (2026-07-30): exterior apertures + shell-UI accent policy locked (§3)
 
 ---
 
@@ -30,12 +30,18 @@ Inherited from the deck-plan mockups — this palette is the brand and carries i
 |------|-----|-------|
 | Void / base dark | `#05080f` | Space, unlit recesses, UI chrome |
 | Hull steel | `#1a232e` – `#2a3644` | Primary surfaces, PBR base metals |
-| Section accents | Engineering `#ef5350` · Command `#7986cb` · Ops `#ffb74d` · Life support `#4dd0e1` · Crew `#ce93d8` · Hydro `#81c784` | Per-section lighting gels, trim, signage — **players learn to navigate by tint** |
-| Function accents (extended) | Armory `#ff8a65` · Medical `#80cbc4` · Comms/Sensors `#5c7cfa` · Mess/Crew ops `#a1887f` | Room-function trim/signage at finer grain than sections — inherited from the deck-plan mockups |
+| Section accents | Engineering `#ef5350` · Command `#7986cb` · Ops `#ffb74d` · Life support `#4dd0e1` · Crew `#ce93d8` · Hydro `#81c784` | Per-section signage, trim strips, and lighting gels — **players learn to navigate by signage + accent lighting** (v1.8 interior-neutrality rule: never large-area tints) |
+| Function accents (extended) | Armory `#ff8a65` · Medical `#80cbc4` · Comms/Sensors `#5c7cfa` · Mess/Crew ops `#a1887f` | Room-function trim/signage/gels at finer grain than sections (v1.8: trim, signage, gels only) — inherited from the deck-plan mockups |
 | Corridor neutral | `#8b949e` | Spine/corridor surfaces — deliberately tint-neutral so section accents read by contrast |
 | Alarm / hazard | `#ff5252` | Alarm states, breach events, enemy telegraphs |
 | Safe / allied | `#69f0ae` | Airlocks, extraction, player-aligned indicators |
 | Interactive / door | `#ffd54f` | Doors, gates, interactables — one color, one meaning, everywhere |
+
+**Interior-neutrality rule (v1.8 — Director ruling 2026-07-30, post-`p1-visual-pass` Gate 2):** room interiors are **neutral** — floors, ceilings, and wall bodies render in the hull-steel and corridor-neutral families only. Section and function accents are confined to **signage, trim strips, fixture gels/lighting, and HUD**; large-area floor/ceiling/wall tints are removed. This supersedes the v1.0–v1.7 "navigate by tint" read for all work after the ruling date (the `p1-visual-pass` G6 acceptance at `d4809d6` stands as accepted history). Navigation remains a player skill — carried by the signage atlas, accent-lit trim, and the §4 lighting matrix, not by colored rooms.
+
+**Exterior void read (v1.8 — same ruling; apertures v1.9):** space beyond the hull is a readable scene element, not a flat clear color — a **dim starfield** inside the `#05080f` void family (no bright nebula spectacle; §9 anti-goals hold) and a hull silhouette that reads as a solid vessel shell from the 60° camera. **Hull apertures (Director 2026-07-30):** **real transparent openings** cut into Class C exterior faces (viewport glazing, not fake decals) at authored sites — airlocks, cargo/med/bridge-adjacent hull where deck data marks exterior exposure; starfield visible through them. Apertures are presentation geometry only: they do not change breach rules, collision classes, or hull-breach rolls (design doc §6.1/§6.4). `p1-deck-polish` (#10) reserves envelope topology; `p1-hull-exterior-view` (#11) ships the starfield + aperture glazing read.
+
+**Shell UI vs in-world (Director 2026-07-30, OQ3):** breach select, score screen, and HUD chrome **keep** section/function accent colors per the table above and the v1.6 UI note — interior-neutrality applies to **in-world room surfaces only**.
 
 **Rule:** interactive-vs-hostile color meanings are never crossed. Red never decorates; green never threatens.
 
@@ -95,7 +101,7 @@ Inherited from the deck-plan mockups — this palette is the brand and carries i
 3. **No visual noise on interactables.** Doors/gates/panels carry the `#ffd54f` language and nothing competes with it.
 4. **Darkness is a budget, not a default.** Meltdown goes dark, but every dark room contains exactly one readable light story (exit strip, fire, beacon) — never true black.
 5. **VFX can obscure intentionally** (wall-failure dust, smoke columns) — but always as a *timed, designed* readability event, never incidental clutter.
-6. **Ceiling policy — full interiors, camera cutaway.** All rooms are built with complete geometry including ceilings (needed for the lighting model and the perspective pivot). Top-down visibility is handled by camera-driven ceiling fade/cutaway per room, **never by omitting geometry**. Wall tops must read cleanly at the camera angle.
+6. **Ceiling policy — full interiors, camera cutaway with adjacency fade.** All rooms are built with complete geometry including ceilings (needed for the lighting model and the perspective pivot). Top-down visibility is handled by camera-driven ceiling fade/cutaway per room, **never by omitting geometry**: the **active room's** ceiling is fully hidden; ceilings of rooms **adjacent to the active room** (sharing a wall or door edge) and any room substantially inside the camera frustum render **semi-transparent** (target alpha 0.25–0.4 — actors, silhouettes, and telegraphs beneath must stay readable per rules 2 and 4) rather than fully opaque; rooms outside the frustum may stay opaque. The adjacency fade is an ambush-telegraph rule (v1.8, Director ruling 2026-07-30): a player must never be surprised from a room the camera frame can see into. Wall tops must read cleanly at the camera angle.
 7. **Player combat telegraphs are world-space, never HUD chrome.** Projectile tracers and the aim-direction line live in the scene, use the allied palette only (white core / `#69f0ae` — red never decorates, and hostile fire will own `#ff5252`), sit *below* enemy telegraphs in the clarity hierarchy, and must stay legible against hull-steel floors without competing with `#ffd54f` interactables. They visualize facing and shot clearance — they are not a laser-sight cosmetic.
 8. **Animation serves readability; it never replaces a telegraph.** Actor locomotion cycles are authored **in place** — no root motion; the sim owns actor translation, and render-side motion must never drift from sim positions. Cycle cadence is matched to sim speed within **±10 %** at the 60° camera — foot slide beyond that tolerance reads as a bug, not style. Binding combat telegraphs (§6: wind-up pre-glow, tracers, hit-flash) remain the readable signals; skeletal animation may mirror a state (raising a weapon during wind-up) but must never be the *sole* carrier of a mechanic's telegraph. Hostile silhouette readability (rule 2) must hold through **every frame of every clip**, not just the rest pose.
 
@@ -130,7 +136,7 @@ Every phase (P1–P4) closes with a scheduled **visual-pass feature** (`pN-visua
 1. **No blockout in frame.** Zero untextured primitives/placeholder capsules visible in normal play. (Exception: assets a later phase explicitly owns may stay placeholder — e.g., android racks during P1–P3.)
 2. **Lighting-matrix rows live.** The ship states reachable in that phase render per §4.1, transition correctly, and are readable without UI (pillar 2).
 3. **Telegraphs complete.** Every mechanic shipped in the phase has its §6 VFX family and its material/damage states — particles tell you what just happened (pillar 3).
-4. **Palette language intact.** §3 section accents readable in-game (navigable by tint); interactive-vs-hostile color meanings never crossed.
+4. **Palette language intact.** §3 accent policy live in-game — post-v1.8: signage + accent lighting carry navigation over neutral interiors; interactive-vs-hostile color meanings never crossed.
 5. **Readability verified.** §7 rules checked at the 60° camera in the densest combat scene the phase can produce; spectacle never beats telegraph (pillar 4).
 6. **Performance held.** §8 target (60 fps @1080p, mid-tier GPU) with the phase's full lighting + VFX load active.
 7. **No functional change.** A visual pass alters no accepted G#, number, or rule — anything that does routes as a separate feature. License scan (charter §3 Stage 5) passes.
@@ -146,6 +152,8 @@ Every phase (P1–P4) closes with a scheduled **visual-pass feature** (`pN-visua
 
 Each visual pass is scoped, not open-ended: its design pack enumerates exactly the assets/rows/families above that are in scope, with reference boards per charter §1 (reference-first). Polish beyond the milestone is S3 defect work, not visual-pass scope creep.
 
+*M-P1 note (v1.8):* M-P1 was accepted at `d4809d6` (2026-07-30) and stands. The appended P1 polish features (roadmap v1.9, P1 #10–#14, Director ruling R2) supersede this row's section-accent-trim/tint reads where they conflict (§3 interior-neutrality rule) and extend §7 rule 6 (adjacency fade) — each carries its own Gate 1 bar in its design pack.
+
 ---
 
 ## 12. Changelog
@@ -160,3 +168,5 @@ Each visual pass is scoped, not open-ended: its design pack enumerates exactly t
 | v1.5 | Hostile combat telegraphs (`p1-enemy-baseline` design pack v1, R9): §6 muzzle/impacts row extended — tracer halo carries allegiance (allied `#69f0ae` / hostile `#ff5252`, formalizing the §7 rule 7 note), enemy muzzle flash is a real light like the player's, and the **enemy attack wind-up pre-glow** (`#ff5252`, full wind-up duration, render-only) joins the family |
 | v1.6 | §3 UI application note (`p1-hud` design pack v1, R7/M8): palette meanings extend to HUD/shell UI verbatim — allied `#69f0ae` player-state readouts, hazard `#ff5252` alarm/danger readouts, interactive `#ffd54f` UI focus/highlight, void `#05080f` chrome base; crossing rule holds on UI |
 | v1.7 | Hero animation readability (Director Gate 2 iteration on `p1-visual-pass`, design pack v2 R13 — "I need those models rigged and animated", overriding pack R8): §7 rule 8 added — animation authored in place (no root motion), cadence within ±10 % of sim speed (foot-slide tolerance), animation never the sole telegraph carrier, silhouette readability holds through every frame of every clip; §11 M-P1 row amended — player/crew hero models now carry the skeletal rig + minimum animation set (idle, locomotion, aim/fire hold, crew death) as part of the milestone bar |
+| v1.8 | Director post-M-P1 polish rulings (2026-07-30, §3.5a iteration on accepted `p1-visual-pass`): §3 interior-neutrality rule — room interiors neutral, section/function accents confined to signage/trim/gels/HUD, large-area tints removed (supersedes the "navigate by tint" read for future work); §3 exterior void read — dim starfield + solid hull silhouette beyond the ship, presentation only; §7 rule 6 amended — ceiling cutaway gains **adjacency fade** (active room hidden, adjacent/frustum rooms semi-transparent alpha 0.25–0.4, ambush telegraph); §11 universal bar item 4 re-worded to the v1.8 accent policy + M-P1 note recording the supersession boundary |
+| v1.9 | Director R2 open-question resolution (2026-07-30): §3 — **starfield** exterior (not plain void only); **real transparent hull apertures** on Class C faces at authored sites; **shell UI keeps section accents** while in-world rooms stay neutral (OQ3 yes) |

@@ -2,7 +2,7 @@
 
 **Purpose:** the phase→feature breakdown. Each feature below is one pipeline instance (charter §3): one design pack, one spec, one branch/PR, one Gate 1 + Gate 2.
 **Granularity rule:** a feature is the smallest unit that can be independently gated. Target 3–8 features per phase; if a feature can't pass Gate 1 alone, it's too small; if it needs two design packs, it's too big.
-**Status:** v1.8 — P1 #1–#8 shipped (Gate 2 through 2026-07-30); phase visual-pass policy (Director ruling R1, 2026-07-30): one terminal visual-pass feature per phase; P1 #9 appended; P2–P4 visual-pass rows scoped; rows #7/#8 scope split clarified (`p1-hud` design pack v1, R6)
+**Status:** v1.9 — P1 #1–#9 shipped (Gate 2 through 2026-07-30); Director ruling R2 (2026-07-30): post-M-P1 polish mandate — P1 rows #10–#14 appended (deck polish, hull exterior view, ceiling adjacency, locomotion anim, audio baseline); rows #7/#8 scope split clarified (`p1-hud` design pack v1, R6)
 
 > **Director ruling (v1.2):** P1 is **solo-first**. Netcode is targeted for the P2–P3 window, and every P1 feature must satisfy the netcode-ready architecture mandate (design doc §12.1): command-pattern inputs, deterministic sim ticks, no frame-rate-coupled logic, stable entity IDs. Grok's scaffold spec (p1-project-scaffold) carries this as a primary goal.
 
@@ -11,6 +11,11 @@
 > - **Gate 1 bar:** the universal bar + per-phase milestone (M-P1…M-P4) defined in `visual_direction.md` §11 — verified in the running build.
 > - **Phase checkpoint rule:** a phase checkpoint (charter §8) is signed only when the phase's visual pass is Gate-2 accepted — functional exit criteria AND the visual milestone both hold. There is **one** phase checkpoint; the visual pass is its closing feature, which also gives the Director a dedicated Gate 2 review moment focused purely on presentation at each phase end.
 > - **Protection of accepted work:** a visual pass may not alter any accepted G#, number, or rule; anything that does routes as a separate feature. Functional features earlier in the phase are never blocked by the visual pass — it is terminal, not gating.
+
+> **Director ruling R2 (v1.9, 2026-07-30) — Post-M-P1 Polish Mandate:** Director feedback on the accepted `p1-visual-pass` (`master`, post-Gate-2 Proceed) — *"the ship is ugly; massive gaps between the rooms; we should see space outside; we need sound effects; player needs backpedal and sidestep animations; get rid of the coloring in the rooms; nearby ceilings should be semi-transparent."* Per roadmap rule 1, five P1 rows are **appended** (#10–#14) as a post-checkpoint polish block. Doc-first amendments: **visual_direction v1.8–v1.9**, **design doc v1.18**. **OQ resolution (same date):** exterior = **dim starfield**; hull = **real transparent apertures** on Class C faces; **shell/HUD section accents unchanged**, in-world rooms neutral only.
+> - These rows run **after** the P1 phase checkpoint is signed; they do not re-open it and do not alter P1 exit criteria.
+> - `p1-deck-polish` (#10) **amends** the accepted `p1-visual-pass` G6 tint read by Director ruling (interior-neutrality, VD §3 v1.8) — the supersession is explicit in its design pack; all other accepted G#/M# remain protected per the R1 protection rule.
+> - Kickoff order is the Director's; Kimi's recommendation: #10 → #12/#13 (parallel Stages 1–2) → #11 → #14.
 
 ---
 
@@ -40,9 +45,16 @@
 | 6 | `p1-mission-shell` ✅ shipped | Airlock entry sequence, objective placeholder ("reach Engineering"), mission end + score screen | §3 Phase 0–1 (shell only) | 2, 5 |
 | 7 | `p1-hud` ✅ shipped | Health, ammo, objective line, alarm indicator stub, mission clock as persistent HUD chrome; in-HUD focus + gamepad/KBM navigation of **existing** shell/mission UI (breach select, score screen) | §4 (indicator), §3, §10 (clock) | 6 |
 | 8 | `p1-gamepad-support` ✅ shipped | First-class gamepad gameplay: full action parity, twin-stick aim + aim-assist (§10), input-device hot-swap mid-mission, navigation for any new UI it introduces | §8 (input parity), §9 | 3, 4 |
-| 9 | `p1-visual-pass` | Phase visual milestone **M-P1** (visual_direction §11): hero models for player/rifle/security crew replace all capsules & blockout weapons; deck PBR materials + authored wear + section accent trim; lighting rows AL0/AL1 live (keys, practicals, contact shadows, corridor haze); muzzle/impact VFX family complete; HUD skinned to palette; §7 readability verified | visual_direction §3–§7, §11 | 5, 6, 7, 8 |
+| 9 | `p1-visual-pass` ✅ shipped | Phase visual milestone **M-P1** (visual_direction §11): hero models for player/rifle/security crew replace all capsules & blockout weapons; deck PBR materials + authored wear + section accent trim; lighting rows AL0/AL1 live (keys, practicals, contact shadows, corridor haze); muzzle/impact VFX family complete; HUD skinned to palette; §7 readability verified | visual_direction §3–§7, §11 | 5, 6, 7, 8 |
+| 10 | `p1-deck-polish` | Hull shell & neutral-interior overhaul (ruling R2): fill all inter-room void with hull structure plating — no visible void gaps between room footprints; outer hull envelope silhouette (the deck reads as one vessel, not floating rooms); VD §2 pillar-1 dressing uplift (pipes, conduits, panels — non-colliding); **neutral-room retint** per VD §3 v1.8 (area tints removed; accents confined to signage/trim/lighting — supersedes `p1-visual-pass` G6 by Director ruling). Deck graph, collision, and room data untouched | VD §2, §3 (v1.8), §5 | 9 |
+| 11 | `p1-hull-exterior-view` | Space visible beyond the ship (ruling R2): **dim starfield** backdrop + solid hull exterior silhouette from the 60° camera (VD §3 v1.9); **real transparent hull apertures** (viewport glazing on Class C exterior faces at authored sites — airlock, cargo, med, bridge-adjacent per deck data); depends on #10 envelope | VD §3 (v1.9), §7 rule 6 | 10 |
+| 12 | `p1-ceiling-adjacency-readability` | Ceiling adjacency fade (ruling R2): VD §7 rule 6 v1.8 — active-room ceiling hidden; adjacent + in-frustum room ceilings semi-transparent (alpha 0.25–0.4); ambush-telegraph readability verified at the 60° camera | VD §7 rule 6 (v1.8) | 3 |
+| 13 | `p1-player-locomotion-anim` | Directional locomotion set on the player rig (ruling R2): forward / backpedal / strafe-L / strafe-R (+ diagonals), clip selection by sim velocity vector vs aim-facing angle; in-place, cadence ±10 % per VD §7 rule 8; extends the pack-v2 R13 minimum set | design doc §10 (6 m/s), VD §7 rule 8 | 9 |
+| 14 | `p1-audio-baseline` | Audio engine + P1 SFX set (ruling R2; design doc §12.1 v1.18): player footsteps, rifle + crew gunfire, surface impacts, shell-UI sounds, ambient ship bed with AL0→AL1 mix shift — render-side over sim events, zero sim drift; foundation for `p2-ship-pa` | design doc §12.1 (v1.18), §10 | 1 |
 
 **P1 exit criteria (phase checkpoint):** Director can breach, traverse the full deck, fight, reach Engineering, and exit — end to end, one deck, **on either input device without touching a menu** — **and** `p1-visual-pass` is Gate-2 accepted (milestone M-P1, visual_direction §11). Per ruling R1 the checkpoint is signed only when both hold.
+
+*Post-checkpoint polish block (ruling R2, 2026-07-30):* rows #10–#14 run after the P1 phase checkpoint is signed. They do not re-open the checkpoint, do not alter these exit criteria, and each passes Gate 1 on its own pack bar.
 
 ---
 
