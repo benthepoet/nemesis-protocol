@@ -5,6 +5,8 @@ import type { DeckGraph, WorldRect } from './types.js';
 export interface CollisionWorld {
   aabbs: readonly WorldRect[];
   polyEdges: readonly { ax: number; az: number; bx: number; bz: number }[];
+  /** Static room prop obstacles (Blender presentation); empty on procedural-only builds. */
+  propAabbs?: readonly WorldRect[];
 }
 
 function rectsOverlap(a: WorldRect, b: WorldRect): boolean {
@@ -99,7 +101,11 @@ export function buildCollisionWorld(
     polyEdges.push({ ax: a.x, az: a.z, bx: b.x, bz: b.z });
   }
 
-  return { aabbs: Object.freeze(aabbs), polyEdges: Object.freeze(polyEdges) };
+  return {
+    aabbs: Object.freeze(aabbs),
+    polyEdges: Object.freeze(polyEdges),
+    propAabbs: Object.freeze([]),
+  };
 }
 
 function circleIntersectsAabb(x: number, z: number, radius: number, rect: WorldRect): boolean {
@@ -142,6 +148,11 @@ export function circleHitsWalls(
   radius: number,
 ): boolean {
   for (const aabb of world.aabbs) {
+    if (circleIntersectsAabb(x, z, radius, aabb)) {
+      return true;
+    }
+  }
+  for (const aabb of world.propAabbs ?? []) {
     if (circleIntersectsAabb(x, z, radius, aabb)) {
       return true;
     }

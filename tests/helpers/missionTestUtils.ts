@@ -1,6 +1,5 @@
-import { buildCollisionWorld } from '../../src/deck/collision.js';
 import { createMissionWorld } from '../../src/mission/createMissionWorld.js';
-import type { CollisionWorldRef } from '../../src/mission/integrateMissionShell.js';
+import { createCollisionWorldRef, type CollisionWorldRef } from '../../src/mission/integrateMissionShell.js';
 import { integrateMissionShell } from '../../src/mission/integrateMissionShell.js';
 import { integrateCombat } from '../../src/combat/integrateCombat.js';
 import { integrateCrewAi } from '../../src/ai/integrateCrewAi.js';
@@ -19,7 +18,7 @@ export function createMissionTestWorld(): {
 } {
   const graph = loadTestDeck03();
   const state = createMissionWorld(graph);
-  const collisionRef: CollisionWorldRef = { current: buildCollisionWorld(graph) };
+  const collisionRef = createCollisionWorldRef(graph);
   return { graph, state, collisionRef };
 }
 

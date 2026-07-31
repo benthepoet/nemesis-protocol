@@ -138,7 +138,7 @@ function isActorTargetForOwner(state: SimState, ownerId: EntityId, entity: Entit
 }
 
 /**
- * First wall obstruction along segment (AABB + polyEdges).
+ * First wall obstruction along segment (AABB + polyEdges + prop AABBs).
  * Actors ignored. Read-only vs CollisionWorld.
  */
 export function earliestWallHit(
@@ -151,6 +151,17 @@ export function earliestWallHit(
   let best: WallHit | null = null;
 
   for (const aabb of world.aabbs) {
+    const t = segmentAabbHit(ax, az, bx, bz, aabb);
+    if (t !== null && (best === null || t < best.t)) {
+      best = {
+        t,
+        x: ax + (bx - ax) * t,
+        z: az + (bz - az) * t,
+      };
+    }
+  }
+
+  for (const aabb of world.propAabbs ?? []) {
     const t = segmentAabbHit(ax, az, bx, bz, aabb);
     if (t !== null && (best === null || t < best.t)) {
       best = {

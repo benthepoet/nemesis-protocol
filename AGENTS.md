@@ -75,6 +75,7 @@ Open source: **MIT** for code, **CC BY 4.0** for art assets (`assets/`, mockups,
 ## Current state
 
 - Design doc **v1.19**, visual direction **v1.10**, roadmap **v1.9**, team charter **v1.13**, mockups **v2.2** (deck plan) / flow overlay companion.
-- Shipped: `p1-project-scaffold` (P1 #1) … **`p1-visual-pass` (P1 #9, Gate 2 @ `master`)** — M-P1 visual milestone. **Post-checkpoint polish (R2) on `integration`:** **`p1-deck-polish` (P1 #10, Gate 2 Proceed @ `0084465`)**, **`p1-audio-baseline` (P1 #14, Gate 2 Proceed @ `2110913`, 2026-07-31)**. **Director hold (2026-07-31):** no new feature kick until re-opened — queued #11 hull exterior, #12 ceilings (merged into #10), #13 locomotion anim.
+- Shipped on **`integration`:** P1 #1–#9 … **`p1-deck-polish` (#10, Gate 2 @ `0084465`)**, **`p1-audio-baseline` (#14, Gate 2 @ `2110913`)**.
+- **Active:** **`p1-deck-blender-mesh`** — Director kickoff 2026-07-31 (Stages 1–2 complete on `feat/p1-deck-blender-mesh`; Stage 3 blocked on GLB export). Exploration: `p1-ship-blender-viz`. **Hold** on other roadmap kicks (#11 hull exterior, #13 locomotion) unless Director re-opens.
 - Rulings in force: solo-first with netcode-ready architecture (netcode P2–P3 window); enemy roster = ship's crew as defense (aliens deferred, post-prototype); gamepad first-class input parity; MIT + CC BY 4.0; **phase visual-pass policy** (roadmap R1, 2026-07-30 — every phase P1–P4 ends with a terminal `pN-visual-pass` feature, Gate-2 accepted before the phase checkpoint is signed; milestone bar in `visual_direction.md` §11).
 - Roadmap: P1 core loop → P2 gating & alarm → P3 destructibility & depressurization → P4 androids + prototype bosses (Charge-Defender, Warden). Feature-level breakdown: `docs/design/feature_roadmap.md`.

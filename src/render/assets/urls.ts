@@ -8,6 +8,7 @@ export const P1_SECURITY_CREW_GLB = `${models}/p1_security_crew.glb` as const;
 export const P1_RIFLE_GLB = `${models}/p1_rifle.glb` as const;
 export const P1_CORRIDOR_LIGHT_FIXTURE_GLB = `${models}/p1_corridor_light_fixture.glb` as const;
 export const P1_AMBER_BEACON_GLB = `${models}/p1_amber_beacon.glb` as const;
+export const P1_NEMESIS_DECK03_GLB = `${models}/p1_nemesis_deck03.glb` as const;
 
 export const P1_HULL_STEEL_TRIM_ALBEDO = `${textures}/p1_hull_steel_trim_albedo.png` as const;
 export const P1_HULL_STEEL_TRIM_METAL = `${textures}/p1_hull_steel_trim_metal.png` as const;

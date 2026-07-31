@@ -7,8 +7,6 @@ import {
   PARTITION_ACCENT_STRIP_WIDTH_M,
   ROOM_FLOOR_TOP_Y,
   ROOM_HEIGHT_M,
-  SIGNAGE_PLANE_HEIGHT_M,
-  SIGNAGE_PLANE_WIDTH_M,
   WALL_THICKNESS_M,
 } from '../config.js';
 import { getNode, listNodes, listWallSegments } from '../deck/graph.js';
@@ -16,6 +14,7 @@ import type { AccentId, DeckGraph, DeckNode, WallRole } from '../deck/types.js';
 import { buildDeckDressing } from './deckDressing.js';
 import { createFallbackDeckMaterials, type DeckMaterialSet } from './deckMaterials.js';
 import { buildHullEnvelope } from './deckHullGeometry.js';
+import { attachEngineSignage } from './attachEngineSignage.js';
 
 export interface DeckScene {
   scene: THREE.Scene;
@@ -23,6 +22,8 @@ export interface DeckScene {
   roomGroups: ReadonlyMap<string, THREE.Group>;
   hullEnvelope?: THREE.Group;
   dressing?: THREE.Group;
+  /** Blender architecture root for prop collision extraction. */
+  collisionRoot?: THREE.Object3D;
   disposeMaterials(): void;
 }
 
@@ -81,7 +82,6 @@ function buildRectRoom(
   ceilingMat.opacity = 1;
   ceilingMat.depthWrite = true;
   addBox(group, x, ROOM_HEIGHT_M - 0.05, z, w, 0.05, h, ceilingMat, `ceiling:${node.id}`);
-  addSectionSign(group, node.id, node.accentId, x + w * 0.5, z + 0.15, w, mats);
 }
 
 function buildPolygonRoom(
@@ -120,46 +120,6 @@ function buildPolygonRoom(
   ceiling.name = `ceiling:${node.id}`;
   ceiling.receiveShadow = true;
   group.add(ceiling);
-
-  const cx = points.reduce((s, p) => s + p.x, 0) / points.length;
-  const cz = points.reduce((s, p) => s + p.z, 0) / points.length;
-  const minX = Math.min(...points.map((p) => p.x));
-  const maxX = Math.max(...points.map((p) => p.x));
-  addSectionSign(group, node.id, node.accentId, cx, cz - 0.2, maxX - minX, mats);
-}
-
-function addSectionSign(
-  group: THREE.Group,
-  nodeId: string,
-  accentId: AccentId,
-  cx: number,
-  cz: number,
-  width: number,
-  mats: DeckMaterialSet,
-): void {
-  if (accentId === 'corridor') return;
-  const bandIndex = Object.keys(ACCENT_HEX).indexOf(accentId);
-  const vOffset = Math.max(0, bandIndex) / 12;
-  const mat = new THREE.MeshBasicMaterial({
-    map: mats.signageAtlas,
-    transparent: true,
-    depthWrite: false,
-  });
-  if (mat.map) {
-    mat.map.offset.set(0, vOffset);
-    mat.map.repeat.set(1, 1 / 12);
-  }
-  const planeW = Math.min(SIGNAGE_PLANE_WIDTH_M, width * 0.35);
-  const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(planeW, SIGNAGE_PLANE_HEIGHT_M),
-    mat,
-  );
-  plane.position.set(cx, 1.6, cz);
-  plane.rotation.y = Math.PI;
-  plane.name = `signage:${nodeId}`;
-  plane.castShadow = false;
-  plane.receiveShadow = false;
-  group.add(plane);
 }
 
 function wallThicknessForRole(role: WallRole): number {
@@ -258,6 +218,8 @@ export function createDeckScene(graph: DeckGraph, materials?: DeckMaterialSet): 
     roomGroups.set(node.id, group);
     scene.add(group);
   }
+
+  attachEngineSignage(roomGroups, graph, mats);
 
   buildWalls(scene, graph, mats);
 

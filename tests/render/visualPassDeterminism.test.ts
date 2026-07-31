@@ -11,6 +11,12 @@ import { createHud } from '../../src/render/hud/createHud.js';
 import { createCombatVfx } from '../../src/render/combatVfx.js';
 import { createDeckLighting } from '../../src/render/createDeckLighting.js';
 import { createDeckScene } from '../../src/render/createDeckScene.js';
+import { createBlenderDeckScene } from '../../src/render/createBlenderDeckScene.js';
+import { loadGltf } from '../../src/render/assets/loadGltf.js';
+import { P1_NEMESIS_DECK03_GLB } from '../../src/render/assets/urls.js';
+import { createFallbackDeckMaterials } from '../../src/render/deckMaterials.js';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { createPlayerMeshFromTemplates } from '../../src/render/createPlayerMesh.js';
 import { createStandInMeshFromTemplates } from '../../src/render/createStandInMesh.js';
 import { preloadHeroAssets, getHeroFixtures } from '../../src/render/assets/preloadHeroAssets.js';
@@ -68,4 +74,24 @@ describe('visual pass determinism (G15)', () => {
     expect(await hashSimState(state)).toBe(hashBefore);
     expect(await hashDeckGraph(graph)).toBe(deckHashBefore);
   });
+
+  it.skipIf(!existsSync(join(process.cwd(), 'assets/models/p1_nemesis_deck03.glb')))(
+    'blender deck presentation does not change sim or deck hashes',
+    async () => {
+      const { graph, state, collisionRef } = createMissionTestWorld();
+      confirmBreachAndSkipToActive(state, graph, collisionRef);
+      runMissionTicks(state, graph, collisionRef, 20);
+      const hashBefore = await hashSimState(state);
+      const deckHashBefore = await hashDeckGraph(graph);
+
+      const mats = createFallbackDeckMaterials();
+      const glbRoot = await loadGltf(P1_NEMESIS_DECK03_GLB);
+      const deck = createBlenderDeckScene(graph, { glbRoot, materials: mats });
+      deck.disposeMaterials();
+      mats.dispose();
+
+      expect(await hashSimState(state)).toBe(hashBefore);
+      expect(await hashDeckGraph(graph)).toBe(deckHashBefore);
+    },
+  );
 });
