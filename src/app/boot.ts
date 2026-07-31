@@ -14,7 +14,7 @@ import { CommandBus } from '../input/commandBus.js';
 import { GamepadDevice } from '../input/gamepad.js';
 import { computeMouseAimAxis, KeyboardMouseDevice } from '../input/keyboardMouse.js';
 import { getEntity } from '../sim/world.js';
-import { updateCeilingCutaway, type CutawayState } from '../render/ceilingCutaway.js';
+import { updateCeilingCutaway, createCutawayState, type CutawayState } from '../render/ceilingCutaway.js';
 import { createCombatDevReadout } from '../render/combatDevReadout.js';
 import { createCombatVfx } from '../render/combatVfx.js';
 import { createCombatTelegraphs } from '../render/combatTelegraphs.js';
@@ -98,7 +98,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   let onFrame: ((dt: number) => void) | undefined;
   let onBeforeSim: (() => void) | undefined;
   let flyDispose: (() => void) | undefined;
-  const cutawayState: CutawayState = { lastRoomId: null };
+  const cutawayState: CutawayState = createCutawayState();
 
   const debugFly = isDebugFlyCameraEnabled();
   let follow: ReturnType<typeof createFollowCamera> | undefined;
@@ -158,7 +158,16 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
       const entity = playerId !== null ? getEntity(world, playerId) : undefined;
       if (entity && follow) {
         follow.update(dt, entity);
-        updateCeilingCutaway(deckScene.roomGroups, graph, entity.x, entity.z, cutawayState);
+        updateCeilingCutaway(
+          deckScene.roomGroups,
+          graph,
+          entity.x,
+          entity.z,
+          cutawayState,
+          follow.camera,
+          dt,
+          deckScene.hullEnvelope?.getObjectByName('hull-interstitial:ceiling') ?? null,
+        );
       }
       syncPresentation(dt);
       deckLighting.update(dt, world.meta.alarmLevel as 0 | 1);

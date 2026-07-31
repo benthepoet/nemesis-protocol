@@ -41,13 +41,23 @@ describe('deck hull envelope (G1, G2, M1, M2)', () => {
     expect(shape.holes.length).toBe(polys.length);
   });
 
-  it('interstitial floor, shell, and aperture metadata present', () => {
+  it('interstitial floor, shell, skirts, closure, and aperture metadata present', () => {
     const graph = loadTestDeck03();
     const deck = createDeckScene(graph, createFallbackDeckMaterials());
     expect(deck.hullEnvelope).toBeDefined();
     const floor = deck.hullEnvelope!.getObjectByName('hull-interstitial:floor');
     expect(floor).toBeDefined();
     expect(deck.hullEnvelope!.getObjectByName('hull-envelope:shell:north')).toBeDefined();
+    expect(deck.hullEnvelope!.getObjectByName('hull-envelope:corner:nw')).toBeDefined();
+    expect(deck.hullEnvelope!.getObjectByName('hull-envelope:top-band:north')).toBeDefined();
+
+    const skirtCount = graph.wallSegments.filter((w) =>
+      deck.hullEnvelope!.getObjectByName(`hull-skirt:${w.id}`),
+    ).length;
+    expect(skirtCount).toBe(graph.wallSegments.length);
+
+    const padRing = deck.hullEnvelope!.children.filter((c) => c.name.startsWith('hull-envelope:pad-ring:'));
+    expect(padRing.length).toBeGreaterThan(0);
 
     for (const site of APERTURE_SITES) {
       const mesh = deck.hullEnvelope!.getObjectByName(

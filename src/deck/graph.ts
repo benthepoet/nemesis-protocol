@@ -44,6 +44,21 @@ export function listWallSegments(graph: DeckGraph): readonly WallSegment[] {
   return graph.wallSegments;
 }
 
+/** Door neighbors ∪ wall-segment co-members; sorted; excludes self. Closed doors ignored. */
+export function listAdjacentRooms(graph: DeckGraph, roomId: string): readonly string[] {
+  const result = new Set<string>();
+  for (const next of neighbors(graph, roomId)) {
+    result.add(next);
+  }
+  for (const wall of graph.wallSegments) {
+    if (!wall.rooms.includes(roomId)) continue;
+    for (const other of wall.rooms) {
+      if (other !== roomId) result.add(other);
+    }
+  }
+  return [...result].sort();
+}
+
 export function breachNodes(graph: DeckGraph): readonly DeckNode[] {
   return listNodes(graph).filter((node) => node.breachPoint);
 }

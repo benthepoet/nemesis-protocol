@@ -3,6 +3,14 @@ import {
   APERTURE_SITES,
   HULL_ENVELOPE_PAD_M,
   HULL_ENVELOPE_SHELL_THICKNESS_M,
+  HULL_ENVELOPE_TOP_BAND_M,
+  HULL_PAD_RING_FACE_THICKNESS_M,
+  HULL_SKIRT_HEIGHT_M,
+  HULL_SKIRT_THICKNESS_M,
+  HULL_UV_REPEAT,
+  HULL_UV_ROTATION,
+  INTERSTITIAL_EMISSIVE_HEX,
+  INTERSTITIAL_EMISSIVE_INTENSITY,
   ROOM_HEIGHT_M,
 } from '../config.js';
 import { listNodes, listWallSegments } from '../deck/graph.js';
@@ -10,7 +18,7 @@ import type { DeckGraph, WorldRect, WorldVec2 } from '../deck/types.js';
 import type { DeckMaterialSet } from './deckMaterials.js';
 
 /** Interstitial floor sits slightly below room floors (y=0.05) to reduce z-fight (spec E4). */
-const INTERSTITIAL_FLOOR_Y = -0.01 as const;
+export const INTERSTITIAL_FLOOR_Y = -0.01 as const;
 
 export interface ApertureFaceUserData {
   apertureReserved: true;
@@ -19,6 +27,23 @@ export interface ApertureFaceUserData {
   roomId: string;
   wallSegmentId: string;
   aperturePhase: 'reserved';
+}
+
+export function applyHullFamilyUv(mat: THREE.MeshStandardMaterial): void {
+  if (mat.map) {
+    mat.map.repeat.set(HULL_UV_REPEAT, HULL_UV_REPEAT);
+    mat.map.rotation = HULL_UV_ROTATION;
+    mat.map.needsUpdate = true;
+  }
+}
+
+export function createInterstitialMaterial(base: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial {
+  const mat = base.clone();
+  mat.color = new THREE.Color(INTERSTITIAL_EMISSIVE_HEX);
+  mat.emissive = new THREE.Color(INTERSTITIAL_EMISSIVE_HEX);
+  mat.emissiveIntensity = INTERSTITIAL_EMISSIVE_INTENSITY;
+  applyHullFamilyUv(mat);
+  return mat;
 }
 
 export function computeDeckBounds(graph: DeckGraph): WorldRect {
@@ -160,7 +185,7 @@ function buildApertureFaces(
     }
     const { rect } = wall;
     const { nx, nz } = outwardNormalForWall(rect, bounds);
-    const hullMat = mat.clone();
+    const hullMat = createInterstitialMaterial(mat);
     let x = rect.x;
     let z = rect.z;
     let w = rect.w;
@@ -201,6 +226,126 @@ function buildApertureFaces(
   }
 }
 
+function buildWallSkirts(group: THREE.Group, graph: DeckGraph, mat: THREE.MeshStandardMaterial): void {
+  const skirtMat = createInterstitialMaterial(mat);
+  const skirtY = INTERSTITIAL_FLOOR_Y;
+  const skirtH = HULL_SKIRT_HEIGHT_M;
+  const thick = HULL_SKIRT_THICKNESS_M;
+
+  for (const wall of listWallSegments(graph)) {
+    const { x, z, w, h } = wall.rect;
+    if (w >= h) {
+      addShellBox(group, x, skirtY, z, w, skirtH, thick, skirtMat.clone(), `hull-skirt:${wall.id}`);
+    } else {
+      addShellBox(group, x, skirtY, z, thick, skirtH, h, skirtMat.clone(), `hull-skirt:${wall.id}`);
+    }
+  }
+}
+
+function buildCornerPillars(
+  group: THREE.Group,
+  bounds: WorldRect,
+  mat: THREE.MeshStandardMaterial,
+): void {
+  const pillarMat = createInterstitialMaterial(mat);
+  const size = HULL_ENVELOPE_SHELL_THICKNESS_M;
+  const corners: [string, number, number][] = [
+    ['nw', bounds.x, bounds.z],
+    ['ne', bounds.x + bounds.w, bounds.z],
+    ['sw', bounds.x, bounds.z + bounds.h],
+    ['se', bounds.x + bounds.w, bounds.z + bounds.h],
+  ];
+  for (const [tag, cx, cz] of corners) {
+    addShellBox(
+      group,
+      cx - size / 2,
+      0,
+      cz - size / 2,
+      size,
+      ROOM_HEIGHT_M,
+      size,
+      pillarMat.clone(),
+      `hull-envelope:corner:${tag}`,
+    );
+  }
+}
+
+function buildTopBandRim(group: THREE.Group, bounds: WorldRect, mat: THREE.MeshStandardMaterial): void {
+  const bandMat = createInterstitialMaterial(mat);
+  const bandH = HULL_ENVELOPE_TOP_BAND_M;
+  const y = ROOM_HEIGHT_M - bandH;
+  const { x, z, w, h } = bounds;
+  const t = HULL_ENVELOPE_SHELL_THICKNESS_M;
+  addShellBox(group, x, y, z - t, w, bandH, t, bandMat.clone(), 'hull-envelope:top-band:north');
+  addShellBox(group, x, y, z + h, w, bandH, t, bandMat.clone(), 'hull-envelope:top-band:south');
+  addShellBox(group, x - t, y, z, t, bandH, h, bandMat.clone(), 'hull-envelope:top-band:west');
+  addShellBox(group, x + w, y, z, t, bandH, h, bandMat.clone(), 'hull-envelope:top-band:east');
+}
+
+function buildPadRingBridges(
+  group: THREE.Group,
+  graph: DeckGraph,
+  bounds: WorldRect,
+  mat: THREE.MeshStandardMaterial,
+): void {
+  const bridgeMat = createInterstitialMaterial(mat);
+  const faceT = HULL_PAD_RING_FACE_THICKNESS_M;
+  const shellT = HULL_ENVELOPE_SHELL_THICKNESS_M;
+  const { x, z, w, h } = bounds;
+
+  for (const wall of listWallSegments(graph)) {
+    if (wall.role !== 'hull') continue;
+    const { rect } = wall;
+    const { outward } = outwardNormalForWall(rect, bounds);
+    const isHorizontal = rect.w >= rect.h;
+
+    if (isHorizontal) {
+      const bridgeLen = shellT + faceT;
+      const bridgeZ =
+        outward === 'north'
+          ? z - shellT
+          : z + h;
+      const wallZ = outward === 'north' ? rect.z : rect.z + rect.h;
+      const midZ = (wallZ + bridgeZ) / 2;
+      addShellBox(
+        group,
+        rect.x,
+        0,
+        midZ - bridgeLen / 2,
+        rect.w,
+        ROOM_HEIGHT_M,
+        bridgeLen,
+        bridgeMat.clone(),
+        `hull-envelope:pad-ring:${wall.id}`,
+      );
+    } else {
+      const bridgeLen = shellT + faceT;
+      const bridgeX =
+        outward === 'west'
+          ? x - shellT
+          : x + w;
+      const wallX = outward === 'west' ? rect.x : rect.x + rect.w;
+      const midX = (wallX + bridgeX) / 2;
+      addShellBox(
+        group,
+        midX - bridgeLen / 2,
+        0,
+        rect.z,
+        bridgeLen,
+        ROOM_HEIGHT_M,
+        rect.h,
+        bridgeMat.clone(),
+        `hull-envelope:pad-ring:${wall.id}`,
+      );
+    }
+  }
+}
+
+function prepareShellMaterial(base: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial {
+  const mat = createInterstitialMaterial(base);
+  return mat;
+}
+
 export function buildHullEnvelope(graph: DeckGraph, mats: DeckMaterialSet): THREE.Group {
   const group = new THREE.Group();
   group.name = 'hull-envelope';
@@ -210,7 +355,7 @@ export function buildHullEnvelope(graph: DeckGraph, mats: DeckMaterialSet): THRE
   const shape = buildInterstitialShape(bounds, roomPolys);
 
   const floorGeo = new THREE.ShapeGeometry(shape);
-  const floorMat = mats.floor.clone();
+  const floorMat = createInterstitialMaterial(mats.floor);
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = INTERSTITIAL_FLOOR_Y;
@@ -219,7 +364,10 @@ export function buildHullEnvelope(graph: DeckGraph, mats: DeckMaterialSet): THRE
   group.add(floor);
 
   const ceilingGeo = floorGeo.clone();
-  const ceilingMat = mats.ceiling.clone();
+  const ceilingMat = createInterstitialMaterial(mats.ceiling);
+  ceilingMat.transparent = true;
+  ceilingMat.opacity = 1;
+  ceilingMat.depthWrite = true;
   const ceiling = new THREE.Mesh(ceilingGeo, ceilingMat);
   ceiling.rotation.x = -Math.PI / 2;
   ceiling.position.y = ROOM_HEIGHT_M;
@@ -227,15 +375,59 @@ export function buildHullEnvelope(graph: DeckGraph, mats: DeckMaterialSet): THRE
   ceiling.receiveShadow = true;
   group.add(ceiling);
 
-  const shellMat = mats.hullWall.clone();
+  const shellBase = mats.hullWall.clone();
   const t = HULL_ENVELOPE_SHELL_THICKNESS_M;
   const { x, z, w, h } = bounds;
 
-  addShellBox(group, x, 0, z - t, w, ROOM_HEIGHT_M, t, shellMat.clone(), 'hull-envelope:shell:north');
-  addShellBox(group, x, 0, z + h, w, ROOM_HEIGHT_M, t, shellMat.clone(), 'hull-envelope:shell:south');
-  addShellBox(group, x - t, 0, z, t, ROOM_HEIGHT_M, h, shellMat.clone(), 'hull-envelope:shell:west');
-  addShellBox(group, x + w, 0, z, t, ROOM_HEIGHT_M, h, shellMat.clone(), 'hull-envelope:shell:east');
+  addShellBox(
+    group,
+    x,
+    0,
+    z - t,
+    w,
+    ROOM_HEIGHT_M,
+    t,
+    prepareShellMaterial(shellBase),
+    'hull-envelope:shell:north',
+  );
+  addShellBox(
+    group,
+    x,
+    0,
+    z + h,
+    w,
+    ROOM_HEIGHT_M,
+    t,
+    prepareShellMaterial(shellBase.clone()),
+    'hull-envelope:shell:south',
+  );
+  addShellBox(
+    group,
+    x - t,
+    0,
+    z,
+    t,
+    ROOM_HEIGHT_M,
+    h,
+    prepareShellMaterial(shellBase.clone()),
+    'hull-envelope:shell:west',
+  );
+  addShellBox(
+    group,
+    x + w,
+    0,
+    z,
+    t,
+    ROOM_HEIGHT_M,
+    h,
+    prepareShellMaterial(shellBase.clone()),
+    'hull-envelope:shell:east',
+  );
 
+  buildCornerPillars(group, bounds, mats.hullWall);
+  buildTopBandRim(group, bounds, mats.hullWall);
+  buildPadRingBridges(group, graph, bounds, mats.hullWall);
+  buildWallSkirts(group, graph, mats.hullWall);
   buildApertureFaces(group, graph, bounds, mats.hullWall);
 
   return group;

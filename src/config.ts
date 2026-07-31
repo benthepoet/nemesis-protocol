@@ -306,8 +306,45 @@ export const HULL_ENVELOPE_SHELL_THICKNESS_M = 0.4 as const;
 /** Partition accent trim strip width after polish (m). Was 0.04 inline. */
 export const PARTITION_ACCENT_STRIP_WIDTH_M = 0.07 as const;
 
-/** Partition accent strip emissive intensity after polish. Was 0.38 inline. */
-export const PARTITION_ACCENT_STRIP_EMISSIVE = 0.55 as const;
+/** Partition accent strip emissive intensity after polish (R-DP13 / spec v2). */
+export const PARTITION_ACCENT_STRIP_EMISSIVE = 0.4 as const;
+
+/** Void clear-color family (scene.background / fog) — G1 v2 / R-DP9. */
+export const VOID_FAMILY_RGB = { r: 5, g: 8, b: 15 } as const;
+/** Max per-channel distance to VOID_FAMILY_RGB before a sample counts as void-family. */
+export const VOID_FAMILY_CHANNEL_EPSILON = 6 as const;
+
+/** Interstitial dim-structure emissive (hull-steel mid family). */
+export const INTERSTITIAL_EMISSIVE_HEX = '#2a3644' as const;
+export const INTERSTITIAL_EMISSIVE_INTENSITY = 0.22 as const;
+/** Minimum linear luminance (0–1) of interstitial/skirt/envelope sample under audit. */
+export const INTERSTITIAL_MIN_LINEAR_LUMINANCE = 0.04 as const;
+
+/** Wall-skirt vertical extent from interstitial floor up to deck plane (m). */
+export const HULL_SKIRT_HEIGHT_M = 0.06 as const;
+export const HULL_SKIRT_THICKNESS_M = 0.08 as const;
+
+/** Envelope top-band rim height (m) at ROOM_HEIGHT_M. */
+export const HULL_ENVELOPE_TOP_BAND_M = 0.12 as const;
+/** Pad-ring bridge face thickness (m) — shell-to-outer-wall connectivity. */
+export const HULL_PAD_RING_FACE_THICKNESS_M = 0.08 as const;
+
+/** Shared UV policy for hull-steel / deck-plate continuity (VD §5 v1.10). */
+export const HULL_UV_REPEAT = 0.35 as const;
+export const HULL_UV_ROTATION = 0 as const;
+
+/** Ceiling adjacency fade (VD §7 rule 6 / M8). */
+export const CEILING_FADE_ALPHA = 0.32 as const;
+export const CEILING_FADE_ALPHA_MIN = 0.25 as const;
+export const CEILING_FADE_ALPHA_MAX = 0.4 as const;
+export const CEILING_FADE_LERP_PER_SEC = 8 as const;
+
+/** Dressing must sit on / within this distance of an allowed wall face (m). */
+export const DRESSING_WALL_FACE_TOLERANCE_M = 0.45 as const;
+
+if (CEILING_FADE_ALPHA < CEILING_FADE_ALPHA_MIN || CEILING_FADE_ALPHA > CEILING_FADE_ALPHA_MAX) {
+  throw new Error('CEILING_FADE_ALPHA out of band');
+}
 
 /** Signage plane width/height (m) — strengthened vs prior ~1.2×0.35. */
 export const SIGNAGE_PLANE_WIDTH_M = 1.6 as const;

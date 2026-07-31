@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { DRESSING_PROPS_PER_ROOM_MAX } from '../../src/config.js';
 import { buildCollisionWorld } from '../../src/deck/collision.js';
 import { createDeckScene } from '../../src/render/createDeckScene.js';
+import { isDressingOriginAllowed } from '../../src/render/deckDressing.js';
 import { createFallbackDeckMaterials } from '../../src/render/deckMaterials.js';
 import { loadTestDeck03 } from '../helpers/deckTestUtils.js';
 
@@ -42,5 +43,24 @@ describe('deck dressing (G5, M4)', () => {
 
     deck.disposeMaterials();
     deck2.disposeMaterials();
+  });
+
+  it('S6 v2: every dressing origin passes isDressingOriginAllowed; none under envelope', () => {
+    const graph = loadTestDeck03();
+    const deck = createDeckScene(graph, createFallbackDeckMaterials());
+    const origins: { name: string; x: number; z: number }[] = [];
+    deck.dressing!.traverse((obj) => {
+      if (obj.name.startsWith('dressing:')) {
+        origins.push({ name: obj.name, x: obj.position.x, z: obj.position.z });
+      }
+    });
+    expect(origins.length).toBeGreaterThan(0);
+    for (const o of origins) {
+      expect(isDressingOriginAllowed(graph, o.x, o.z), o.name).toBe(true);
+    }
+    deck.hullEnvelope!.traverse((obj) => {
+      expect(obj.name.startsWith('dressing:')).toBe(false);
+    });
+    deck.disposeMaterials();
   });
 });

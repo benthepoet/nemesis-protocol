@@ -75,7 +75,11 @@ function buildRectRoom(
   const { x, z, w, h } = node.footprint.rect;
   const floorMat = mats.floor.clone();
   addBox(group, x, 0, z, w, 0.05, h, floorMat, `floor:${node.id}`);
-  addBox(group, x, ROOM_HEIGHT_M - 0.05, z, w, 0.05, h, mats.ceiling.clone(), `ceiling:${node.id}`);
+  const ceilingMat = mats.ceiling.clone();
+  ceilingMat.transparent = true;
+  ceilingMat.opacity = 1;
+  ceilingMat.depthWrite = true;
+  addBox(group, x, ROOM_HEIGHT_M - 0.05, z, w, 0.05, h, ceilingMat, `ceiling:${node.id}`);
   addSectionSign(group, node.id, node.accentId, x + w * 0.5, z + 0.15, w, mats);
 }
 
@@ -102,7 +106,11 @@ function buildPolygonRoom(
   floor.receiveShadow = true;
   group.add(floor);
 
-  const ceiling = new THREE.Mesh(floorGeo.clone(), mats.ceiling.clone());
+  const ceilingMat = mats.ceiling.clone();
+  ceilingMat.transparent = true;
+  ceilingMat.opacity = 1;
+  ceilingMat.depthWrite = true;
+  const ceiling = new THREE.Mesh(floorGeo.clone(), ceilingMat);
   ceiling.rotation.x = -Math.PI / 2;
   ceiling.position.y = ROOM_HEIGHT_M;
   ceiling.name = `ceiling:${node.id}`;
