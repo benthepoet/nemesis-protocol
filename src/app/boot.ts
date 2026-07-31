@@ -98,10 +98,31 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
       };
     },
   });
-  const unlockAudioOnce = () => gameAudio.unlock();
-  document.addEventListener('pointerdown', unlockAudioOnce, { once: true });
-  document.addEventListener('keydown', unlockAudioOnce, { once: true });
+  let audioUnlocked = false;
+  const unlockAudio = () => {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    gameAudio.unlock();
+  };
+  const onGamepadConnected = () => unlockAudio();
+  document.addEventListener('pointerdown', unlockAudio, { once: true });
+  document.addEventListener('keydown', unlockAudio, { once: true });
+  window.addEventListener('gamepadconnected', onGamepadConnected, { once: true });
 
+  const tryGamepadUnlockAudio = () => {
+    if (audioUnlocked) return;
+    const pads = navigator.getGamepads?.();
+    if (!pads) return;
+    for (const pad of pads) {
+      if (!pad) continue;
+      for (const btn of pad.buttons) {
+        if (btn.pressed) {
+          unlockAudio();
+          return;
+        }
+      }
+    }
+  };
 
   const playerMesh = createPlayerMesh();
   playerMesh.visible = false;
@@ -169,6 +190,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     camera = fly.camera;
     activeCamera = camera;
     onFrame = (dt) => {
+      tryGamepadUnlockAudio();
       fly.update(dt);
       syncPresentation(dt);
       deckLighting.update(dt, world.meta.alarmLevel as 0 | 1);
@@ -192,6 +214,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     };
 
     onFrame = (dt) => {
+      tryGamepadUnlockAudio();
       const playerId = world.meta.playerId;
       const entity = playerId !== null ? getEntity(world, playerId) : undefined;
       if (entity && follow) {
@@ -295,8 +318,9 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     missionShellUi.dispose();
     objectiveBanner.dispose();
     objectiveBeacon.dispose();
-    document.removeEventListener('pointerdown', unlockAudioOnce);
-    document.removeEventListener('keydown', unlockAudioOnce);
+    document.removeEventListener('pointerdown', unlockAudio);
+    document.removeEventListener('keydown', unlockAudio);
+    window.removeEventListener('gamepadconnected', onGamepadConnected);
     gameAudio.dispose();
     window.removeEventListener('resize', resize);
     kbm.dispose();

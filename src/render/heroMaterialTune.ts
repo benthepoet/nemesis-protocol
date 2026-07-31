@@ -39,20 +39,16 @@ function resolveHex(role: 'player' | 'crew', name: string, fallback: THREE.Color
   return `#${fallback.getHexString()}`;
 }
 
-function isHeroDrawMesh(obj: THREE.Object3D): obj is THREE.Mesh | THREE.SkinnedMesh {
+function isHeroDrawMesh(obj: THREE.Object3D): obj is THREE.Mesh {
   return obj instanceof THREE.Mesh || obj instanceof THREE.SkinnedMesh;
-}
-
-function heroMaterialSlots(obj: THREE.Mesh | THREE.SkinnedMesh): THREE.Material[] {
-  const slot = obj.material;
-  return Array.isArray(slot) ? slot.slice() : [slot];
 }
 
 function tuneHeroMaterialsBasic(root: THREE.Object3D, role: 'player' | 'crew'): void {
   root.traverse((obj) => {
     if (!isHeroDrawMesh(obj)) return;
-    const materials = heroMaterialSlots(obj);
-    const wasArray = Array.isArray(obj.material);
+    const slot = obj.material;
+    const wasArray = Array.isArray(slot);
+    const materials = wasArray ? slot.slice() : [slot];
 
     for (let i = 0; i < materials.length; i++) {
       const material = materials[i]!;
