@@ -39,6 +39,8 @@ import * as THREE from 'three';
 import { createRenderer } from '../render/createRenderer.js';
 import { startFrameLoop } from '../render/frameLoop.js';
 import type { EntityId } from '../sim/types.js';
+import { createGameAudio } from '../audio/createGameAudio.js';
+import { preloadAudioAssets } from '../audio/preloadAudio.js';
 
 export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): Promise<() => void> {
   const graph = loadDeck03();
@@ -70,6 +72,36 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   const deckScene = createDeckScene(graph, deckMaterials);
   const sceneEnv = attachSceneEnvironment(deckScene.scene, appRenderer);
   const deckLighting = createDeckLighting(deckScene.scene, graph, getHeroFixtures(heroTemplates));
+
+  const audioContext = new AudioContext();
+  const audioBuffers = await preloadAudioAssets(audioContext);
+  let activeCamera: THREE.PerspectiveCamera = deckScene.camera;
+  const gameAudio = createGameAudio({
+    buffers: audioBuffers,
+    audioContext,
+    getListenerPose: () => {
+      activeCamera.updateMatrixWorld(true);
+      const pos = new THREE.Vector3();
+      const dir = new THREE.Vector3();
+      activeCamera.getWorldPosition(pos);
+      activeCamera.getWorldDirection(dir);
+      return {
+        x: pos.x,
+        y: pos.y,
+        z: pos.z,
+        forwardX: dir.x,
+        forwardY: dir.y,
+        forwardZ: dir.z,
+        upX: 0,
+        upY: 1,
+        upZ: 0,
+      };
+    },
+  });
+  const unlockAudioOnce = () => gameAudio.unlock();
+  document.addEventListener('pointerdown', unlockAudioOnce, { once: true });
+  document.addEventListener('keydown', unlockAudioOnce, { once: true });
+
 
   const playerMesh = createPlayerMesh();
   playerMesh.visible = false;
@@ -129,11 +161,13 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     missionShellUi.update(world);
     objectiveBeacon.sync(world);
     objectiveBanner.sync(world, world.tick);
+    gameAudio.update(dtSec, world);
   };
 
   if (debugFly) {
     const fly = createDebugFlyCamera(canvas);
     camera = fly.camera;
+    activeCamera = camera;
     onFrame = (dt) => {
       fly.update(dt);
       syncPresentation(dt);
@@ -144,6 +178,7 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   } else {
     follow = createFollowCamera();
     camera = follow.camera;
+    activeCamera = camera;
 
     onBeforeSim = () => {
       const playerId = world.meta.playerId;
@@ -236,7 +271,10 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     fpsOverlay,
     onFrame,
     onBeforeSim,
-    onCombatEvents: (events) => combatVfx.push(events),
+    onCombatEvents: (events) => {
+      combatVfx.push(events);
+      gameAudio.pushCombatEvents(events, world);
+    },
   });
 
   return () => {
@@ -257,6 +295,9 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
     missionShellUi.dispose();
     objectiveBanner.dispose();
     objectiveBeacon.dispose();
+    document.removeEventListener('pointerdown', unlockAudioOnce);
+    document.removeEventListener('keydown', unlockAudioOnce);
+    gameAudio.dispose();
     window.removeEventListener('resize', resize);
     kbm.dispose();
     gamepad.dispose();

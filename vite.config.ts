@@ -7,6 +7,7 @@ const ASSET_ROOT = path.resolve(__dirname, 'assets');
 function mimeFor(file: string): string {
   if (file.endsWith('.glb')) return 'model/gltf-binary';
   if (file.endsWith('.png')) return 'image/png';
+  if (file.endsWith('.ogg')) return 'audio/ogg';
   return 'application/octet-stream';
 }
 
@@ -30,7 +31,7 @@ function nemesisAssetsPlugin(): Plugin {
     },
     closeBundle() {
       const out = path.resolve(__dirname, 'dist/assets');
-      for (const sub of ['models', 'textures'] as const) {
+      for (const sub of ['models', 'textures', 'audio'] as const) {
         const src = path.join(ASSET_ROOT, sub);
         if (!existsSync(src)) continue;
         mkdirSync(path.join(out, sub), { recursive: true });

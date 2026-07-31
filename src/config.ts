@@ -374,6 +374,18 @@ export const APERTURE_SITES = [
   { siteId: 'aperture-bridge-nose', wallSegmentId: 'wall-c-bridge-nose', roomId: 'bridge' },
 ] as const;
 
+/** Footstep cadence at move-speed cap (steps/s). Design doc §10 / pack R1. */
+export const FOOTSTEP_RATE_AT_CAP_HZ = 2.2 as const;
+/** Silence footsteps at or below this measured speed (m/s). Pack R1. */
+export const FOOTSTEP_SILENCE_SPEED_MPS = 0.5 as const;
+/** Stride length at cap: PLAYER_MOVE_SPEED_MPS / FOOTSTEP_RATE_AT_CAP_HZ. */
+export const FOOTSTEP_STRIDE_M = PLAYER_MOVE_SPEED_MPS / FOOTSTEP_RATE_AT_CAP_HZ;
+/** AL0→AL1 ambient bed crossfade (seconds). Design doc §10 / pack R2. */
+export const ALARM_BED_CROSSFADE_SEC = 1.5 as const;
+/** World SFX linear distance model (meters). */
+export const AUDIO_REF_DISTANCE_M = 8 as const;
+export const AUDIO_MAX_DISTANCE_M = 48 as const;
+
 /** R15 hero shading: default `basic` for reliable palette (tune-4); full-deck PBR exceeds TU until Blender remodel / budget pass. Override with `?heroMaterial=pbr`. */
 export const HERO_MATERIAL_MODE: 'basic' | 'pbr' = 'basic';
 
