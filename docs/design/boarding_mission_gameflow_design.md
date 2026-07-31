@@ -8,7 +8,7 @@
 **License:** open source — MIT (code) / CC BY 4.0 (assets). See `LICENSE` / `LICENSE-ASSETS`.
 **Scope of this document:** Single-mission gameflow for the core loop — *board an enemy capital ship, fight through it, destroy it, get out.*
 **Reference asset:** `assets/mockups/cruiser_boarding_deck_plan.svg` — ISV *Nemesis*, Deck 03 (procgen reference layout)
-**Status:** v1.18 — locked for prototype (enemy roster approved; phase visual-pass policy; P1 crew-AI baselines; P1 mission-shell baselines; P1 HUD baselines; P1 gamepad aim-assist model; P1 audio baselines)
+**Status:** v1.19 — locked for prototype (enemy roster approved; phase visual-pass policy; P1 crew-AI baselines; P1 mission-shell baselines; P1 HUD baselines; P1 gamepad aim-assist model; P1 audio baselines; P1 audio model numbers)
 
 ---
 
@@ -384,6 +384,8 @@ Everything else is deferred to the roadmap (§12.5): Kill-Team and Champion need
 | Airlock entry cycle | 5.0 s | §3 v1.15 note: gameplay verbs locked, inner airlock door closed (impassable, LOS-blocking) until cycle completes |
 | Mission clock | from sim tick 0 | Shown on score screen; in-mission display (`M:SS`, same sim source) ships with `p1-hud` (#7, v1.16) |
 | HUD low-health warning | ≤25 HP | `p1-hud` (v1.16, pack R2): health element pulses hazard `#ff5252` at/below threshold — presentation only; player HP model unchanged |
+| Player footstep cadence | 2.2 steps/s @ 6 m/s | `p1-audio-baseline` (v1.19, pack R1): cadence scales linearly with actual sim displacement speed; zero at rest, blocked, dead, or non-ACTIVE; ~2.7 m stride = deliberate boarding pace; presentation only; tuning lever |
+| Alarm bed shift crossfade | 1.5 s, one-way | `p1-audio-baseline` (v1.19, pack R2): AL0→AL1 trip crossfades the ambient bed calm→alert layer; never de-escalates (mirrors §4 v1.14 stub); fresh sim resets to calm; presentation only; tuning lever |
 | Player death (P1 solo fail flow) | mission FAILED → score screen → restart (fresh sim) | `p1-mission-shell` (v1.15) — **supersedes the v1.12 3 s respawn placeholder**; co-op downed-but-not-out (§8) arrives with netcode |
 
 ---
@@ -479,3 +481,4 @@ This layout is the canonical grammar example for the generator: *nose = command,
 | v1.16 | P1 HUD baselines (from `p1-hud` design pack v1, rulings R1/R2/R4/R5): §4 prototype scoping note — HUD alarm indicator as presentation over the AL0/AL1 stub (level name + numeral, data-driven, AL1 hazard `#ff5252`, never de-escalates); §10 — mission clock in-mission display format `M:SS`, new row: HUD low-health warning ≤25 HP (presentation only); §12.1 — HUD element set + visibility lifecycle (INSERTION/ACTIVE only) and the explicit-absent list |
 | v1.17 | P1 gamepad aim-assist model (from `p1-gamepad-support` design pack v1, rulings R1–R3): §10 aim-assist row clarified — numbers unchanged (0.35 magnetism, 10° cone); cone read as ±10° half-angle around commanded stick aim; magnetism = per-tick blend fraction toward the selected target (never snap/lock); eligibility = living hostile crew, unobstructed LOS, ≤60 m, smallest-offset selection; gamepad-only; neutral stick = no assist; deterministic sim-side |
 | v1.18 | P1 audio baselines (Director post-M-P1 polish mandate 2026-07-30, §3.5a; roadmap v1.9 P1 #14 `p1-audio-baseline`): §12.1 note — baseline SFX layer as render-side presentation over existing sim events (footsteps, gunfire both sides, surface impacts, shell-UI sounds, ambient ship bed with AL0→AL1 mix shift); no new telegraph obligations at P1; §6.2/§6.4 audio telegraphs remain P3 scope; music/PA/mixing out of scope |
+| v1.19 | P1 audio model numbers (from `p1-audio-baseline` design pack v1, rulings R1/R2): §10 — player footstep cadence 2.2 steps/s @ 6 m/s, linear in actual displacement speed, zero at rest/blocked; alarm bed shift crossfade 1.5 s, one-way, fresh-sim reset. Both presentation-only tuning levers; §12.1 audio scope unchanged |
