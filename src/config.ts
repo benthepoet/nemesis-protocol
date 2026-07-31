@@ -297,6 +297,38 @@ export const SHADOW_CASTING_DIRECTIONAL_MAX = 2 as const;
 /** Corridor spine neutral accent (G6). */
 export const CORRIDOR_SPINE_NEUTRAL_HEX = '#8b949e' as const;
 
+/** Outer pad beyond room-footprint AABB for hull envelope (m). */
+export const HULL_ENVELOPE_PAD_M = 0.5 as const;
+
+/** Envelope shell wall thickness (m) — presentation only. */
+export const HULL_ENVELOPE_SHELL_THICKNESS_M = 0.4 as const;
+
+/** Partition accent trim strip width after polish (m). Was 0.04 inline. */
+export const PARTITION_ACCENT_STRIP_WIDTH_M = 0.07 as const;
+
+/** Partition accent strip emissive intensity after polish. Was 0.38 inline. */
+export const PARTITION_ACCENT_STRIP_EMISSIVE = 0.55 as const;
+
+/** Signage plane width/height (m) — strengthened vs prior ~1.2×0.35. */
+export const SIGNAGE_PLANE_WIDTH_M = 1.6 as const;
+export const SIGNAGE_PLANE_HEIGHT_M = 0.45 as const;
+
+/** Max dressing props per room (soft cap). */
+export const DRESSING_PROPS_PER_ROOM_MAX = 6 as const;
+
+/**
+ * Class C aperture reservation sites for #11 (R-DP2 / VD §3 v1.9).
+ * `wallSegmentId` must exist on deck03; face is placed on the exterior side of that segment.
+ */
+export const APERTURE_SITES = [
+  { siteId: 'aperture-port-airlock-top', wallSegmentId: 'wall-c-port-airlock-top', roomId: 'port-airlock' },
+  { siteId: 'aperture-port-airlock-side', wallSegmentId: 'wall-c-port-airlock-left', roomId: 'port-airlock' },
+  { siteId: 'aperture-stbd-airlock-bottom', wallSegmentId: 'wall-c-stbd-airlock-bottom', roomId: 'stbd-airlock' },
+  { siteId: 'aperture-cargo-top', wallSegmentId: 'wall-c-cargo-top', roomId: 'cargo-hold' },
+  { siteId: 'aperture-med-top', wallSegmentId: 'wall-c-med-top', roomId: 'med-bay' },
+  { siteId: 'aperture-bridge-nose', wallSegmentId: 'wall-c-bridge-nose', roomId: 'bridge' },
+] as const;
+
 /** R15 staged hero shading: preferred default `pbr` (G2–G4); `basic` via URL/env debug override. */
 export const HERO_MATERIAL_MODE: 'basic' | 'pbr' = 'pbr';
 

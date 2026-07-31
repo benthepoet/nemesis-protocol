@@ -3,18 +3,40 @@ import {
   ACCENT_HEX,
   BULKHEAD_THICKNESS_M,
   CORRIDOR_SPINE_NEUTRAL_HEX,
+  PARTITION_ACCENT_STRIP_EMISSIVE,
+  PARTITION_ACCENT_STRIP_WIDTH_M,
   ROOM_HEIGHT_M,
+  SIGNAGE_PLANE_HEIGHT_M,
+  SIGNAGE_PLANE_WIDTH_M,
   WALL_THICKNESS_M,
 } from '../config.js';
 import { getNode, listNodes, listWallSegments } from '../deck/graph.js';
 import type { AccentId, DeckGraph, DeckNode, WallRole } from '../deck/types.js';
+import { buildDeckDressing } from './deckDressing.js';
 import { createFallbackDeckMaterials, type DeckMaterialSet } from './deckMaterials.js';
+import { buildHullEnvelope } from './deckHullGeometry.js';
 
 export interface DeckScene {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   roomGroups: ReadonlyMap<string, THREE.Group>;
+  hullEnvelope?: THREE.Group;
+  dressing?: THREE.Group;
   disposeMaterials(): void;
+}
+
+function disposeOwnedResources(root: THREE.Object3D): void {
+  root.traverse((obj) => {
+    if (obj instanceof THREE.Mesh) {
+      obj.geometry?.dispose();
+      const material = obj.material;
+      if (Array.isArray(material)) {
+        for (const m of material) m.dispose();
+      } else {
+        material?.dispose();
+      }
+    }
+  });
 }
 
 function addBox(
@@ -37,19 +59,11 @@ function addBox(
   return mesh;
 }
 
-function accentFloorMaterial(mats: DeckMaterialSet, accentId: AccentId): THREE.MeshStandardMaterial {
-  const hex = accentId === 'corridor' ? CORRIDOR_SPINE_NEUTRAL_HEX : ACCENT_HEX[accentId as keyof typeof ACCENT_HEX];
-  const mat = mats.floor.clone();
-  mat.emissive = new THREE.Color(hex);
-  mat.emissiveIntensity = 0.22;
-  return mat;
-}
-
 function partitionAccentStripMaterial(mats: DeckMaterialSet, accentId: AccentId): THREE.MeshStandardMaterial {
   const hex = accentId === 'corridor' ? CORRIDOR_SPINE_NEUTRAL_HEX : ACCENT_HEX[accentId as keyof typeof ACCENT_HEX];
   const mat = mats.hullSteel.clone();
   mat.emissive = new THREE.Color(hex);
-  mat.emissiveIntensity = 0.38;
+  mat.emissiveIntensity = PARTITION_ACCENT_STRIP_EMISSIVE;
   return mat;
 }
 
@@ -59,7 +73,7 @@ function buildRectRoom(
   mats: DeckMaterialSet,
 ): void {
   const { x, z, w, h } = node.footprint.rect;
-  const floorMat = accentFloorMaterial(mats, node.accentId);
+  const floorMat = mats.floor.clone();
   addBox(group, x, 0, z, w, 0.05, h, floorMat, `floor:${node.id}`);
   addBox(group, x, ROOM_HEIGHT_M - 0.05, z, w, 0.05, h, mats.ceiling.clone(), `ceiling:${node.id}`);
   addSectionSign(group, node.id, node.accentId, x + w * 0.5, z + 0.15, w, mats);
@@ -80,7 +94,7 @@ function buildPolygonRoom(
   }
   shape.closePath();
 
-  const floorMat = accentFloorMaterial(mats, node.accentId);
+  const floorMat = mats.floor.clone();
   const floorGeo = new THREE.ShapeGeometry(shape);
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
@@ -94,6 +108,12 @@ function buildPolygonRoom(
   ceiling.name = `ceiling:${node.id}`;
   ceiling.receiveShadow = true;
   group.add(ceiling);
+
+  const cx = points.reduce((s, p) => s + p.x, 0) / points.length;
+  const cz = points.reduce((s, p) => s + p.z, 0) / points.length;
+  const minX = Math.min(...points.map((p) => p.x));
+  const maxX = Math.max(...points.map((p) => p.x));
+  addSectionSign(group, node.id, node.accentId, cx, cz - 0.2, maxX - minX, mats);
 }
 
 function addSectionSign(
@@ -105,6 +125,7 @@ function addSectionSign(
   width: number,
   mats: DeckMaterialSet,
 ): void {
+  if (accentId === 'corridor') return;
   const bandIndex = Object.keys(ACCENT_HEX).indexOf(accentId);
   const vOffset = Math.max(0, bandIndex) / 12;
   const mat = new THREE.MeshBasicMaterial({
@@ -116,7 +137,11 @@ function addSectionSign(
     mat.map.offset.set(0, vOffset);
     mat.map.repeat.set(1, 1 / 12);
   }
-  const plane = new THREE.Mesh(new THREE.PlaneGeometry(Math.min(1.2, width * 0.25), 0.35), mat);
+  const planeW = Math.min(SIGNAGE_PLANE_WIDTH_M, width * 0.35);
+  const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(planeW, SIGNAGE_PLANE_HEIGHT_M),
+    mat,
+  );
   plane.position.set(cx, 1.6, cz);
   plane.rotation.y = Math.PI;
   plane.name = `signage:${nodeId}`;
@@ -141,7 +166,7 @@ function buildPartitionWall(
   mats: DeckMaterialSet,
 ): void {
   const capHeight = 0.08;
-  const stripWidth = 0.04;
+  const stripWidth = PARTITION_ACCENT_STRIP_WIDTH_M;
   const bodyMat = mats.hullSteel.clone();
   const capMat = mats.hullSteel.clone();
   capMat.emissive = new THREE.Color('#39434e');
@@ -224,6 +249,12 @@ export function createDeckScene(graph: DeckGraph, materials?: DeckMaterialSet): 
 
   buildWalls(scene, graph, mats);
 
+  const hullEnvelope = buildHullEnvelope(graph, mats);
+  scene.add(hullEnvelope);
+
+  const dressing = buildDeckDressing(graph, mats);
+  scene.add(dressing);
+
   const target = computeMidshipsCameraTarget(graph);
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 500);
   camera.position.set(target.x, 80, target.z + 60);
@@ -233,7 +264,11 @@ export function createDeckScene(graph: DeckGraph, materials?: DeckMaterialSet): 
     scene,
     camera,
     roomGroups,
+    hullEnvelope,
+    dressing,
     disposeMaterials() {
+      disposeOwnedResources(hullEnvelope);
+      disposeOwnedResources(dressing);
       if (ownsMaterials) mats.dispose();
     },
   };

@@ -32,6 +32,8 @@ describe('visual pass determinism (G15)', () => {
     hud.dispose();
 
     const deck = createDeckScene(graph);
+    expect(deck.hullEnvelope?.name).toBe('hull-envelope');
+    expect(deck.dressing?.name).toBe('dressing');
     const templates = await preloadHeroAssets();
     const fixtures = getHeroFixtures(templates);
     const lighting = createDeckLighting(deck.scene, graph, fixtures);
