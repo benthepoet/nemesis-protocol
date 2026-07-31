@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import {
+  INTERSTITIAL_ALBEDO_TINT_HEX,
   INTERSTITIAL_MIN_LINEAR_LUMINANCE,
   VOID_FAMILY_RGB,
 } from '../../src/config.js';
@@ -29,13 +30,13 @@ describe('deck hull pixel audit (G1, R-DP9)', () => {
   it('interstitial / skirt / envelope sample mats meet luminance floor', () => {
     const mats = createFallbackDeckMaterials();
     const interstitial = createInterstitialMaterial(mats.floor);
-    expect(interstitial.color.getHexString()).toBe('2a3644');
+    expect(interstitial.color.getHexString()).toBe(INTERSTITIAL_ALBEDO_TINT_HEX.slice(1));
     expect(materialLinearLuminance(interstitial)).toBeGreaterThanOrEqual(
       INTERSTITIAL_MIN_LINEAR_LUMINANCE,
     );
     expect(interstitialMaterialMeetsLuminanceFloor(interstitial)).toBe(true);
     expect(isVoidFamilyRgb(5, 8, 15)).toBe(true);
-    expect(materialLinearLuminance(interstitial)).toBeGreaterThan(0.04);
+    expect(materialLinearLuminance(interstitial)).toBeGreaterThan(0.06);
 
     const graph = loadTestDeck03();
     const deck = createDeckScene(graph, mats);

@@ -9,6 +9,8 @@ import {
   HULL_SKIRT_THICKNESS_M,
   HULL_UV_REPEAT,
   HULL_UV_ROTATION,
+  INTERSTITIAL_ALBEDO_TINT_HEX,
+  INTERSTITIAL_DECK_HEIGHT_M,
   INTERSTITIAL_EMISSIVE_HEX,
   INTERSTITIAL_EMISSIVE_INTENSITY,
   ROOM_HEIGHT_M,
@@ -39,7 +41,9 @@ export function applyHullFamilyUv(mat: THREE.MeshStandardMaterial): void {
 
 export function createInterstitialMaterial(base: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial {
   const mat = base.clone();
-  mat.color = new THREE.Color(INTERSTITIAL_EMISSIVE_HEX);
+  // R-DP18: keep the PBR albedo readable with a hull-steel-family tint; the
+  // emissive floor carries the dim-structure read where no practical light lands.
+  mat.color = new THREE.Color(INTERSTITIAL_ALBEDO_TINT_HEX);
   mat.emissive = new THREE.Color(INTERSTITIAL_EMISSIVE_HEX);
   mat.emissiveIntensity = INTERSTITIAL_EMISSIVE_INTENSITY;
   applyHullFamilyUv(mat);
@@ -106,24 +110,41 @@ export function buildRoomFootprintPolygons(graph: DeckGraph): { roomId: string; 
   return result;
 }
 
+/**
+ * XZ-planar shape authoring convention (R-DP17): shapes are authored with
+ * NEGATED z (`shape(x, -z)`) because meshes are laid flat with
+ * `rotation.x = -Math.PI / 2`, which maps shape-y -> world -z. Authoring
+ * negated yields world-correct, up-facing geometry.
+ */
 export function buildInterstitialShape(bounds: WorldRect, roomPolys: { points: WorldVec2[] }[]): THREE.Shape {
   const shape = new THREE.Shape();
-  shape.moveTo(bounds.x, bounds.z);
-  shape.lineTo(bounds.x + bounds.w, bounds.z);
-  shape.lineTo(bounds.x + bounds.w, bounds.z + bounds.h);
-  shape.lineTo(bounds.x, bounds.z + bounds.h);
+  shape.moveTo(bounds.x, -bounds.z);
+  shape.lineTo(bounds.x + bounds.w, -bounds.z);
+  shape.lineTo(bounds.x + bounds.w, -(bounds.z + bounds.h));
+  shape.lineTo(bounds.x, -(bounds.z + bounds.h));
   shape.closePath();
 
   for (const poly of roomPolys) {
     if (poly.points.length < 3) continue;
     const hole = new THREE.Path();
-    hole.moveTo(poly.points[0]!.x, poly.points[0]!.z);
+    hole.moveTo(poly.points[0]!.x, -poly.points[0]!.z);
     for (let i = 1; i < poly.points.length; i++) {
-      hole.lineTo(poly.points[i]!.x, poly.points[i]!.z);
+      hole.lineTo(poly.points[i]!.x, -poly.points[i]!.z);
     }
     hole.closePath();
     shape.holes.push(hole);
   }
+  return shape;
+}
+
+/** Full-bounds slab outline (no footprint holes) for the raised maintenance deck (R-DP16). */
+function buildDeckSlabShape(bounds: WorldRect): THREE.Shape {
+  const shape = new THREE.Shape();
+  shape.moveTo(bounds.x, -bounds.z);
+  shape.lineTo(bounds.x + bounds.w, -bounds.z);
+  shape.lineTo(bounds.x + bounds.w, -(bounds.z + bounds.h));
+  shape.lineTo(bounds.x, -(bounds.z + bounds.h));
+  shape.closePath();
   return shape;
 }
 
@@ -354,7 +375,14 @@ export function buildHullEnvelope(graph: DeckGraph, mats: DeckMaterialSet): THRE
   const roomPolys = buildRoomFootprintPolygons(graph);
   const shape = buildInterstitialShape(bounds, roomPolys);
 
-  const floorGeo = new THREE.ShapeGeometry(shape);
+  // R-DP16: raised maintenance deck — solid slab spanning the full bounds
+  // (room floor boxes sit on top), top at y = INTERSTITIAL_FLOOR_Y +
+  // INTERSTITIAL_DECK_HEIGHT_M = +0.04, 1 cm below room-floor tops. Slivers,
+  // door thresholds, and pads-between-walls read as flush deck plating.
+  const floorGeo = new THREE.ExtrudeGeometry(buildDeckSlabShape(bounds), {
+    depth: INTERSTITIAL_DECK_HEIGHT_M,
+    bevelEnabled: false,
+  });
   const floorMat = createInterstitialMaterial(mats.floor);
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
@@ -363,7 +391,9 @@ export function buildHullEnvelope(graph: DeckGraph, mats: DeckMaterialSet): THRE
   floor.receiveShadow = true;
   group.add(floor);
 
-  const ceilingGeo = floorGeo.clone();
+  // Interstitial ceiling keeps footprint holes so it never z-fights room
+  // ceiling slabs at ROOM_HEIGHT_M; fade policy (M8) drives its opacity.
+  const ceilingGeo = new THREE.ShapeGeometry(shape);
   const ceilingMat = createInterstitialMaterial(mats.ceiling);
   ceilingMat.transparent = true;
   ceilingMat.opacity = 1;

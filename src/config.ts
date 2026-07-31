@@ -316,9 +316,17 @@ export const VOID_FAMILY_CHANNEL_EPSILON = 6 as const;
 
 /** Interstitial dim-structure emissive (hull-steel mid family). */
 export const INTERSTITIAL_EMISSIVE_HEX = '#2a3644' as const;
-export const INTERSTITIAL_EMISSIVE_INTENSITY = 0.22 as const;
+export const INTERSTITIAL_EMISSIVE_INTENSITY = 0.6 as const;
+/** Interstitial albedo tint — hull-steel family, bright end (R-DP18). */
+export const INTERSTITIAL_ALBEDO_TINT_HEX = '#3a4a58' as const;
 /** Minimum linear luminance (0–1) of interstitial/skirt/envelope sample under audit. */
-export const INTERSTITIAL_MIN_LINEAR_LUMINANCE = 0.04 as const;
+export const INTERSTITIAL_MIN_LINEAR_LUMINANCE = 0.06 as const;
+
+/** Raised maintenance deck: solid slab from INTERSTITIAL_FLOOR_Y up this far (m) — top at y=+0.04, 1 cm below room-floor tops (R-DP16). */
+export const INTERSTITIAL_DECK_HEIGHT_M = 0.05 as const;
+
+/** Polygon-room floor plane height (m) — flush with rect-room floor slab tops (R-DP17). */
+export const ROOM_FLOOR_TOP_Y = 0.05 as const;
 
 /** Wall-skirt vertical extent from interstitial floor up to deck plane (m). */
 export const HULL_SKIRT_HEIGHT_M = 0.06 as const;

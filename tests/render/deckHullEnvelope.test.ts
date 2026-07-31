@@ -74,4 +74,55 @@ describe('deck hull envelope (G1, G2, M1, M2)', () => {
     }
     deck.disposeMaterials();
   });
+
+  it('R-DP16/R-DP17: interstitial slab is world-placed and covers the spine-adjacent sliver', () => {
+    const graph = loadTestDeck03();
+    const deck = createDeckScene(graph, createFallbackDeckMaterials());
+    const floor = deck.hullEnvelope!.getObjectByName('hull-interstitial:floor') as THREE.Mesh;
+    floor.updateWorldMatrix(true, false);
+    const box = new THREE.Box3().setFromObject(floor);
+
+    const bounds = computeDeckBounds(graph);
+    // Probe: sliver between spine south edge and south rooms (previously
+    // mirrored off-deck — the black line under the spine in gate2-screen1).
+    const spine = getNode(graph, 'main-spine');
+    expect(spine.footprint.kind).toBe('rect');
+    if (spine.footprint.kind === 'rect') {
+      const r = spine.footprint.rect;
+      const probe = new THREE.Vector3(r.x + r.w / 2, 0.02, r.z + r.h + 0.3);
+      expect(box.containsPoint(probe)).toBe(true);
+    }
+    // Slab top sits 1 cm below room-floor tops; base at INTERSTITIAL_FLOOR_Y.
+    expect(box.max.y).toBeCloseTo(0.04, 3);
+    expect(box.min.y).toBeCloseTo(-0.01, 3);
+    // World z must match deck bounds (not mirrored to negative z).
+    expect(box.min.z).toBeCloseTo(bounds.z, 3);
+    expect(box.max.z).toBeCloseTo(bounds.z + bounds.h, 3);
+    deck.disposeMaterials();
+  });
+
+  it('R-DP17: bridge polygon floor lies inside the bridge footprint at flush height', () => {
+    const graph = loadTestDeck03();
+    const deck = createDeckScene(graph, createFallbackDeckMaterials());
+    const floor = deck.roomGroups.get('bridge')!.getObjectByName('floor:bridge') as THREE.Mesh;
+    expect(floor).toBeDefined();
+    floor.updateWorldMatrix(true, false);
+    const box = new THREE.Box3().setFromObject(floor);
+
+    const bridge = getNode(graph, 'bridge');
+    expect(bridge.footprint.kind).toBe('polygon');
+    if (bridge.footprint.kind === 'polygon') {
+      const pts = bridge.footprint.points;
+      const minX = Math.min(...pts.map((p) => p.x));
+      const maxX = Math.max(...pts.map((p) => p.x));
+      const minZ = Math.min(...pts.map((p) => p.z));
+      const maxZ = Math.max(...pts.map((p) => p.z));
+      expect(box.min.x).toBeCloseTo(minX, 3);
+      expect(box.max.x).toBeCloseTo(maxX, 3);
+      expect(box.min.z).toBeCloseTo(minZ, 3);
+      expect(box.max.z).toBeCloseTo(maxZ, 3);
+    }
+    expect(box.min.y).toBeCloseTo(0.05, 3);
+    deck.disposeMaterials();
+  });
 });

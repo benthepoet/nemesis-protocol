@@ -1,7 +1,9 @@
 # Design Pack — p1-deck-polish
 
-`DESIGN PACK v2 | feature p1-deck-polish | design doc v1.18 | visual direction v1.10 | goals: G1..G12 | mechanics: M1..M8`
+`DESIGN PACK v3 | feature p1-deck-polish | design doc v1.18 | visual direction v1.10 | goals: G1..G12 | mechanics: M1..M8`
 *Owner: Kimi K3. Working versions: charter v1.13 · design doc v1.18 · visual direction v1.10 · roadmap v1.9 · assets/AGENTS.md (current) · `p1-visual-pass` design pack v2 (G6 supersession context). Kickoff: Director Stage 0, 2026-07-30 — ruling R2 (roadmap v1.9), post-M-P1 polish mandate, P1 #10. Depends on: P1 #9 (`p1-visual-pass`, Gate-2 accepted @ `master` `d4809d6`; Director message cites working tree `faad264`).*
+
+**v3 status:** binding contract, supersedes v2. **Director mandate 2026-07-31 (override of normal handoff):** *"I'm still seeing gaps, it just doesn't look good. I want YOU to personally fix the issues, not Grok/Composer."* Kimi implements directly on `feat/p1-deck-polish` (design + code + tests). Root cause re-diagnosed as a **render-transform defect** (§ v3 below) plus the v2 luminance shortfall. Rulings R-DP16–R-DP18. R-DP12 Blender contingency stood down.
 
 **v2 status:** binding Stage 1 contract, supersedes v1 (§3.5a Director Gate-2 iteration on PR #14, 2026-07-31 — *"It doesn't look good."*; **2026-07-31 Director: include ceilings** — pulls forward roadmap #12 adjacency fade into this feature/PR). Gate-2 evidence: `gate2-screen0.png`–`gate2-screen3.png`. v2 amends G1/G2/G5, adds G8–G12 + M7–M8, rulings R-DP9–R-DP15. VD **v1.10**.
 
@@ -202,3 +204,34 @@ All original, CC BY 4.0, phase-prefixed (charter §5). Reference boards: `featur
 ## Next pipeline step
 
 Pack v2 → **Grok spec v2** (hotfix/revision spec against PR #14, S1–S9 acceptance above) → **Composer revision on `feat/p1-deck-polish`** (same PR) → Stage 4 review → Gate 1 re-review → Gate 2.
+
+---
+
+# § v3 Amendment — Director mandate: Kimi direct fix (2026-07-31)
+
+**Director feedback (Gate 2, second iteration):** *"I'm still seeing gaps, it just doesn't look good. I want YOU to personally fix the issues, not Grok/Composer."* Director overrides the normal handoff for this session: Kimi designs **and implements** the fix on `feat/p1-deck-polish` directly. Diagnosed layer: **implementation defect (blocking)** + v2's luminance shortfall (carried). R-DP3 still holds — all work render-only.
+
+## Root-cause re-diagnosis (v3)
+
+- **L6 — render-transform defect (the true cause of the persisting void).** `buildInterstitialShape` and `buildPolygonRoom` author `THREE.Shape` in world (x, z) and lay it flat with `rotation.x = -π/2`, which maps shape-y → world **−z**. Consequences, all visible in `gate2-screen0..3`:
+  - The interstitial floor/ceiling plate is mirrored to negative z — **the interstitial was never covered at all**, on any revision. The dim slab at screen0's lower-left and the fragment at screen1's upper-right are this mirrored plate; screen2's "diagonal wedge" is its edge crossing frame.
+  - The bridge floor and ceiling are likewise mirrored — the bridge has never had a floor; its black pentagon reads in every gate2 screen (and in `p1-visual-pass/gate2-rendering-issue-black.png`).
+  - Therefore v2's luminance/skirt/closure work, though correct in itself, was applied to geometry sitting off-deck; G1/G2 could never pass.
+- **L7 — luminance numbers short of the bar (v2 L1 carried).** Even correctly placed, emissive `#2a3644` × 0.22 renders ≈ (9,11,15) 8-bit — inside the void-family epsilon of `#05080f`. The audit bar (0.04 linear) licensed a read indistinguishable from void.
+- **Not at fault (re-affirmed):** deck data, deck graph, collision (R-DP3); M8 ceiling-fade logic; dressing bounds; neutral retint (G3/G4 PASS stand).
+
+## New rulings (v3)
+
+- **R-DP16 — Raised maintenance deck.** The interstitial floor is no longer a flat sub-plate at y=−0.01. It is a **solid structural slab** spanning the full deck bounds (no footprint holes — room floor boxes sit on top), extruded from y=−0.01 to a top at **y=+0.04**, 1 cm below room-floor tops. Every sliver, threshold, and pad-between-walls reads as deck plating flush with room floors at the 60° camera; wall bases stand in solid mass (G1, G8; M1(a) method amended — dim-structure read unchanged).
+- **R-DP17 — Shape-space convention (defect fix, binding for all future XZ shape geometry).** XZ-planar `THREE.Shape` geometry is authored with **negated z** (`shape(x, −z)`) so `rotation.x = −π/2` yields world-correct, up-facing meshes. Bridge polygon floor is raised from y=0 to **y=0.05**, flush with rect-room floor tops; ceilings unchanged at `ROOM_HEIGHT_M`.
+- **R-DP18 — Interstitial luminance retune.** Interstitial/skirt/envelope-family material: albedo tint **`#3a4a58`** (hull-steel family, bright end — replaces forcing color to the emissive hex, which crushed the PBR albedo to void), emissive `#2a3644` **× 0.6**. Unlit read ≈ (25,32,41) vs void (5,8,15) — >3× the void-family channel epsilon, unambiguous dim structure (VD §7 rule 4). Audit bar `INTERSTITIAL_MIN_LINEAR_LUMINANCE` 0.04 → **0.06**.
+- **R-DP12 resolved — Blender contingency stood down.** The Gate-2 failures traced to the transform defect and luminance, not envelope sculpture; the authored-GLB path is not required. Kit-bash/procedural path retained. The contingency may re-arm only on new Gate-2 evidence after v3.
+
+## Verification (v3)
+
+- **Automated (new regression guards):** world-space placement tests — the interstitial slab's world bounding box must cover a probe point in the spine-adjacent sliver (previously mirrored off-deck), and the bridge floor must lie inside the bridge footprint AABB at flush height; luminance-floor test updated to the R-DP18 tint. Suite + collision/determinism freeze unchanged (G7).
+- **Gate 1/2 evidence:** S1/S2 screenshot sweep re-run against the same `gate2-screen0..3` framings (`gate2-v3-screenN.png`); Director playtest check: full-deck sweep at 60° — no `#05080f` inside the hull silhouette; bridge has a floor; spine reads continuous with room floors; ceiling adjacency fade (G9–G12) unchanged in behavior.
+
+## Doc/visual bumps (v3)
+
+**None.** VD v1.10 already carries the material-continuity and one-vessel rules; this amendment is presentation-only method + numbers. Design doc unchanged.

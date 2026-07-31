@@ -5,6 +5,7 @@ import {
   CORRIDOR_SPINE_NEUTRAL_HEX,
   PARTITION_ACCENT_STRIP_EMISSIVE,
   PARTITION_ACCENT_STRIP_WIDTH_M,
+  ROOM_FLOOR_TOP_Y,
   ROOM_HEIGHT_M,
   SIGNAGE_PLANE_HEIGHT_M,
   SIGNAGE_PLANE_WIDTH_M,
@@ -91,10 +92,12 @@ function buildPolygonRoom(
   const points = node.footprint.points;
   if (points.length < 3) return;
 
+  // R-DP17: author shape with negated z — rotation.x = -PI/2 maps shape-y to
+  // world -z; authoring negated yields world-correct, up-facing geometry.
   const shape = new THREE.Shape();
-  shape.moveTo(points[0]!.x, points[0]!.z);
+  shape.moveTo(points[0]!.x, -points[0]!.z);
   for (let i = 1; i < points.length; i++) {
-    shape.lineTo(points[i]!.x, points[i]!.z);
+    shape.lineTo(points[i]!.x, -points[i]!.z);
   }
   shape.closePath();
 
@@ -102,6 +105,7 @@ function buildPolygonRoom(
   const floorGeo = new THREE.ShapeGeometry(shape);
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
+  floor.position.y = ROOM_FLOOR_TOP_Y;
   floor.name = `floor:${node.id}`;
   floor.receiveShadow = true;
   group.add(floor);
