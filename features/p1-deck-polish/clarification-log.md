@@ -2,7 +2,7 @@
 
 *Grok ↔ Kimi Stage 1–2 loop (charter §3.2a). Oldest first.*
 
-Working versions: charter v1.13 · design doc v1.18 · visual direction v1.9 · design pack v0 · roadmap v1.9 · `integration` @ `1718432`
+Working versions: charter v1.13 · design doc v1.18 · visual direction **v1.10** · design pack **v2** · roadmap v1.9 · SPEC **v2 FINAL** (supersedes v1; Stage 2 v2 closed 2026-07-31)
 
 | Q# | From | Question | Answer | Status |
 |----|------|----------|--------|--------|
@@ -10,3 +10,11 @@ Working versions: charter v1.13 · design doc v1.18 · visual direction v1.9 · 
 | TL-B2 | Grok | Reference boards not gathered (pack v0). Block Stage 3 for Kimi assets, or kit-bash only? | **TL binding:** kit-bash primitives only this feature (charter overkill / pack M4 sketch). No new GLB prereq from Kimi for #10. | **resolved (TL)** |
 | TL-B3 | Grok | Exact Class C aperture site list for R-DP2 reservation (VD: airlock / cargo / med / bridge-adjacent)? | **TL binding from VD §3 v1.9 + deck03 Class C ids:** `APERTURE_SITES` in SPEC v1 Constants (port-airlock×2, stbd-airlock, cargo, med, bridge-nose). Opaque reserved faces only; glazing = #11. | **resolved (TL)** |
 | — | — | No open questions to Kimi. Pack v1 hardening may add acceptance criteria only; breaking G#/M# changes require spec bump. | — | **closed for Stage 3** |
+| K-v2-1 | Kimi (proactive, pack v2) | *Anticipated: how is the G1 v2 luminance bar measured?* | **Ruling (R-DP9):** binary bar is design-fixed — no pixel inside the hull-silhouette mask matches the `#05080f` void family, checked at AL0 **and** AL1 at the 60° camera. Mask construction, threshold delta, and sampling method are spec-level (Grok). The intent: interstitial reads as *dim structure* (VD §7 rules 4 + 9), never true black. [doc change: yes → visual_direction v1.10, landed] | **resolved (Kimi)** |
+| K-v2-2 | Kimi (proactive, pack v2) | *Anticipated: does the wall-seal rule (G8/R-DP10) permit reshaping wall geometry or extending walls downward?* | **Ruling:** render-only either way — extend wall bodies to the deck/fill plane **or** add skirt meshes that bridge the gap; Composer-visible choice is spec-level. The bar is visual: zero gap at wall bases, doorway corners, and footprint seams from any follow-camera framing. **Collision and wall data stay frozen (R-DP3 re-affirmed).** [doc change: no] | **resolved (Kimi)** |
+| K-v2-3 | Kimi (proactive, pack v2) | *Anticipated: may the envelope move off the AABB perimeter (stepped silhouette) to pass G2 v2?* | **Ruling (R-DP11):** not required — AABB perimeter remains permitted **if** closure (sealed corners, unbroken top band) + shell-to-outer-wall connectivity pass. A stepped silhouette is allowed but not mandated; kit-bash/data-driven only (R-DP4 stands per R-DP12 — Blender pass not triggered). [doc change: no] | **resolved (Kimi)** |
+| TL-v2-1 | Grok | Exact adjacency set for M8/G10 — door graph only, or wall-sharing too? | **TL binding:** `listAdjacentRooms` = door `neighbors` ∪ wall-segment co-members; closed doors do not remove adjacency (ambush telegraph is visual). Matches VD §7 rule 6 “sharing a wall or door edge.” [doc change: no] | **resolved (TL)** |
+| TL-v2-2 | Grok | Frustum “substantially inside” threshold for G11? | **TL binding:** room footprint AABB (`y∈[0, ROOM_HEIGHT_M]`) **intersects** `THREE.Frustum` from gameplay camera — no partial-volume % required. [doc change: no] | **resolved (TL)** |
+| TL-v2-3 | Grok | How does CI enforce R-DP9 pixel audit without WebGL screenshots? | **TL binding:** `deckHullAudit` void-family classifier + interstitial/skirt/envelope **material luminance floor** + 2D silhouette interstitial mask; Gate-1 still uses real AL0/AL1 screenshots (S1 v2). [doc change: no] | **resolved (TL)** |
+| TL-v2-4 | Grok | R-DP10 — extend wall bodies vs skirt meshes? | **TL binding:** **skirt meshes** preferred (`hull-skirt:<wallId>`); do not mutate wall segment Y extents or collision. [doc change: no] | **resolved (TL)** |
+| — | — | No open questions to Kimi. SPEC v2 FINAL binds pack v2 + VD v1.10 + TL-v2-1…4. | — | **closed for Stage 3 revision** |
