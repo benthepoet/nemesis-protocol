@@ -1,10 +1,13 @@
 import { DEFAULT_PIXEL_RATIO_CAP } from '../config.js';
 import {
   getHeroMaterialMode,
+  heroActorShadersExceedTextureUnitLimit,
   heroShadersExceedTextureUnitLimit,
   initHeroMaterialMode,
   resolveHeroMaterialMode,
+  setHeroMaterialModeDevMarker,
 } from '../render/heroMaterialMode.js';
+import { retuneHeroActorsBasic } from '../render/heroMaterialTune.js';
 import { buildCollisionWorld } from '../deck/collision.js';
 import { loadDeck03 } from '../deck/loadDeck.js';
 import { validateDeckGraph } from '../deck/validate.js';
@@ -191,23 +194,33 @@ export async function boot(canvas: HTMLCanvasElement, fpsElement: HTMLElement): 
   window.addEventListener('resize', resize);
 
   if (import.meta.env.DEV) {
-    document.body.dataset.nemesisHeroTune = getHeroMaterialMode() === 'pbr' ? 'pbr' : '4';
+    setHeroMaterialModeDevMarker(getHeroMaterialMode());
   }
+
+  const heroActorRoots: { root: THREE.Object3D; role: 'player' | 'crew' }[] = [
+    { root: playerMesh, role: 'player' },
+    ...[...standInMeshes.values()].map((root) => ({ root, role: 'crew' as const })),
+  ];
 
   if (
     appRenderer.backend === 'webgl2' &&
     getHeroMaterialMode() === 'pbr' &&
     appRenderer.renderer instanceof THREE.WebGLRenderer
   ) {
-    const tuExceeded = heroShadersExceedTextureUnitLimit(
-      appRenderer.renderer,
-      deckScene.scene,
-      camera,
-    );
+    const tuExceeded =
+      heroActorShadersExceedTextureUnitLimit(
+        appRenderer.renderer,
+        deckScene.scene,
+        camera,
+        heroActorRoots.map((a) => a.root),
+      ) ||
+      heroShadersExceedTextureUnitLimit(appRenderer.renderer, deckScene.scene, camera);
     if (tuExceeded) {
-      console.error(
-        '[nemesis] hero PBR shaders exceed MAX_TEXTURE_IMAGE_UNITS — use ?heroMaterial=basic for debug or verify shadow cap.',
+      console.warn(
+        '[nemesis] hero PBR exceeds texture units with full deck — downgrading heroes to unlit basic palette.',
       );
+      retuneHeroActorsBasic(heroActorRoots);
+      setHeroMaterialModeDevMarker('basic');
     }
   }
 

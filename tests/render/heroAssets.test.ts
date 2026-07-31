@@ -1,14 +1,24 @@
 /** @vitest-environment jsdom */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, afterEach } from 'vitest';
 import * as THREE from 'three';
 import { PLAYER_COLOR_HEX, PROJECTILE_MUZZLE_OFFSET_M } from '../../src/config.js';
-import { loadGltf } from '../../src/render/assets/loadGltf.js';
+import { loadGltf, loadGltfWithAnimations, stripOptionalMaterialMaps } from '../../src/render/assets/loadGltf.js';
+import { P1_PLAYER_BOARDER_GLB } from '../../src/render/assets/urls.js';
 import { preloadHeroAssets } from '../../src/render/assets/preloadHeroAssets.js';
 import { createPlayerMeshFromTemplates, playerHasDebugWedge } from '../../src/render/createPlayerMesh.js';
-import { countHeroBasicMaterials, countHeroStandardBodyMaterials } from '../../src/render/heroMaterialTune.js';
+import { resetHeroMaterialModeForTests } from '../../src/render/heroMaterialMode.js';
+import {
+  countHeroBasicMaterials,
+  countHeroStandardBodyMaterials,
+  tuneHeroMaterials,
+} from '../../src/render/heroMaterialTune.js';
 import { getMuzzleWorldXZ, heroHasGripBone } from '../../src/render/createRifleBlockout.js';
 
 describe('hero assets (G1, M1–M3, R5, R6)', () => {
+  afterEach(() => {
+    resetHeroMaterialModeForTests();
+  });
+
   it('E1: missing GLB rejects with path in error', async () => {
     await expect(loadGltf('/assets/models/does-not-exist.glb')).rejects.toThrow(/does-not-exist\.glb/);
   });
@@ -28,8 +38,9 @@ describe('hero assets (G1, M1–M3, R5, R6)', () => {
   });
 
   it('player allied-glow uses #69f0ae in PBR emissive (G2)', async () => {
-    const templates = await preloadHeroAssets();
-    const player = createPlayerMeshFromTemplates(templates);
+    const { scene: player } = await loadGltfWithAnimations(P1_PLAYER_BOARDER_GLB);
+    stripOptionalMaterialMaps(player);
+    tuneHeroMaterials(player, 'player', 'pbr');
     let glow: THREE.MeshStandardMaterial | undefined;
     player.traverse((obj) => {
       if (!(obj instanceof THREE.Mesh)) return;

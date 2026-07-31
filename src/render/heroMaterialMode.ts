@@ -25,7 +25,7 @@ function readEnvOverride(): HeroMaterialMode | null {
 }
 
 /**
- * Resolve staged hero shading (R15). Default follows `HERO_MATERIAL_MODE` (`pbr`) when TU budget allows;
+ * Resolve staged hero shading (R15). Default follows `HERO_MATERIAL_MODE`; when `pbr`, TU budget must allow.
  * URL `?heroMaterial=basic|pbr` or `VITE_HERO_MATERIAL_MODE` override for debug.
  */
 export function resolveHeroMaterialMode(options?: {
@@ -73,6 +73,40 @@ export function getHeroMaterialMode(): HeroMaterialMode {
 /** Reset for unit tests. */
 export function resetHeroMaterialModeForTests(): void {
   activeMode = null;
+}
+
+export function setHeroMaterialModeDevMarker(mode: HeroMaterialMode): void {
+  if (typeof document === 'undefined' || !import.meta.env.DEV) return;
+  document.body.dataset.nemesisHeroTune = mode === 'pbr' ? 'pbr' : '4';
+}
+
+/**
+ * Compile hero actor roots only; returns true if WebGL logs TU overflow for those meshes.
+ */
+export function heroActorShadersExceedTextureUnitLimit(
+  renderer: THREE.WebGLRenderer,
+  scene: THREE.Scene,
+  camera: THREE.Camera,
+  actorRoots: readonly THREE.Object3D[],
+): boolean {
+  const captured: string[] = [];
+  const prev = console.error;
+  console.error = (...args: unknown[]) => {
+    captured.push(args.map(String).join(' '));
+    prev.apply(console, args as Parameters<typeof console.error>);
+  };
+  try {
+    for (const root of actorRoots) {
+      root.traverse((obj) => {
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.SkinnedMesh) {
+          renderer.compile(obj, camera, scene);
+        }
+      });
+    }
+  } finally {
+    console.error = prev;
+  }
+  return captured.some((line) => line.includes('MAX_TEXTURE_IMAGE_UNITS'));
 }
 
 /**

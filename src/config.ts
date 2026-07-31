@@ -374,8 +374,8 @@ export const APERTURE_SITES = [
   { siteId: 'aperture-bridge-nose', wallSegmentId: 'wall-c-bridge-nose', roomId: 'bridge' },
 ] as const;
 
-/** R15 staged hero shading: preferred default `pbr` (G2–G4); `basic` via URL/env debug override. */
-export const HERO_MATERIAL_MODE: 'basic' | 'pbr' = 'pbr';
+/** R15 hero shading: default `basic` for reliable palette (tune-4); full-deck PBR exceeds TU until Blender remodel / budget pass. Override with `?heroMaterial=pbr`. */
+export const HERO_MATERIAL_MODE: 'basic' | 'pbr' = 'basic';
 
 /** Clip names — must match R14 export exactly. */
 export const HERO_CLIP_IDLE = 'idle' as const;

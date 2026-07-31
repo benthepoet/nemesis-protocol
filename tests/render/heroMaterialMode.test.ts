@@ -7,8 +7,13 @@ describe('heroMaterialMode (R15, T33)', () => {
     resetHeroMaterialModeForTests();
   });
 
-  it('defaults to pbr when texture units meet budget', () => {
-    expect(resolveHeroMaterialMode({ maxTextureImageUnits: 32 })).toBe('pbr');
+  it('defaults to basic from config when TU budget allows', () => {
+    expect(resolveHeroMaterialMode({ maxTextureImageUnits: 32 })).toBe('basic');
+  });
+
+  it('allows pbr via URL when TU budget allows', () => {
+    const params = new URLSearchParams('heroMaterial=pbr');
+    expect(resolveHeroMaterialMode({ searchParams: params, maxTextureImageUnits: 32 })).toBe('pbr');
   });
 
   it('falls back to basic when TU budget is low', () => {

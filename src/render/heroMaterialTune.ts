@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { HOSTILE_COLOR_HEX, PLAYER_COLOR_HEX } from '../config.js';
-import { getHeroMaterialMode } from './heroMaterialMode.js';
+import { getHeroMaterialMode, initHeroMaterialMode } from './heroMaterialMode.js';
 
 /** GLB material names (Blender MCP). */
 const ALLIED_GLOW_MAT = 'p1_allied_glow';
@@ -39,9 +39,13 @@ function resolveHex(role: 'player' | 'crew', name: string, fallback: THREE.Color
   return `#${fallback.getHexString()}`;
 }
 
+function isHeroDrawMesh(obj: THREE.Object3D): obj is THREE.Mesh {
+  return obj instanceof THREE.Mesh || obj instanceof THREE.SkinnedMesh;
+}
+
 function tuneHeroMaterialsBasic(root: THREE.Object3D, role: 'player' | 'crew'): void {
   root.traverse((obj) => {
-    if (!(obj instanceof THREE.Mesh)) return;
+    if (!isHeroDrawMesh(obj)) return;
     const wasArray = Array.isArray(obj.material);
     const materials = wasArray ? [...obj.material] : [obj.material];
 
@@ -68,7 +72,7 @@ function tuneHeroMaterialsBasic(root: THREE.Object3D, role: 'player' | 'crew'): 
 
 function tuneHeroMaterialsPbr(root: THREE.Object3D, role: 'player' | 'crew'): void {
   root.traverse((obj) => {
-    if (!(obj instanceof THREE.Mesh)) return;
+    if (!isHeroDrawMesh(obj)) return;
     const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
     for (const material of materials) {
       const name = material.name ?? '';
@@ -107,6 +111,22 @@ export function tuneHeroMaterials(
     tuneHeroMaterialsPbr(root, role);
   } else {
     tuneHeroMaterialsBasic(root, role);
+  }
+}
+
+/** Runtime downgrade when full-deck scene exceeds hero PBR texture-unit budget (S1). */
+export function retuneHeroActorsBasic(
+  actors: readonly { root: THREE.Object3D; role: 'player' | 'crew' }[],
+): void {
+  initHeroMaterialMode('basic');
+  for (const { root, role } of actors) {
+    tuneHeroMaterials(root, role, 'basic');
+    root.traverse((obj) => {
+      if (isHeroDrawMesh(obj)) {
+        obj.castShadow = false;
+        obj.receiveShadow = false;
+      }
+    });
   }
 }
 
